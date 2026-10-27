@@ -85,12 +85,12 @@ canvas{display:block;width:100%;touch-action:manipulation;cursor:crosshair}
 .key.wide{flex-basis:70px;font-family:var(--body);font-weight:900;font-size:13px;background:var(--board2);color:var(--chalk);box-shadow:0 3px 0 var(--line)}
 .hint{font-size:12px;color:var(--muted);text-align:center}
 
-details{background:var(--board2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+details{background:var(--board2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;transition:all .2s ease}
 summary{cursor:pointer;font-weight:900;outline:none}
 .codex-group{margin-top:14px}
 .group-title{font-size:13px;font-weight:900;color:var(--tile);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
-.cx{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--muted);min-width:0;cursor:pointer;transition:all .15s}
+.cx{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--muted);min-width:0;cursor:pointer;transition:all .18s;position:relative}
 .cx:hover{border-color:var(--gold);transform:scale(1.02)}
 .cx b{font-family:var(--display);font-weight:400;font-size:14px;color:var(--chalk);display:block}
 .cx.done{border-color:var(--ok)} .cx.done b{color:var(--ok)}
@@ -98,9 +98,33 @@ summary{cursor:pointer;font-weight:900;outline:none}
 .cx.locked:hover{opacity:0.65}
 .cx i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
 .lock-tag{float:right;font-size:10px;color:var(--danger)}
+.target-tag{float:right;font-size:10px;color:var(--gold);font-weight:900}
+
+/* 目標卡片特殊發光動效 */
+.cx.target-active{
+  border-color: var(--gold) !important;
+  background: rgba(255, 209, 102, 0.16) !important;
+  animation: target-glow 1.4s infinite alternate ease-in-out;
+  transform: scale(1.03);
+  z-index: 2;
+}
+.cx.target-active b{
+  color: var(--gold) !important;
+  text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
+}
+@keyframes target-glow{
+  0%{
+    box-shadow: 0 0 6px rgba(255, 209, 102, 0.4), inset 0 0 4px rgba(255, 209, 102, 0.2);
+    border-color: #ffd166;
+  }
+  100%{
+    box-shadow: 0 0 16px rgba(255, 209, 102, 0.9), inset 0 0 10px rgba(255, 209, 102, 0.4);
+    border-color: #ffffff;
+  }
+}
 
 @media (max-width:520px){.slot{width:30px;height:36px;font-size:17px}.key{height:42px;font-size:16px}}
-@media (prefers-reduced-motion:reduce){.shake{animation:none}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none};.cx.target-active{animation:none}}
 </style>
 </head>
 <body>
@@ -168,7 +192,7 @@ summary{cursor:pointer;font-weight:900;outline:none}
   </div>
 
   <div class="kb" id="kb"></div>
-  <div class="hint">提示：格子放滿時，手上拿新單字直接點舊單位即可「覆蓋替換」；或點擊舊單位按「回收拆除」！</div>
+  <div class="hint">提示：下方字典的發光卡片為當前目標，點擊卡片可聽真人發音；格子放滿時點擊舊單位可直接覆蓋替換！</div>
 
   <details id="detailsCodex" open>
     <summary>單字圖鑑（按字母數排列，點擊卡片聽真人發音 🔊）</summary>
@@ -280,6 +304,7 @@ function pickPrompt(){
   $('pZh').textContent=s.zh;
   $('pLevel').textContent=tier.name;
   ui();
+  buildCodex(); // 題目更換後即時更新字典的高亮卡片
 }
 
 function skipPrompt(){
@@ -296,6 +321,8 @@ function reset(){
       enemies:[],towers:[],fx:[],slots:[],pending:null,sel:null,kills:0,over:false,speed:1,built:new Set(),
       camShake:0,prepTime:20,targetWord:'',targetSpec:null};
   $('over').hidden=true;
+  const d=$('detailsCodex');
+  if(d) d.open=true; // 重置時確保字典打開
   pickPrompt();
   say('請依照上方題目填入剩下的字母！');
   buildCodex();
@@ -350,7 +377,7 @@ function submit(){
   st.pending={w,s};
   st.slots=[];
   st.built.add(w);
-  st.sel=null; // 清除選取
+  st.sel=null;
 
   speakWord(w,s.zh);
 
@@ -377,7 +404,7 @@ function canPlaceTerrain(x,y,s){
 }
 
 function recycleTower(t){
-  const refund=t.w.length*4; // 80% 回收退款
+  const refund=t.w.length*4;
   st.gold+=refund;
   st.towers=st.towers.filter(item=>item!==t);
   st.sel=null;
@@ -389,7 +416,6 @@ function recycleTower(t){
 function clickCell(x,y){
   if(st.over) return;
   
-  // 情況 A：手上有準備放置的單字（pending）
   if(st.pending){
     const {w,s}=st.pending;
     if(!canPlaceTerrain(x,y,s)){
@@ -397,7 +423,6 @@ function clickCell(x,y){
     }
     const existing = st.towers.find(t=>t.x===x&&t.y===y);
     if(existing){
-      // 直接覆蓋舊單位，並給予回收退款！
       const refund = existing.w.length * 4;
       st.gold += refund;
       st.towers = st.towers.filter(t=>t!==existing);
@@ -409,7 +434,6 @@ function clickCell(x,y){
       ui();
       return;
     }
-    // 正常放置在空格
     st.towers.push({w,s,x,y,cd:0,t:0});
     st.pending=null;
     say(`${w} 就位！`,'good');
@@ -418,7 +442,6 @@ function clickCell(x,y){
     return;
   }
 
-  // 情況 B：平常點擊單位，進入選取並顯示「回收」選項
   const t=st.towers.find(t=>t.x===x&&t.y===y);
   st.sel=t||null;
   if(t){
@@ -448,6 +471,7 @@ function startWave(){
     say(`第 ${st.wave} 波來襲！${st.boss?'這波有魔王！':''}`);
   }
 
+  // 需求實作：關卡開始，字典自動縮起來
   const d=$('detailsCodex');
   if(d) d.open=false;
 
@@ -665,6 +689,8 @@ function update(dt){
     $('overTxt').textContent=`撐到第 ${st.wave} 波，擊倒 ${st.kills} 個敵人`;
     $('over').hidden=false;
   }
+
+  // 波次通關結算
   if(st.inWave&&st.spawnLeft===0&&!st.enemies.length){
     st.inWave=false;
     const bonus=8+st.wave;
@@ -676,6 +702,11 @@ function update(dt){
       say(`🎉 恭喜晉級！已解鎖${nextTier.name}！`,'good');
     }
     pickPrompt();
+
+    // 需求實作：關卡結束，字典自動打開
+    const d=$('detailsCodex');
+    if(d) d.open=true;
+
     buildCodex();
   }
   st.fx.forEach(f=>f.t+=dt);st.fx=st.fx.filter(f=>f.t<f.life);
@@ -862,13 +893,11 @@ function draw(){
   ctx.fillStyle='#ff6b5b';ctx.fillText('入口',CS*.5,CS*.6);
   ctx.fillStyle='#7ed6a0';ctx.fillText('基地',CS*11.5,CS*7.4);
 
-  // 放置或覆蓋預覽提示
   if(hover&&st.pending){
     const validTerrain = canPlaceTerrain(hover.x,hover.y,st.pending.s);
     const existing = st.towers.find(t=>t.x===hover.x&&t.y===hover.y);
     if(validTerrain){
       if(existing){
-        // 覆蓋提示：金色方框
         ctx.fillStyle='rgba(255, 209, 102, 0.45)';
         ctx.fillRect(hover.x*CS,hover.y*CS,CS,CS);
         ctx.strokeStyle='#ffd166';ctx.lineWidth=2;
@@ -876,24 +905,20 @@ function draw(){
         ctx.font=`900 ${CS*.2}px Nunito, sans-serif`;ctx.fillStyle='#2a2208';
         ctx.fillText('替換',hover.x*CS+CS/2,hover.y*CS+CS/2);
       }else{
-        // 空格放置提示：綠色方框
         ctx.fillStyle='rgba(126,214,160,.25)';
         ctx.fillRect(hover.x*CS,hover.y*CS,CS,CS);
       }
     }else{
-      // 無效地形
       ctx.fillStyle='rgba(255,107,91,.25)';
       ctx.fillRect(hover.x*CS,hover.y*CS,CS,CS);
     }
   }
 
-  // 單位繪製
   for(const t of st.towers){
     const col=KIND[t.s.k].c,p=CS*.08;
     ctx.fillStyle='rgba(0,0,0,.35)';rr(t.x*CS+p,t.y*CS+p+3,CS-2*p,CS-2*p,6);ctx.fill();
     ctx.fillStyle=col;rr(t.x*CS+p,t.y*CS+p,CS-2*p,CS-2*p,6);ctx.fill();
 
-    // 如果是被選取的單位，繪製高亮金邊
     if(st.sel===t){
       ctx.strokeStyle='#ffd166';ctx.lineWidth=3;
       ctx.strokeRect(t.x*CS+p-2,t.y*CS+p-2,CS-2*p+4,CS-2*p+4);
@@ -904,7 +929,6 @@ function draw(){
     ctx.font=`800 ${CS*.17}px Nunito, sans-serif`;ctx.fillStyle='rgba(34,32,15,.75)';ctx.fillText(t.s.zh,t.x*CS+CS/2,t.y*CS+CS*.74);
   }
 
-  // 敵人繪製
   for(const e of st.enemies){
     const r=CS*(e.type==='boss'?.36:e.type==='fast'?.2:.26),X=e.x*CS,Y=e.y*CS;
     ctx.fillStyle=e.type==='boss'?'#b8322a':e.type==='fast'?'#ffa94d':'#ff6b5b';
@@ -949,6 +973,7 @@ function onCodexClick(w){
   }
 }
 
+// 依照字母長度排列與分組，並高亮當前目標單字
 function buildCodex(){
   const wrap=$('codexWrap');wrap.innerHTML='';
   const groups=[
@@ -971,11 +996,13 @@ function buildCodex(){
     words.forEach(([w,s])=>{
       const isLocked = w.length > tier.maxLen;
       const isDone = st.built.has(w);
+      const isCurrentTarget = (w === st.targetWord);
+
       const card=document.createElement('div');
-      card.className=`cx ${isDone?'done':''} ${isLocked?'locked':''}`;
+      card.className=`cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCurrentTarget?'target-active':''}`;
       card.onclick=()=>onCodexClick(w);
       card.innerHTML=`
-        ${isLocked?'<span class="lock-tag">🔒 鎖定</span>':''}
+        ${isCurrentTarget ? '<span class="target-tag">★ 當前目標</span>' : (isLocked ? '<span class="lock-tag">🔒 鎖定</span>' : '')}
         <b>${w}</b>
         <i style="background:${KIND[s.k].c}"></i>${s.zh}・${KIND[s.k].t}
       `;
@@ -1021,12 +1048,11 @@ function ui(){
   $('pendWrap').hidden=!st.pending;
   if(st.pending) $('pend').textContent=`待放置：${st.pending.w}（${st.pending.s.zh}）點擊地圖空地或舊單位即可放置！`;
 
-  // 選取回收列顯示控制
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
 function liveUi(){
-  const k=[Math.ceil(st.hp),st.gold,st.wave,st.kills,st.inWave,Math.ceil(st.prepTime),st.sel?st.sel.w:''].join();
+  const k=[Math.ceil(st.hp),st.gold,st.wave,st.kills,st.inWave,Math.ceil(st.prepTime),st.sel?st.sel.w:'',st.targetWord].join();
   if(k!==lastUi){lastUi=k;ui();}
 }
 
