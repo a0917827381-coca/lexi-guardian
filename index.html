@@ -255,7 +255,7 @@ const KIND={
 const PATHK=new Set(['trap','wall','mine']);
 const DICT=new Set(Object.keys(SPEC));
 
-// ---------- 語音合成系統（修復 GC 釋放崩潰） ----------
+// ---------- 語音合成系統 ----------
 const activeVoices = [];
 function speakWord(w, zh){
   if(!('speechSynthesis' in window)) return;
@@ -553,6 +553,9 @@ function fireTowerFx(t,c,tg,col){
   }else if(w==='ROCK'){
     addShake(3);
     fx({type:'rock_throw',x:c.x,y:c.y,x2:tg.x,y2:tg.y,aoe,life:.4});
+  }else if(['DRAGON','FIRE','LAVA'].includes(w)){
+    addShake(w==='DRAGON'?7.5:3);
+    fx({type:'flame_breath',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,aoe:aoe||(w==='DRAGON'?1.4:0.8),life:.36});
   }else if(['ZAP','BOLT','THUNDER'].includes(w)){
     const subs=w==='THUNDER'?4:(w==='BOLT'?2:1);
     addShake(w==='THUNDER'?6:2);
@@ -715,6 +718,47 @@ function drawFx(f){
   const p=f.t/f.life, a=Math.max(0,1-p);
   ctx.save();
   switch(f.type){
+    case 'flame_breath':{
+      const ang=Math.atan2(f.y2-f.y,f.x2-f.x);
+      const distP=Math.hypot(f.x2-f.x,f.y2-f.y)*CS;
+      ctx.translate(f.x*CS,f.y*CS);
+      ctx.rotate(ang);
+      ctx.globalCompositeOperation='lighter';
+
+      const isDragon=f.w==='DRAGON';
+      const reach=distP*Math.min(1.15,0.3+p*1.5);
+      const spread=CS*(isDragon?1.15:0.65)*(0.35+p*0.65);
+
+      const grad=ctx.createRadialGradient(reach*0.6,0,CS*0.1,reach*0.5,0,spread);
+      grad.addColorStop(0,`rgba(255,255,255,${a*0.95})`);
+      grad.addColorStop(0.2,`rgba(255,210,60,${a*0.9})`);
+      grad.addColorStop(0.65,`rgba(255,60,0,${a*0.8})`);
+      grad.addColorStop(1,'rgba(255,0,0,0)');
+
+      ctx.fillStyle=grad;
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.quadraticCurveTo(reach*0.4,-spread,reach,-spread*0.45);
+      ctx.lineTo(reach*1.15,0);
+      ctx.lineTo(reach,spread*0.45);
+      ctx.quadraticCurveTo(reach*0.4,spread,0,0);
+      ctx.closePath();
+      ctx.fill();
+
+      if(p>0.25){
+        const expP=(p-0.25)/0.75;
+        const blastR=CS*(isDragon?1.35:0.75)*expP;
+        const gradBlast=ctx.createRadialGradient(distP,0,0,distP,0,blastR);
+        gradBlast.addColorStop(0,`rgba(255,240,180,${(1-expP)*0.9})`);
+        gradBlast.addColorStop(0.4,`rgba(255,100,0,${(1-expP)*0.7})`);
+        gradBlast.addColorStop(1,'rgba(200,0,0,0)');
+        ctx.fillStyle=gradBlast;
+        ctx.beginPath();
+        ctx.arc(distP,0,blastR,0,Math.PI*2);
+        ctx.fill();
+      }
+      break;
+    }
     case 'meteor':{
       const impactP=f.impactP||0.42;
       const targetX=f.tx*CS, targetY=f.ty*CS;
