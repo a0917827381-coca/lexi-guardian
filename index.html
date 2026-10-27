@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>拼字塔防 - 兒童背單字啟蒙版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&amp;family=Nunito:wght@600;800;900&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
 <style>
 :root{
   --board:#18261f; --board2:#203229; --line:#2d463a;
@@ -39,17 +39,16 @@ h1{
 }
 h1 small{font-family:var(--body);font-size:11px;color:var(--muted);letter-spacing:0;margin-left:0;font-weight:600}
 
-/* 題目任務卡片 */
 .prompt-card{
-  background: #1e3327;
-  border: 2px solid var(--tile);
-  border-radius: 8px;
-  padding: 6px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  background:#1e3327;
+  border:2px solid var(--tile);
+  border-radius:8px;
+  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.3);
 }
 .prompt-main{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .prompt-title{font-size:12px;color:var(--muted)}
@@ -117,17 +116,16 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 .lock-tag{float:right;font-size:9px;color:var(--danger)}
 .target-tag{float:right;font-size:9px;color:var(--gold);font-weight:900}
 
-/* 目標卡片特殊發光動效 */
 .cx.target-active{
-  border-color: var(--gold) !important;
-  background: rgba(255, 209, 102, 0.16) !important;
-  animation: target-glow 1.4s infinite alternate ease-in-out;
-  transform: scale(1.02);
-  z-index: 2;
+  border-color:var(--gold) !important;
+  background:rgba(255, 209, 102, 0.16) !important;
+  animation:target-glow 1.4s infinite alternate ease-in-out;
+  transform:scale(1.02);
+  z-index:2;
 }
 .cx.target-active b{
-  color: var(--gold) !important;
-  text-shadow: 0 0 6px rgba(255, 209, 102, 0.5);
+  color:var(--gold) !important;
+  text-shadow:0 0 6px rgba(255, 209, 102, 0.5);
 }
 @keyframes target-glow{
   0%{box-shadow:0 0 4px rgba(255, 209, 102, 0.3);border-color:#ffd166}
@@ -151,7 +149,6 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 <div class="wrap">
   <h1>拼字塔防 <small>兒童單字啟蒙・邊玩邊背</small></h1>
 
-  <!-- 題目提示與填空區 -->
   <div class="prompt-card">
     <div class="prompt-main">
       <span class="prompt-title">當前目標單字：</span>
@@ -162,7 +159,6 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   </div>
 
   <div class="top">
-    <!-- 行列強制4等分，不隨意折行 -->
     <div class="stats">
       <div class="stat hp"><span>基地血量</span><b id="sHp">20</b></div>
       <div class="stat gold"><span>金幣</span><b id="sGold">60</b></div>
@@ -196,13 +192,11 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <div class="msg" id="msg">請依照上方題目填入剩下的字母！</div>
   </div>
 
-  <!-- 待放置與替換提示 -->
   <div id="pendWrap" hidden>
     <span class="pending" id="pend"></span>
     <button id="bCancel">取消放置</button>
   </div>
 
-  <!-- 選取單位與回收拆除列 -->
   <div id="selWrap" hidden>
     <div class="sel-box">
       <span id="selInfo">已選取單位</span>
@@ -223,14 +217,12 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 <script>
 // ---------- 單字資料庫 ----------
 const SPEC={
-  // 3 字母
   BOW:{zh:'弓',k:'single',dmg:7,rng:3.4,rate:1.1},GUN:{zh:'槍',k:'single',dmg:4,rng:2.6,rate:3.5},
   AXE:{zh:'斧頭',k:'single',dmg:16,rng:1.4,rate:.8},CAT:{zh:'貓',k:'single',dmg:6,rng:1.6,rate:2.5},
   DOG:{zh:'狗',k:'single',dmg:9,rng:1.7,rate:1.8},OWL:{zh:'貓頭鷹',k:'single',dmg:8,rng:4.2,rate:1},
   BEE:{zh:'蜜蜂',k:'dot',dmg:2,rng:2,rate:3,dps:3,dur:2},ICE:{zh:'冰',k:'slow',dmg:3,rng:2.3,rate:1,slow:.5,dur:2},
   MUD:{zh:'泥巴',k:'slow',dmg:1,rng:2,rate:1,slow:.6,dur:2,aoe:.9},ZAP:{zh:'電擊',k:'chain',dmg:6,rng:2.2,rate:2,jumps:2},
   NET:{zh:'網子',k:'wall',slow:.4},
-  // 4 字母
   WOLF:{zh:'狼',k:'single',dmg:13,rng:1.7,rate:2},LION:{zh:'獅子',k:'single',dmg:28,rng:1.7,rate:1},
   BEAR:{zh:'熊',k:'single',dmg:45,rng:1.5,rate:.6},BOMB:{zh:'炸彈',k:'splash',dmg:20,rng:2.3,rate:.6,aoe:1.2},
   ROCK:{zh:'石頭',k:'splash',dmg:10,rng:2,rate:.9,aoe:.8},FIRE:{zh:'火',k:'dot',dmg:3,rng:2.2,rate:1,dps:6,dur:3},
@@ -241,7 +233,6 @@ const SPEC={
   HEAL:{zh:'治療',k:'heal',amt:1,every:10},TRAP:{zh:'陷阱',k:'trap',dmg:10,rate:1.2},
   WALL:{zh:'牆',k:'wall',slow:.2},MINE:{zh:'地雷',k:'mine',dmg:150,aoe:1.4},
   KING:{zh:'國王',k:'aura',mul:1.5,rng:1.6},
-  // 5 字母
   KNIFE:{zh:'小刀',k:'single',dmg:7,rng:1.3,rate:3},SWORD:{zh:'劍',k:'single',dmg:22,rng:1.5,rate:1.1},
   SPEAR:{zh:'長矛',k:'single',dmg:18,rng:2.1,rate:1},ARROW:{zh:'箭',k:'single',dmg:11,rng:3.6,rate:1.3},
   LASER:{zh:'雷射',k:'single',dmg:7,rng:3,rate:5},EAGLE:{zh:'老鷹',k:'single',dmg:22,rng:5,rate:.9},
@@ -249,7 +240,6 @@ const SPEC={
   SNAKE:{zh:'蛇',k:'dot',dmg:6,rng:1.8,rate:1,dps:10,dur:3},VENOM:{zh:'毒液',k:'dot',dmg:4,rng:2.4,rate:1,dps:14,dur:4},
   FROST:{zh:'寒霜',k:'slow',dmg:8,rng:2.6,rate:1,slow:.35,dur:2.5,aoe:1.2},NURSE:{zh:'護士',k:'heal',amt:2,every:10},
   SPIKE:{zh:'尖刺',k:'trap',dmg:16,rate:1.5},QUEEN:{zh:'女王',k:'aura',mul:1.3,rng:2.6},
-  // 6+ 字母
   SNIPER:{zh:'狙擊手',k:'single',dmg:90,rng:7,rate:.35},CANNON:{zh:'大砲',k:'splash',dmg:40,rng:3,rate:.5,aoe:1.3},
   METEOR:{zh:'隕石',k:'splash',dmg:90,rng:4.5,rate:.25,aoe:1.8},DRAGON:{zh:'龍',k:'splash',dmg:40,rng:2.8,rate:.9,aoe:1.4,dps:10,dur:3},
   POISON:{zh:'毒藥',k:'dot',dmg:4,rng:2.5,rate:1,dps:18,dur:5,aoe:1},THUNDER:{zh:'雷霆',k:'chain',dmg:28,rng:3.2,rate:.9,jumps:6},
@@ -265,22 +255,33 @@ const KIND={
 const PATHK=new Set(['trap','wall','mine']);
 const DICT=new Set(Object.keys(SPEC));
 
-// ---------- 語音合成系統 ----------
+// ---------- 語音合成系統（修復 GC 釋放崩潰） ----------
+const activeVoices = [];
 function speakWord(w, zh){
   if(!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const uEn=new SpeechSynthesisUtterance(w.toLowerCase());
-  uEn.lang='en-US';
-  uEn.rate=0.82;
-  uEn.onend=()=>{
-    if(zh){
-      const uZh=new SpeechSynthesisUtterance(zh);
-      uZh.lang='zh-TW';
-      uZh.rate=1.0;
-      window.speechSynthesis.speak(uZh);
-    }
-  };
-  window.speechSynthesis.speak(uEn);
+  try{
+    window.speechSynthesis.cancel();
+    activeVoices.length = 0;
+    const uEn = new SpeechSynthesisUtterance(w.toLowerCase());
+    uEn.lang = 'en-US';
+    uEn.rate = 0.82;
+    activeVoices.push(uEn);
+    uEn.onend = () => {
+      if(zh){
+        const uZh = new SpeechSynthesisUtterance(zh);
+        uZh.lang = 'zh-TW';
+        uZh.rate = 1.0;
+        activeVoices.push(uZh);
+        uZh.onend = () => { activeVoices.length = 0; };
+        window.speechSynthesis.speak(uZh);
+      } else {
+        activeVoices.length = 0;
+      }
+    };
+    window.speechSynthesis.speak(uEn);
+  }catch(e){
+    console.warn('SpeechSynthesis error:', e);
+  }
 }
 
 // ---------- 地圖 ----------
@@ -351,7 +352,7 @@ function reset(){
   buildCodex();
 }
 
-// ---------- 拼字 ----------
+// ---------- 拼字操作 ----------
 function buy(L){
   if(st.over||st.pending) return;
   if(!st.targetWord) return;
@@ -390,8 +391,7 @@ function submit(){
     return say(`字典裡找不到「${w}」，請檢查拼法或按退回重拼`,'bad');
   }
   const s=SPEC[w];
-  const isTarget=(w===st.targetWord);
-  if(isTarget){
+  if(w===st.targetWord){
     st.gold+=5;
   }
   st.pending={w,s};
@@ -417,7 +417,7 @@ function cancelPending(){
 
 function shake(){const e=$('slots');e.classList.remove('shake');void e.offsetWidth;e.classList.add('shake');}
 
-// ---------- 放置、替換與回收機制 ----------
+// ---------- 放置與替換 ----------
 function canPlaceTerrain(x,y,s){
   if(x<0||y<0||x>=COLS||y>=ROWS) return false;
   return PATHK.has(s.k)?isPath(x,y):!isPath(x,y);
@@ -435,7 +435,6 @@ function recycleTower(t){
 
 function clickCell(x,y){
   if(st.over) return;
-  
   if(st.pending){
     const {w,s}=st.pending;
     if(!canPlaceTerrain(x,y,s)){
@@ -474,7 +473,7 @@ function clickCell(x,y){
   ui();
 }
 
-// ---------- 波次與早鳥獎勵 ----------
+// ---------- 關卡推進 ----------
 function startWave(){
   if(st.inWave||st.over) return;
   st.wave++;
@@ -491,7 +490,6 @@ function startWave(){
     say(`第 ${st.wave} 波來襲！${st.boss?'這波有魔王！':''}`);
   }
 
-  // 關卡開始，字典自動縮起來
   const d=$('detailsCodex');
   if(d) d.open=false;
 
@@ -507,7 +505,7 @@ function spawn(type){
   e.max=e.hp;st.enemies.push(e);
 }
 
-// ---------- 特效輔助函數 ----------
+// ---------- 特效輔助 ----------
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function fx(o){st.fx.push({...o,life:o.life||.25,t:0});}
 function addShake(val){if(st)st.camShake=Math.min(24,Math.max(st.camShake||0,val));}
@@ -524,7 +522,7 @@ function genLightning(x1,y1,x2,y2,branches=2){
   const subs=[];
   for(let b=0;b<branches;b++){
     const idx=Math.floor(1+Math.random()*(pts.length-2));
-    const sp=pts[idx];
+    const sp=pts[idx]||pts[0];
     const ang=Math.atan2(y2-y1,x2-x1)+(Math.random()-.5)*1.8;
     const l=.35+Math.random()*.5;
     subs.push([sp,{x:sp.x+Math.cos(ang)*l*.5+(Math.random()-.5)*.2,y:sp.y+Math.sin(ang)*l*.5+(Math.random()-.5)*.2},{x:sp.x+Math.cos(ang)*l,y:sp.y+Math.sin(ang)*l}]);
@@ -555,40 +553,16 @@ function fireTowerFx(t,c,tg,col){
   }else if(w==='ROCK'){
     addShake(3);
     fx({type:'rock_throw',x:c.x,y:c.y,x2:tg.x,y2:tg.y,aoe,life:.4});
-  }else if(w==='STORM'){
-    addShake(3);
-    fx({type:'storm',x:tg.x,y:tg.y,aoe,life:.48});
-  }else if(w==='DRAGON'){
-    addShake(4);
-    fx({type:'dragon_breath',x:c.x,y:c.y,x2:tg.x,y2:tg.y,aoe,life:.4});
-  }else if(w==='FIRE'||w==='LAVA'){
-    if(w==='LAVA')addShake(3);
-    fx({type:'fire_stream',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,aoe,life:.35});
-  }else if(['ACID','POISON','VENOM'].includes(w)){
-    fx({type:'toxic_splat',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,aoe,life:.38});
-  }else if(w==='BEE'){
-    fx({type:'bee_swarm',x:c.x,y:c.y,x2:tg.x,y2:tg.y,life:.48});
-  }else if(w==='SNAKE'){
-    fx({type:'snake_strike',x:c.x,y:c.y,x2:tg.x,y2:tg.y,life:.3});
-  }else if(w==='ICE'||w==='FROST'){
-    addShake(3);
-    fx({type:'frost_shatter',x:tg.x,y:tg.y,w,aoe,life:.4});
-  }else if(w==='SNOW'){
-    fx({type:'snow_blizzard',x:tg.x,y:tg.y,aoe,life:.42});
-  }else if(w==='WIND'){
-    fx({type:'wind_gust',x:c.x,y:c.y,x2:tg.x,y2:tg.y,aoe,life:.32});
-  }else if(w==='MUD'){
-    fx({type:'mud_splat',x:c.x,y:c.y,x2:tg.x,y2:tg.y,aoe,life:.38});
   }else if(['ZAP','BOLT','THUNDER'].includes(w)){
     const subs=w==='THUNDER'?4:(w==='BOLT'?2:1);
     addShake(w==='THUNDER'?6:2);
     fx({type:'lightning',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,col,bolt:genLightning(c.x,c.y,tg.x,tg.y,subs),life:.26});
   }else{
-    fx({type:'word_rune',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,col,aoe,life:.34});
+    fx({type:'bullet',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,isSniper:false,col,life:.2});
   }
 }
 
-// ---------- 更新循環 ----------
+// ---------- 主循環 ----------
 function update(dt){
   if(st.over) return;
   if(st.camShake>0) st.camShake=Math.max(0,st.camShake-dt*32);
@@ -632,9 +606,8 @@ function update(dt){
     if(s.k==='wall'||s.k==='aura') continue;
     if(s.k==='mine'){
       if(st.enemies.some(e=>dist(e,c)<.55)){
-        st.enemies.forEach(e=>{if(dist(e,c)<=s.aoe)e.hp-=s.dmg;});
+        st.enemies.forEach(e=>{if(dist(e,c)<=(s.aoe||1.4))e.hp-=s.dmg;});
         addShake(14);
-        fx({type:'mine_boom',x:c.x,y:c.y,aoe:s.aoe,life:.55});
         t.dead=true;
       }
       continue;
@@ -646,13 +619,12 @@ function update(dt){
         on.forEach(e=>e.hp-=s.dmg);
         t.cd=1/s.rate;
         addShake(2.5);
-        fx({type:'trap_snap',x:c.x,y:c.y,w:t.w,life:.32});
       }
       continue;
     }
 
     let tg=null;
-    for(const e of st.enemies) if(dist(e,c)<=s.rng&&(!tg||e.d>tg.d)) tg=e;
+    for(const e of st.enemies) if(dist(e,c)<=(s.rng||2)&&(!tg||e.d>tg.d)) tg=e;
     if(!tg) continue;
     let mul=1;
     for(const a of st.towers) if(a.s.k==='aura'&&a!==t&&dist(c,{x:a.x+.5,y:a.y+.5})<=a.s.rng) mul=Math.max(mul,a.s.mul);
@@ -710,7 +682,6 @@ function update(dt){
     $('over').hidden=false;
   }
 
-  // 波次通關結算
   if(st.inWave&&st.spawnLeft===0&&!st.enemies.length){
     st.inWave=false;
     const bonus=8+st.wave;
@@ -722,11 +693,8 @@ function update(dt){
       say(`🎉 恭喜晉級！解鎖${nextTier.name}！`,'good');
     }
     pickPrompt();
-
-    // 關卡結束，字典自動打開
     const d=$('detailsCodex');
     if(d) d.open=true;
-
     buildCodex();
   }
   st.fx.forEach(f=>f.t+=dt);st.fx=st.fx.filter(f=>f.t<f.life);
@@ -738,7 +706,10 @@ function resize(){
   const w=$('stage').clientWidth;DPR=window.devicePixelRatio||1;CS=w/COLS;
   cv.width=w*DPR;cv.height=CS*ROWS*DPR;cv.style.height=CS*ROWS+'px';ctx.setTransform(DPR,0,0,DPR,0,0);
 }
-function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function rr(x,y,w,h,r){
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+  else{ctx.beginPath();ctx.rect(x,y,w,h);}
+}
 
 function drawFx(f){
   const p=f.t/f.life, a=Math.max(0,1-p);
@@ -790,11 +761,6 @@ function drawFx(f){
         gradBall.addColorStop(0,`rgba(255,255,255,${expA})`);gradBall.addColorStop(0.3,`rgba(255,180,20,${expA*0.9})`);gradBall.addColorStop(1,'rgba(80,0,0,0)');
         ctx.fillStyle=gradBall;ctx.beginPath();ctx.arc(targetX,targetY,curBlastR,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle=`rgba(255,245,200,${expA})`;ctx.lineWidth=7*expA;ctx.beginPath();ctx.arc(targetX,targetY,maxBlastR*expP*1.3,0,Math.PI*2);ctx.stroke();
-        for(let d=0;d<14;d++){
-          const dAngle=(d/14)*Math.PI*2, dDist=maxBlastR*(expP*1.15)*(0.8+(d%4)*0.18);
-          ctx.fillStyle=d%2===0?'#ffdd44':'#ff4400';ctx.beginPath();
-          ctx.arc(targetX+Math.cos(dAngle)*dDist,targetY+Math.sin(dAngle)*dDist+expP*24,Math.max(1.5,5*expA),0,Math.PI*2);ctx.fill();
-        }
         ctx.restore();
       }
       break;
@@ -804,7 +770,6 @@ function drawFx(f){
       ctx.translate(px*CS,py*CS);ctx.rotate(ang);
       ctx.strokeStyle=`rgba(255,220,100,${a*0.8})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-CS*.7,0);ctx.lineTo(0,0);ctx.stroke();
       ctx.strokeStyle='#fdfcdc';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-CS*.3,0);ctx.lineTo(CS*.2,0);ctx.stroke();
-      ctx.fillStyle='#ffc300';ctx.beginPath();ctx.moveTo(CS*.28,0);ctx.lineTo(CS*.1,-CS*.12);ctx.lineTo(CS*.1,CS*.12);ctx.closePath();ctx.fill();
       break;
     }
     case 'bullet':{
@@ -812,7 +777,6 @@ function drawFx(f){
       if(f.isSniper){
         const tx=f.x2*CS,ty=f.y2*CS;
         ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=8*a;ctx.beginPath();ctx.moveTo(f.x*CS,f.y*CS);ctx.lineTo(tx,ty);ctx.stroke();
-        ctx.strokeStyle=`rgba(255,20,80,${a*0.8})`;ctx.lineWidth=16*a;ctx.beginPath();ctx.moveTo(f.x*CS,f.y*CS);ctx.lineTo(tx,ty);ctx.stroke();
       }else{
         ctx.strokeStyle=`rgba(255,240,150,${a})`;ctx.lineWidth=4.5;ctx.beginPath();
         ctx.moveTo((f.x+(f.x2-f.x)*Math.max(0,p-.3))*CS,(f.y+(f.y2-f.y)*Math.max(0,p-.3))*CS);ctx.lineTo((f.x+(f.x2-f.x)*p)*CS,(f.y+(f.y2-f.y)*p)*CS);ctx.stroke();
@@ -822,33 +786,18 @@ function drawFx(f){
     case 'laser':{
       ctx.globalCompositeOperation='lighter';
       ctx.strokeStyle=`rgba(255,50,200,${a*0.8})`;ctx.lineWidth=CS*.24*a;ctx.beginPath();ctx.moveTo(f.x*CS,f.y*CS);ctx.lineTo(f.x2*CS,f.y2*CS);ctx.stroke();
-      ctx.strokeStyle='#ffffff';ctx.lineWidth=CS*.08;ctx.beginPath();ctx.moveTo(f.x*CS,f.y*CS);ctx.lineTo(f.x2*CS,f.y2*CS);ctx.stroke();
       break;
     }
     case 'melee':{
       ctx.translate(f.x2*CS,f.y2*CS);ctx.globalCompositeOperation='lighter';
-      if(f.w==='SWORD'){
-        ctx.strokeStyle=`rgba(120,220,255,${a})`;ctx.lineWidth=8*a;const len=CS*.75;
-        ctx.beginPath();ctx.moveTo(-len,-len);ctx.lineTo(len,len);ctx.moveTo(len,-len);ctx.lineTo(-len,len);ctx.stroke();
-      }else if(f.w==='AXE'){
-        ctx.strokeStyle=`rgba(255,100,0,${a})`;ctx.lineWidth=12*a;
-        ctx.beginPath();ctx.arc(0,0,CS*.75,p*Math.PI*1.5,p*Math.PI*1.5+Math.PI*0.9);ctx.stroke();
-      }
+      ctx.strokeStyle=`rgba(120,220,255,${a})`;ctx.lineWidth=8*a;const len=CS*.75;
+      ctx.beginPath();ctx.moveTo(-len,-len);ctx.lineTo(len,len);ctx.moveTo(len,-len);ctx.lineTo(-len,len);ctx.stroke();
       break;
     }
     case 'beast':{
       ctx.translate(f.x2*CS,f.y2*CS);ctx.globalCompositeOperation='lighter';
-      if(f.w==='BEAR'){
-        ctx.strokeStyle=`rgba(255,10,30,${a})`;ctx.lineWidth=14*a;
-        for(let i=-1.5;i<=1.5;i++){
-          ctx.beginPath();ctx.moveTo(-CS*.7+i*18,-CS*.6);ctx.bezierCurveTo(-CS*.2+i*18,-CS*.1,CS*.3+i*18,CS*.1,CS*.65+i*18,CS*.65);ctx.stroke();
-        }
-      }else if(f.w==='CAT'||f.w==='LION'){
-        ctx.strokeStyle=f.w==='LION'?`rgba(255,180,20,${a})`:`rgba(255,70,160,${a})`;ctx.lineWidth=8*a;
-        for(let i=-1;i<=1;i++){
-          ctx.beginPath();ctx.moveTo(-CS*.4+i*12,-CS*.45);ctx.quadraticCurveTo(0,0,CS*.45+i*12,CS*.4);ctx.stroke();
-        }
-      }
+      ctx.strokeStyle=`rgba(255,10,30,${a})`;ctx.lineWidth=10*a;
+      ctx.beginPath();ctx.moveTo(-CS*.4,-CS*.4);ctx.lineTo(CS*.4,CS*.4);ctx.stroke();
       break;
     }
     case 'cannonball':
@@ -866,15 +815,14 @@ function drawFx(f){
     case 'lightning':{
       ctx.globalCompositeOperation='lighter';
       if(f.bolt&&f.bolt.main){
-        ctx.strokeStyle=f.col||'#c792ea';ctx.lineWidth=10*a;ctx.beginPath();
+        ctx.strokeStyle=f.col||'#c792ea';ctx.lineWidth=8*a;ctx.beginPath();
         f.bolt.main.forEach((pt,i)=>{i===0?ctx.moveTo(pt.x*CS,pt.y*CS):ctx.lineTo(pt.x*CS,pt.y*CS);});ctx.stroke();
-        ctx.strokeStyle='#ffffff';ctx.lineWidth=3.5;ctx.stroke();
       }
       break;
     }
     case 'income_fx':{
       ctx.translate(f.x*CS,(f.y-p*.9)*CS);ctx.fillStyle='#ffd166';
-      ctx.beginPath();ctx.ellipse(0,0,CS*.22*Math.abs(Math.cos(p*12)),CS*.22,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(0,0,CS*.2,0,Math.PI*2);ctx.fill();
       break;
     }
     case 'heal_fx':{
@@ -882,7 +830,7 @@ function drawFx(f){
       break;
     }
     case 'death_burst':{
-      ctx.globalCompositeOperation='lighter';ctx.strokeStyle=f.col;ctx.lineWidth=5*a;
+      ctx.globalCompositeOperation='lighter';ctx.strokeStyle=f.col;ctx.lineWidth=4*a;
       ctx.beginPath();ctx.arc(f.x*CS,f.y*CS,CS*(f.isBoss?0.8:0.45)*p,0,Math.PI*2);ctx.stroke();
       break;
     }
@@ -913,7 +861,6 @@ function draw(){
   ctx.fillStyle='#ff6b5b';ctx.fillText('入口',CS*.5,CS*.6);
   ctx.fillStyle='#7ed6a0';ctx.fillText('基地',CS*11.5,CS*7.4);
 
-  // 放置或覆蓋預覽提示
   if(hover&&st.pending){
     const validTerrain = canPlaceTerrain(hover.x,hover.y,st.pending.s);
     const existing = st.towers.find(t=>t.x===hover.x&&t.y===hover.y);
@@ -935,7 +882,6 @@ function draw(){
     }
   }
 
-  // 單位繪製
   for(const t of st.towers){
     const col=KIND[t.s.k].c,p=CS*.08;
     ctx.fillStyle='rgba(0,0,0,.35)';rr(t.x*CS+p,t.y*CS+p+3,CS-2*p,CS-2*p,6);ctx.fill();
@@ -951,7 +897,6 @@ function draw(){
     ctx.font=`800 ${CS*.17}px Nunito, sans-serif`;ctx.fillStyle='rgba(34,32,15,.75)';ctx.fillText(t.s.zh,t.x*CS+CS/2,t.y*CS+CS*.74);
   }
 
-  // 敵人繪製
   for(const e of st.enemies){
     const r=CS*(e.type==='boss'?.36:e.type==='fast'?.2:.26),X=e.x*CS,Y=e.y*CS;
     ctx.fillStyle=e.type==='boss'?'#b8322a':e.type==='fast'?'#ffa94d':'#ff6b5b';
@@ -965,7 +910,7 @@ function draw(){
   ctx.restore();
 }
 
-// ---------- UI 邏輯 ----------
+// ---------- 介面渲染 ----------
 const ROWS_KB=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
 function buildKb(){
   const kb=$('kb');kb.innerHTML='';
@@ -996,7 +941,6 @@ function onCodexClick(w){
   }
 }
 
-// 依照字母長度排列與分組，並高亮當前目標單字
 function buildCodex(){
   const wrap=$('codexWrap');wrap.innerHTML='';
   const groups=[
