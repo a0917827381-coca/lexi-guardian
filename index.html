@@ -18,43 +18,60 @@
   color-scheme:dark;
 }
 html,body{background:var(--board);color:var(--chalk);margin:0;padding:0;overflow-x:hidden}
-body{font-family:var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 28px}
-.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:.02em;color:var(--tile)}
-h1 small{font-family:var(--body);font-size:13px;color:var(--muted);letter-spacing:0;margin-left:8px;font-weight:600}
-.top{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:stretch}
-.stats{display:flex;gap:6px;flex-wrap:wrap}
-.stat{background:var(--board2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:64px}
-.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums;line-height:1.1}
-.stat span{font-size:11px;color:var(--muted);letter-spacing:.08em}
-.stat.hp b{color:var(--danger)} .stat.gold b{color:var(--gold)}
+body{
+  font-family:var(--body);
+  padding-left:max(8px,env(safe-area-inset-left,0px));
+  padding-right:max(8px,env(safe-area-inset-right,0px));
+  padding-block:6px 16px;
+}
+.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+h1{
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(16px,4vw,24px);
+  margin:0;
+  letter-spacing:.01em;
+  color:var(--tile);
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:4px;
+}
+h1 small{font-family:var(--body);font-size:11px;color:var(--muted);letter-spacing:0;margin-left:0;font-weight:600}
 
 /* 題目任務卡片 */
 .prompt-card{
   background: #1e3327;
   border: 2px solid var(--tile);
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 6px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  gap: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
 }
-.prompt-main{display:flex;align-items:baseline;gap:8px}
-.prompt-title{font-size:13px;color:var(--muted)}
-.prompt-zh{font-size:22px;font-weight:900;color:var(--gold)}
-.prompt-level{font-size:11px;background:rgba(242,201,76,0.2);color:var(--tile);padding:2px 6px;border-radius:4px}
-.skip-btn{font-size:12px;padding:5px 9px;background:var(--board);border:1px solid var(--line);color:var(--chalk);border-radius:6px}
+.prompt-main{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.prompt-title{font-size:12px;color:var(--muted)}
+.prompt-zh{font-size:20px;font-weight:900;color:var(--gold)}
+.prompt-level{font-size:10px;background:rgba(242,201,76,0.2);color:var(--tile);padding:1px 5px;border-radius:4px;white-space:nowrap}
+.skip-btn{font-size:11px;padding:4px 8px;background:var(--board);border:1px solid var(--line);color:var(--chalk);border-radius:5px;white-space:nowrap}
 .skip-btn:hover{border-color:var(--gold);color:var(--gold)}
 
-.rack{display:flex;flex-direction:column;gap:6px;min-width:0}
-.slots{display:flex;gap:5px}
-.slot{width:36px;height:42px;border-radius:6px;border:2px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-size:20px;background:rgba(0,0,0,0.15)}
-.slot.f{background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 3px 0 var(--tile-edge)}
-.slot.hint-slot{background:#594411;color:#ffe699;border:2px solid var(--gold);box-shadow:0 0 8px rgba(255,209,102,0.4)}
-.rack-btns{display:flex;gap:6px}
-button{font-family:var(--body);font-weight:800;font-size:14px;border-radius:7px;border:1px solid var(--line);background:var(--board2);color:var(--chalk);padding:7px 12px;cursor:pointer;transition:transform .08s}
+.top{display:flex;flex-direction:column;gap:6px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
+.stat{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:center;min-width:0}
+.stat b{display:block;font-size:16px;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{display:block;font-size:10px;color:var(--muted);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat.hp b{color:var(--danger)} .stat.gold b{color:var(--gold)}
+
+.rack{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
+.slots{display:flex;gap:4px}
+.slot{width:28px;height:34px;border-radius:5px;border:1.5px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-size:16px;background:rgba(0,0,0,0.15)}
+.slot.f{background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge)}
+.slot.hint-slot{background:#594411;color:#ffe699;border:1.5px solid var(--gold);box-shadow:0 0 6px rgba(255,209,102,0.3)}
+.rack-btns{display:flex;gap:4px}
+button{font-family:var(--body);font-weight:800;font-size:13px;border-radius:6px;border:1px solid var(--line);background:var(--board2);color:var(--chalk);padding:5px 10px;cursor:pointer;transition:transform .08s;white-space:nowrap}
 button:hover:not(:disabled){border-color:var(--muted)}
 button:focus-visible{outline:2px solid var(--tile);outline-offset:2px}
 button:disabled{opacity:.4;cursor:not-allowed}
@@ -64,66 +81,68 @@ button.danger:hover:not(:disabled){background:#b8322a}
 .shake{animation:shake .35s}
 @keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 
-.stage{position:relative;border:3px solid var(--tile);border-radius:6px;overflow:hidden;background:var(--board2);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.stage{position:relative;border:2px solid var(--tile);border-radius:6px;overflow:hidden;background:var(--board2);box-shadow:0 3px 12px rgba(0,0,0,.4)}
 canvas{display:block;width:100%;touch-action:manipulation;cursor:crosshair}
 
 .over{position:absolute;inset:0;background:rgba(10,16,13,.86);display:grid;place-items:center;text-align:center;z-index:20}
 .over[hidden],[hidden]{display:none !important}
 
-.over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 8px;font-size:32px}
-.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.prep-timer{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
-.msg{flex:1;min-width:0;font-size:14px;color:var(--muted);min-height:20px}
+.over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 8px;font-size:28px}
+.bar{display:grid;grid-template-columns:2fr 1fr;gap:4px;align-items:center}
+.prep-timer{grid-column:1/-1;background:var(--board2);border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.msg{grid-column:1/-1;font-size:12px;color:var(--muted);min-height:16px;line-height:1.2}
 .msg.good{color:var(--ok)} .msg.bad{color:var(--danger)}
-.pending{background:#2b3d2a;border:1px solid var(--ok);color:var(--ok);border-radius:7px;padding:6px 10px;font-size:13px}
-.sel-box{background:#3a2818;border:1px solid var(--gold);color:var(--gold);border-radius:7px;padding:6px 10px;font-size:13px;display:flex;align-items:center;gap:8px}
+.pending{background:#2b3d2a;border:1px solid var(--ok);color:var(--ok);border-radius:6px;padding:4px 8px;font-size:12px}
+.sel-box{background:#3a2818;border:1px solid var(--gold);color:var(--gold);border-radius:6px;padding:4px 8px;font-size:12px;display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box}
 
-.kb{display:flex;flex-direction:column;gap:5px;align-items:center}
-.kb-row{display:flex;gap:4px;width:100%;justify-content:center}
-.key{flex:0 1 46px;min-width:0;height:46px;padding:0;font-family:var(--display);font-weight:400;font-size:18px;background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 3px 0 var(--tile-edge);border-radius:6px}
-.key:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--tile-edge)}
-.key.wide{flex-basis:70px;font-family:var(--body);font-weight:900;font-size:13px;background:var(--board2);color:var(--chalk);box-shadow:0 3px 0 var(--line)}
-.hint{font-size:12px;color:var(--muted);text-align:center}
+.kb{display:flex;flex-direction:column;gap:4px;align-items:center}
+.kb-row{display:flex;gap:3px;width:100%;justify-content:center}
+.key{flex:0 1 46px;min-width:0;height:40px;padding:0;font-family:var(--display);font-weight:400;font-size:16px;background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge);border-radius:5px}
+.key:active:not(:disabled){transform:translateY(1.5px);box-shadow:0 0.5px 0 var(--tile-edge)}
+.key.wide{flex-basis:56px;font-family:var(--body);font-weight:900;font-size:11px;background:var(--board2);color:var(--chalk);box-shadow:0 2px 0 var(--line)}
+.hint{font-size:11px;color:var(--muted);text-align:center}
 
-details{background:var(--board2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;transition:all .2s ease}
-summary{cursor:pointer;font-weight:900;outline:none}
-.codex-group{margin-top:14px}
-.group-title{font-size:13px;font-weight:900;color:var(--tile);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
-.cx{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--muted);min-width:0;cursor:pointer;transition:all .18s;position:relative}
+details{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:8px}
+summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
+.codex-group{margin-top:10px}
+.group-title{font-size:12px;font-weight:900;color:var(--tile);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px}
+.cx{border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:11px;color:var(--muted);min-width:0;cursor:pointer;transition:all .15s;position:relative}
 .cx:hover{border-color:var(--gold);transform:scale(1.02)}
-.cx b{font-family:var(--display);font-weight:400;font-size:14px;color:var(--chalk);display:block}
+.cx b{font-family:var(--display);font-weight:400;font-size:13px;color:var(--chalk);display:block}
 .cx.done{border-color:var(--ok)} .cx.done b{color:var(--ok)}
 .cx.locked{opacity:0.38;filter:grayscale(90%);border-style:dashed}
 .cx.locked:hover{opacity:0.65}
-.cx i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
-.lock-tag{float:right;font-size:10px;color:var(--danger)}
-.target-tag{float:right;font-size:10px;color:var(--gold);font-weight:900}
+.cx i{font-style:normal;display:inline-block;width:6px;height:6px;border-radius:1.5px;margin-right:3px}
+.lock-tag{float:right;font-size:9px;color:var(--danger)}
+.target-tag{float:right;font-size:9px;color:var(--gold);font-weight:900}
 
 /* 目標卡片特殊發光動效 */
 .cx.target-active{
   border-color: var(--gold) !important;
   background: rgba(255, 209, 102, 0.16) !important;
   animation: target-glow 1.4s infinite alternate ease-in-out;
-  transform: scale(1.03);
+  transform: scale(1.02);
   z-index: 2;
 }
 .cx.target-active b{
   color: var(--gold) !important;
-  text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
+  text-shadow: 0 0 6px rgba(255, 209, 102, 0.5);
 }
 @keyframes target-glow{
-  0%{
-    box-shadow: 0 0 6px rgba(255, 209, 102, 0.4), inset 0 0 4px rgba(255, 209, 102, 0.2);
-    border-color: #ffd166;
-  }
-  100%{
-    box-shadow: 0 0 16px rgba(255, 209, 102, 0.9), inset 0 0 10px rgba(255, 209, 102, 0.4);
-    border-color: #ffffff;
-  }
+  0%{box-shadow:0 0 4px rgba(255, 209, 102, 0.3);border-color:#ffd166}
+  100%{box-shadow:0 0 12px rgba(255, 209, 102, 0.7);border-color:#ffffff}
 }
 
-@media (max-width:520px){.slot{width:30px;height:36px;font-size:17px}.key{height:42px;font-size:16px}}
+@media (max-width:520px){
+  .slot{width:24px;height:30px;font-size:14px}
+  .key{height:36px;font-size:15px}
+  .prompt-zh{font-size:18px}
+  .skip-btn{font-size:10px;padding:3px 6px}
+  .stat b{font-size:14px}
+  .stat span{font-size:9px}
+  button{font-size:12px;padding:4px 8px}
+}
 @media (prefers-reduced-motion:reduce){.shake{animation:none};.cx.target-active{animation:none}}
 </style>
 </head>
@@ -137,12 +156,13 @@ summary{cursor:pointer;font-weight:900;outline:none}
     <div class="prompt-main">
       <span class="prompt-title">當前目標單字：</span>
       <span class="prompt-zh" id="pZh">弓</span>
-      <span class="prompt-level" id="pLevel">第 1 等級（3 字母）</span>
+      <span class="prompt-level" id="pLevel">第 1 等級</span>
     </div>
     <button class="skip-btn" id="bSkip" type="button">換一題 ↻</button>
   </div>
 
   <div class="top">
+    <!-- 行列強制4等分，不隨意折行 -->
     <div class="stats">
       <div class="stat hp"><span>基地血量</span><b id="sHp">20</b></div>
       <div class="stat gold"><span>金幣</span><b id="sGold">60</b></div>
@@ -153,7 +173,7 @@ summary{cursor:pointer;font-weight:900;outline:none}
       <div class="slots" id="slots"></div>
       <div class="rack-btns">
         <button class="primary" id="bSubmit" disabled="">拼出單字 ⏎</button>
-        <button id="bClear" disabled="">清空重填</button>
+        <button id="bClear" disabled="">重填</button>
       </div>
     </div>
   </div>
@@ -171,8 +191,8 @@ summary{cursor:pointer;font-weight:900;outline:none}
 
   <div class="bar">
     <button class="primary" id="bWave">開始第 1 波</button>
-    <div class="prep-timer" id="prepTimer">⏱️ 早鳥獎勵倒數: 20s</div>
     <button id="bSpeed">速度 1×</button>
+    <div class="prep-timer" id="prepTimer">⏱️ 早鳥獎勵倒數: 20s</div>
     <div class="msg" id="msg">請依照上方題目填入剩下的字母！</div>
   </div>
 
@@ -186,8 +206,8 @@ summary{cursor:pointer;font-weight:900;outline:none}
   <div id="selWrap" hidden>
     <div class="sel-box">
       <span id="selInfo">已選取單位</span>
-      <button class="danger" id="bRecycle">🗑️ 回收拆除 (+<span id="recGold">0</span> 金幣)</button>
-      <button id="bDeselect">取消選取</button>
+      <button class="danger" id="bRecycle">🗑️ 回收拆除 (+<span id="recGold">0</span>)</button>
+      <button id="bDeselect">取消</button>
     </div>
   </div>
 
@@ -286,10 +306,10 @@ const $=id=>document.getElementById(id);
 function say(t,cls=''){const m=$('msg');m.textContent=t;m.className='msg '+cls;}
 
 function getTier(wave){
-  if(wave<=5) return {lv:1,maxLen:3,targetLen:3,name:'第 1 等級（3 字母）'};
-  if(wave<=10) return {lv:2,maxLen:4,targetLen:4,name:'第 2 等級（4 字母）'};
-  if(wave<=15) return {lv:3,maxLen:5,targetLen:5,name:'第 3 等級（5 字母）'};
-  return {lv:4,maxLen:8,targetLen:6,name:'第 4 等級（6+ 字母大絕招）'};
+  if(wave<=5) return {lv:1,maxLen:3,targetLen:3,name:'第 1 等級（3 字）'};
+  if(wave<=10) return {lv:2,maxLen:4,targetLen:4,name:'第 2 等級（4 字）'};
+  if(wave<=15) return {lv:3,maxLen:5,targetLen:5,name:'第 3 等級（5 字）'};
+  return {lv:4,maxLen:8,targetLen:6,name:'第 4 等級（6+ 字）'};
 }
 
 function pickPrompt(){
@@ -304,7 +324,7 @@ function pickPrompt(){
   $('pZh').textContent=s.zh;
   $('pLevel').textContent=tier.name;
   ui();
-  buildCodex(); // 題目更換後即時更新字典的高亮卡片
+  buildCodex();
 }
 
 function skipPrompt(){
@@ -322,7 +342,7 @@ function reset(){
       camShake:0,prepTime:20,targetWord:'',targetSpec:null};
   $('over').hidden=true;
   const d=$('detailsCodex');
-  if(d) d.open=true; // 重置時確保字典打開
+  if(d) d.open=true;
   pickPrompt();
   say('請依照上方題目填入剩下的字母！');
   buildCodex();
@@ -335,8 +355,8 @@ function reset(){
 function buy(L){
   if(st.over||st.pending) return;
   if(!st.targetWord) return;
-  if(st.slots.length>=st.targetWord.length) return say(`這個單字只需要 ${st.targetWord.length} 個字母喔！`,'bad');
-  if(st.gold<COST) return say('金幣不夠，擊倒敵人可以賺金幣','bad');
+  if(st.slots.length>=st.targetWord.length) return say(`只需 ${st.targetWord.length} 個字母！`,'bad');
+  if(st.gold<COST) return say('金幣不夠！','bad');
   st.gold-=COST;
   st.slots.push(L);
   ui();
@@ -363,7 +383,7 @@ function submit(){
   const w=st.slots.join('');
   if(w.length<st.targetWord.length){
     shake();
-    return say(`還差 ${st.targetWord.length-w.length} 個字母才完整喔！`,'bad');
+    return say(`還差 ${st.targetWord.length-w.length} 個字母！`,'bad');
   }
   if(!DICT.has(w)){
     shake();
@@ -381,8 +401,8 @@ function submit(){
 
   speakWord(w,s.zh);
 
-  const where=PATHK.has(s.k)?'土黃色的路上':'路以外的空地';
-  say(`${w}（${s.zh}・${KIND[s.k].t}）召喚成功！點擊${where}放置（點現有單位可直接覆蓋換人！）`,'good');
+  const where=PATHK.has(s.k)?'路上':'草地上';
+  say(`${w}（${s.zh}）召喚成功！點擊${where}放置（點舊單位可直接覆蓋！）`,'good');
   ui();
   buildCodex();
 }
@@ -391,7 +411,7 @@ function cancelPending(){
   if(!st.pending) return;
   st.slots=st.pending.w.split('');
   st.pending=null;
-  say('已取消，字母退回拼湊區');
+  say('已取消放置');
   ui();
 }
 
@@ -409,7 +429,7 @@ function recycleTower(t){
   st.towers=st.towers.filter(item=>item!==t);
   st.sel=null;
   fx({type:'txt',x:t.x+0.5,y:t.y+0.5,txt:`+${refund} 回收`,col:'#ffd166',life:0.9});
-  say(`已回收【${t.w}】（${t.s.zh}），退還 ${refund} 金幣！空出格子囉。`,'good');
+  say(`已回收【${t.w}】，退還 ${refund} 金幣！`,'good');
   ui();
 }
 
@@ -419,7 +439,7 @@ function clickCell(x,y){
   if(st.pending){
     const {w,s}=st.pending;
     if(!canPlaceTerrain(x,y,s)){
-      return say(PATHK.has(s.k)?'這個單位只能放在路上':'這個單位只能放在路以外的草地上','bad');
+      return say(PATHK.has(s.k)?'這個單位只能放在路上':'這個單位只能放在草地上','bad');
     }
     const existing = st.towers.find(t=>t.x===x&&t.y===y);
     if(existing){
@@ -429,7 +449,7 @@ function clickCell(x,y){
       st.towers.push({w,s,x,y,cd:0,t:0});
       st.pending = null;
       fx({type:'txt',x:x+0.5,y:y+0.5,txt:`替換! +${refund}金`,col:'#ffd166',life:1.1});
-      say(`✨ 成功用【${w}】覆蓋替換了【${existing.w}】！回收退還 ${refund} 金幣！`,'good');
+      say(`✨ 成功用【${w}】覆蓋替換了【${existing.w}】！退還 ${refund} 金幣！`,'good');
       pickPrompt();
       ui();
       return;
@@ -449,7 +469,7 @@ function clickCell(x,y){
     const refGold=t.w.length*4;
     $('selInfo').innerHTML=`<b>${t.w}</b>（${s.zh}）${KIND[s.k].t}`;
     $('recGold').textContent=refGold;
-    say(`選取了【${t.w}】。若格子放滿，可點擊「回收拆除」換回 ${refGold} 金幣！`);
+    say(`選取了【${t.w}】。點擊「回收拆除」可退還 ${refGold} 金幣。`);
   }
   ui();
 }
@@ -465,13 +485,13 @@ function startWave(){
 
   if(st.prepTime>0){
     st.gold+=10;
-    say(`⚡ 神速出擊！獲得早鳥獎勵 +10 金幣！第 ${st.wave} 波開戰！${st.boss?'這波有魔王！':''}`,'good');
-    fx({type:'txt',x:6,y:4,txt:'⚡ 神速獎勵 +10 金幣!',col:'#ffd166',life:1.3});
+    say(`⚡ 神速出擊！獲得早鳥獎勵 +10 金幣！第 ${st.wave} 波開戰！`,'good');
+    fx({type:'txt',x:6,y:4,txt:'⚡ 神速獎勵 +10金幣!',col:'#ffd166',life:1.3});
   }else{
     say(`第 ${st.wave} 波來襲！${st.boss?'這波有魔王！':''}`);
   }
 
-  // 需求實作：關卡開始，字典自動縮起來
+  // 關卡開始，字典自動縮起來
   const d=$('detailsCodex');
   if(d) d.open=false;
 
@@ -696,14 +716,14 @@ function update(dt){
     const bonus=8+st.wave;
     st.gold+=bonus;
     st.prepTime=20;
-    say(`第 ${st.wave} 波清空！獎勵 ${bonus} 金幣。請從容準備下一波！`,'good');
+    say(`第 ${st.wave} 波通關！獎勵 +${bonus} 金幣`,'good');
     if(st.wave%5===0){
       const nextTier=getTier(st.wave+1);
-      say(`🎉 恭喜晉級！已解鎖${nextTier.name}！`,'good');
+      say(`🎉 恭喜晉級！解鎖${nextTier.name}！`,'good');
     }
     pickPrompt();
 
-    // 需求實作：關卡結束，字典自動打開
+    // 關卡結束，字典自動打開
     const d=$('detailsCodex');
     if(d) d.open=true;
 
@@ -893,6 +913,7 @@ function draw(){
   ctx.fillStyle='#ff6b5b';ctx.fillText('入口',CS*.5,CS*.6);
   ctx.fillStyle='#7ed6a0';ctx.fillText('基地',CS*11.5,CS*7.4);
 
+  // 放置或覆蓋預覽提示
   if(hover&&st.pending){
     const validTerrain = canPlaceTerrain(hover.x,hover.y,st.pending.s);
     const existing = st.towers.find(t=>t.x===hover.x&&t.y===hover.y);
@@ -914,6 +935,7 @@ function draw(){
     }
   }
 
+  // 單位繪製
   for(const t of st.towers){
     const col=KIND[t.s.k].c,p=CS*.08;
     ctx.fillStyle='rgba(0,0,0,.35)';rr(t.x*CS+p,t.y*CS+p+3,CS-2*p,CS-2*p,6);ctx.fill();
@@ -929,6 +951,7 @@ function draw(){
     ctx.font=`800 ${CS*.17}px Nunito, sans-serif`;ctx.fillStyle='rgba(34,32,15,.75)';ctx.fillText(t.s.zh,t.x*CS+CS/2,t.y*CS+CS*.74);
   }
 
+  // 敵人繪製
   for(const e of st.enemies){
     const r=CS*(e.type==='boss'?.36:e.type==='fast'?.2:.26),X=e.x*CS,Y=e.y*CS;
     ctx.fillStyle=e.type==='boss'?'#b8322a':e.type==='fast'?'#ffa94d':'#ff6b5b';
@@ -969,7 +992,7 @@ function onCodexClick(w){
   }else{
     const reqTier=w.length===4?2:(w.length===5?3:4);
     const reqWave=(reqTier-1)*5+1;
-    say(`🔒 ${w}（${s.zh}）將在第 ${reqWave} 關解鎖！點擊先聽聽發音吧。`);
+    say(`🔒 ${w} 將在第 ${reqWave} 關解鎖！`);
   }
 }
 
@@ -977,10 +1000,10 @@ function onCodexClick(w){
 function buildCodex(){
   const wrap=$('codexWrap');wrap.innerHTML='';
   const groups=[
-    {len:3,name:'🌱 3 個字母單字（第 1～5 關解鎖）'},
-    {len:4,name:'🌿 4 個字母單字（第 6～10 關解鎖）'},
-    {len:5,name:'🌲 5 個字母單字（第 11～15 關解鎖）'},
-    {len:6,name:'🔥 6+ 字母大絕招（第 16 關以上解鎖）'}
+    {len:3,name:'🌱 3 個字母（1～5 關）'},
+    {len:4,name:'🌿 4 個字母（6～10 關）'},
+    {len:5,name:'🌲 5 個字母（11～15 關）'},
+    {len:6,name:'🔥 6+ 字母大絕招（16 關以上）'}
   ];
   const tier=getTier(st.wave);
 
@@ -1002,7 +1025,7 @@ function buildCodex(){
       card.className=`cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCurrentTarget?'target-active':''}`;
       card.onclick=()=>onCodexClick(w);
       card.innerHTML=`
-        ${isCurrentTarget ? '<span class="target-tag">★ 當前目標</span>' : (isLocked ? '<span class="lock-tag">🔒 鎖定</span>' : '')}
+        ${isCurrentTarget ? '<span class="target-tag">★ 當前目標</span>' : (isLocked ? '<span class="lock-tag">🔒鎖</span>' : '')}
         <b>${w}</b>
         <i style="background:${KIND[s.k].c}"></i>${s.zh}・${KIND[s.k].t}
       `;
@@ -1032,9 +1055,9 @@ function ui(){
   if(st.inWave){
     pTimeEl.innerHTML=`<span style="color:var(--ok)">⚔️ 第 ${st.wave} 波戰鬥中</span>`;
   }else if(st.prepTime>0){
-    pTimeEl.innerHTML=`⏱️ 神速獎勵倒數: <b style="color:var(--gold);font-size:15px">${Math.ceil(st.prepTime)}s</b> <span style="font-size:11px;color:var(--muted)">(時間內開始 +10 金幣)</span>`;
+    pTimeEl.innerHTML=`⏱️ 獎勵倒數: <b style="color:var(--gold);font-size:14px">${Math.ceil(st.prepTime)}s</b> <span style="font-size:10px;color:var(--muted)">(開始+10金)</span>`;
   }else{
-    pTimeEl.innerHTML=`⏳ 準備時間無上限 (已超過早鳥時間，請從容佈陣)`;
+    pTimeEl.innerHTML=`⏳ 準備無上限 (可從容佈置)`;
   }
 
   const lock=st.over||!!st.pending;
@@ -1043,10 +1066,10 @@ function ui(){
   $('bSubmit').disabled=lock||st.slots.length<targetL;
   $('bClear').disabled=lock||st.slots.length<=1;
   $('bWave').disabled=st.inWave||st.over;
-  $('bWave').textContent=st.inWave?`第 ${st.wave} 波進行中`:`開始第 ${st.wave+1} 波`;
+  $('bWave').textContent=st.inWave?`戰鬥中...`:`開始第 ${st.wave+1} 波 ⚔️`;
   
   $('pendWrap').hidden=!st.pending;
-  if(st.pending) $('pend').textContent=`待放置：${st.pending.w}（${st.pending.s.zh}）點擊地圖空地或舊單位即可放置！`;
+  if(st.pending) $('pend').textContent=`待放置：${st.pending.w}。點擊空格或覆蓋舊單位！`;
 
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
