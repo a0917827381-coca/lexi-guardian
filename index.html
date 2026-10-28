@@ -442,7 +442,7 @@ const ISLANDS = [
     desc:'雪山與合歡山極地凍土，禦寒建築與冰霜魔法之境。',
     x: 46, y: 41, cardDir: 'to-left',
     board:'#101d2d', dirt:'#273e58', line:'#3c5a7e', tile:'#7cc6fe',
-    wp:[[-1,1],[4,1],[1,3],[8,3],[4,5],[10,5],[10,7],[12,7]]
+    wp:[[-1,1],[4,1],[4,3],[8,3],[8,5],[3,5],[3,7],[12,7]]
   },
   {
     id:3, name:'熔岩地底', eng:'Molten Underground', icon:'🌋',
@@ -528,7 +528,8 @@ const STORAGE_KEY = 'SPELL_TD_SAVE_TW_V1';
 
 let worldProgress = {
   unlockedMax: 0,
-  conquered: []
+  conquered: [],
+  bonusGold: 60
 };
 
 // 儲存所有島嶼的歷史陣容狀態
@@ -536,10 +537,10 @@ let islandSavedStates = {};
 
 function saveGameProgress(){
   try{
-    // 如果正在戰鬥，更新當前島嶼的陣容
-    if(!$('battleView').hidden){
+    // 如果正在戰鬥且未失敗，更新當前島嶼的陣容（若在波數進行中離開，波數退回上一波避免跳關漏洞）
+    if(!$('battleView').hidden && !st.over){
       islandSavedStates[st.curIslandId] = {
-        wave: st.wave,
+        wave: st.inWave ? Math.max(0, st.wave - 1) : st.wave,
         gold: st.gold,
         hp: st.hp,
         kills: st.kills,
@@ -565,7 +566,9 @@ function loadGameProgress(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return false;
     const data = JSON.parse(raw);
-    if(data.worldProgress) worldProgress = data.worldProgress;
+    if(data.worldProgress){
+      worldProgress = { unlockedMax: 0, conquered: [], bonusGold: 60, ...data.worldProgress };
+    }
     if(data.islandSavedStates) islandSavedStates = data.islandSavedStates;
     if(typeof data.autoWave === 'boolean'){
       st.autoWave = data.autoWave;
@@ -675,7 +678,7 @@ function renderTaiwanMap(){
     const anchor = node.querySelector('.island-anchor');
     const btn = node.querySelector('.fc-btn');
 
-    const handleEnter = () => { if(isUnlocked) enterIsland(isl.id); };
+    const handleEnter = () => { if(isUnlocked) enterIsland(isl.id, worldProgress.bonusGold || 60); };
     anchor.onclick = handleEnter;
     btn.onclick = handleEnter;
 
@@ -709,11 +712,20 @@ function enterIsland(id, carryoverGold = 60){
     }));
     say(`已還原【${isl.name}】的存檔陣容！第 ${st.wave} 波待命！`, 'good');
   } else {
-    // 全新開局
+    // 全新開局（找第一個非路徑的草地格放置初始塔）
     st.wave = 0; st.hp = 20; st.gold = carryoverGold; st.kills = 0;
     st.built.clear();
     const firstWord = Object.keys(dict)[0];
-    st.towers = [{ w:firstWord, s:dict[firstWord], x:2, y:3, star:1, cd:0, t:0 }];
+    let initX = 2, initY = 3;
+    if(isPath(initX, initY)){
+      for(let y=1; y<ROWS-1; y++){
+        for(let x=1; x<COLS-1; x++){
+          if(!isPath(x, y)){ initX = x; initY = y; break; }
+        }
+        if(!isPath(initX, initY)) break;
+      }
+    }
+    st.towers = [{ w:firstWord, s:dict[firstWord], x:initX, y:initY, star:1, cd:0, t:0 }];
     st.built.add(firstWord);
     say(`已降臨【${isl.name}】！初始啟動金：${carryoverGold} 金幣！`);
   }
@@ -736,6 +748,8 @@ function enterIsland(id, carryoverGold = 60){
 
 function returnToWorldMap(){
   saveGameProgress(); // 離開前存檔
+  st.inWave = false;
+  st.enemies = [];
   st.autoWaveTimer = 0;
   $('battleView').hidden = true;
   $('worldView').hidden = false;
@@ -758,6 +772,7 @@ function conquerCurrentIsland(){
   let totalAsset = st.gold;
   st.towers.forEach(t => { totalAsset += getLetterCost(t.w.length) * t.w.length * (t.star||1); });
   const carryover = 60 + Math.min(60, Math.floor(totalAsset * 0.15));
+  worldProgress.bonusGold = carryover;
 
   // 清除本島的戰鬥記憶，下一輪重置為全新
   delete islandSavedStates[curId];
@@ -771,7 +786,7 @@ function conquerCurrentIsland(){
     【${curName}】已被你守護征服！<br>
     ${hasNext ? `🌊 前往<b>【${nextName}】</b>的航道已經解鎖！` : '🌟 恭喜你達成了全台灣群島完全征服的榮耀！'}
   `;
-  $('conquerReward').textContent = hasNext ? `殘值折抵股息：帶著 ${carryover} 金幣進軍下座島嶼！` : '全島征服最高榮耀達成！';
+  $('conquerReward').textContent = hasNext ? `殘值折抵股息：下次開局將帶著 ${carryover} 金幣出征！` : '全島征服最高榮耀達成！';
   $('conquerModal').hidden = false;
 
   $('bBackWorldSuccess').onclick = () => {
@@ -849,6 +864,7 @@ function submitWord(){
 
   if(!dict[w]){
     shake();
+    st.backspaced = true;
     if(st.targetWord && w.length === st.targetWord.length){
       let diff = 0;
       for(let i=0; i<w.length; i++) if(w[i] !== st.targetWord[i]) diff++;
@@ -860,15 +876,17 @@ function submitWord(){
   }
 
   const s = dict[w];
+  let bonusAwarded = false;
   if(w === st.targetWord && !st.backspaced){
     st.gold += 10;
+    bonusAwarded = true;
     fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.2 });
     say(`✨ 完美一發入魂！獲得額外獎勵 +10 金幣！`, 'good');
   } else {
     say(`【${w}】召喚成功！在草地上移動游標可看淡紅虛線射程！`, 'good');
   }
 
-  st.pending = { w, s };
+  st.pending = { w, s, bonusAwarded };
   st.slots = [];
   st.built.add(w);
   speakWord(w, s.zh);
@@ -897,7 +915,7 @@ function clickCell(x, y){
         pickPrompt(); ui(); saveGameProgress();
         return;
       } else {
-        const refund = Math.floor(getLetterCost(exist.w.length) * exist.w.length * 0.7);
+        const refund = Math.floor(getLetterCost(exist.w.length) * exist.w.length * (exist.star || 1) * 0.7);
         st.gold += refund;
         st.towers = st.towers.filter(t => t !== exist);
         st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
@@ -918,7 +936,7 @@ function clickCell(x, y){
   const t = st.towers.find(t => t.x===x && t.y===y);
   st.sel = t || null;
   if(t){
-    const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * 0.7);
+    const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
     $('selInfo').innerHTML = `<b>${t.w}</b> (★${t.star||1}・${t.s.zh})`;
     $('recGold').textContent = ref;
   }
@@ -928,7 +946,7 @@ function clickCell(x, y){
 function recycleSelected(){
   if(!st.sel) return;
   const t = st.sel;
-  const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * 0.7);
+  const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
   st.gold += ref;
   st.towers = st.towers.filter(item => item !== t);
   st.sel = null;
@@ -976,7 +994,8 @@ function startWave(){
 
 function spawnEnemy(type){
   const base = 24 * Math.pow(1.12, st.wave - 1);
-  const e = { d:0, type, slowF:1, slowT:0, dot:0, dotT:0, x:-0.5, y:1.5, spd:1.1, hp:base, rew:3 };
+  const startPos = posAt(0);
+  const e = { d:0, type, slowF:1, slowT:0, dot:0, dotT:0, x:startPos.x, y:startPos.y, spd:1.1, hp:base, rew:3 };
   if(type === 'fast'){ e.spd = 1.85; e.hp = base * 0.65; e.rew = 3; }
   if(type === 'boss'){
     const isWorldBoss = (st.wave === 30);
@@ -1158,8 +1177,10 @@ function draw(){
   for(let y=1; y<ROWS; y++){ ctx.beginPath(); ctx.moveTo(0,y*CS); ctx.lineTo(W,y*CS); ctx.stroke(); }
 
   ctx.font = `900 ${CS*0.22}px Nunito, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ff6b5b'; ctx.fillText('起點', CS*0.5, CS*1.5);
-  ctx.fillStyle = '#7ed6a0'; ctx.fillText('基地', CS*11.5, CS*6.5);
+  const startY = isl.wp[0][1] + 0.5;
+  const endY = isl.wp[isl.wp.length - 1][1] + 0.5;
+  ctx.fillStyle = '#ff6b5b'; ctx.fillText('起點', CS*0.5, CS*startY);
+  ctx.fillStyle = '#7ed6a0'; ctx.fillText('基地', CS*11.5, CS*endY);
 
   // 防禦塔
   for(const t of st.towers){
@@ -1526,8 +1547,21 @@ window.addEventListener('DOMContentLoaded', () => {
   $('bListen').onclick = () => speakWord(st.targetWord, st.targetSpec.zh);
   $('bAutoWave').onclick = toggleAutoWave;
   $('bWave').onclick = startWave;
-  $('bCancel').onclick = () => { st.pending = null; hoverCell = null; ui(); say('已取消放置'); };
-  $('bRestart').onclick = () => enterIsland(st.curIslandId, 60);
+  $('bCancel').onclick = () => {
+    if(st.pending){
+      const len = st.pending.w.length;
+      const refund = getLetterCost(len) * (len - 1);
+      // 退還買字母成本，若剛剛領了一發入魂獎勵則收回，防止反覆洗錢
+      st.gold = Math.max(0, st.gold + refund - (st.pending.bonusAwarded ? 10 : 0));
+      st.pending = null; hoverCell = null;
+      pickPrompt(); ui();
+      say(`已取消放置，退還 ${refund} 金幣`);
+    }
+  };
+  $('bRestart').onclick = () => {
+    delete islandSavedStates[st.curIslandId];
+    enterIsland(st.curIslandId, worldProgress.bonusGold || 60);
+  };
   $('bRecycle').onclick = recycleSelected;
   $('bDeselect').onclick = () => { st.sel = null; ui(); };
   $('bSpeed').onclick = () => {
@@ -1562,7 +1596,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if(/^[a-z]$/i.test(e.key)){ buyLetter(e.key.toUpperCase()); e.preventDefault(); }
     else if(e.key === 'Backspace'){ backSlot(); e.preventDefault(); }
     else if(e.key === 'Enter'){ submitWord(); e.preventDefault(); }
-    else if(e.key === 'Escape'){ st.pending = null; hoverCell = null; st.sel = null; ui(); }
+    else if(e.key === 'Escape'){
+      if(st.pending) $('bCancel').onclick();
+      else { st.sel = null; ui(); }
+    }
   });
 
   let prev = performance.now();
