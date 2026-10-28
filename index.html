@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<script>
+// 偵測是否在 LINE 內建瀏覽器中
+if (/Line/i.test(navigator.userAgent)) {
+  if (!location.search.includes('openExternalBrowser=1')) {
+    const search = location.search ? location.search + '&openExternalBrowser=1' : '?openExternalBrowser=1';
+    location.href = location.origin + location.pathname + search + location.hash;
+  }
+}
+</script>
 <title>拼字塔防 - 台灣群島自動存檔版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
