@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>拼字塔防 - 兒童背單字啟蒙版</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>拼字塔防 - 台灣群島自動存檔版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
 <style>
@@ -11,82 +11,173 @@
   --board:#18261f; --board2:#203229; --line:#2d463a;
   --chalk:#eaf1e7; --muted:#9db3a7;
   --tile:#f2c94c; --tile-ink:#2a2208; --tile-edge:#b58f1f;
-  --dirt:#43392a; --dirt2:#4d4231;
-  --danger:#ff6b5b; --ok:#7ed6a0; --gold:#ffd166; --ice:#7cc6fe;
+  --danger:#ff6b5b; --ok:#7ed6a0; --gold:#ffd166;
   --display:"Bungee","Nunito",system-ui,sans-serif;
   --body:"Nunito","PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
   color-scheme:dark;
 }
-html,body{background:var(--board);color:var(--chalk);margin:0;padding:0;overflow-x:hidden}
+html,body{background:#09120e;color:var(--chalk);margin:0;padding:0;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 body{
   font-family:var(--body);
   padding-left:max(8px,env(safe-area-inset-left,0px));
   padding-right:max(8px,env(safe-area-inset-right,0px));
-  padding-block:6px 16px;
+  padding-block:6px 20px;
 }
-.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
-h1{
-  font-family:var(--display);
-  font-weight:400;
-  font-size:clamp(16px,4vw,24px);
-  margin:0;
-  letter-spacing:.01em;
-  color:var(--tile);
-  display:flex;
-  flex-wrap:wrap;
-  align-items:baseline;
-  gap:4px;
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+[hidden]{display:none !important}
+
+/* ==================== 1. 台灣世界地圖 ==================== */
+#worldView{display:flex;flex-direction:column;gap:8px;padding-bottom:16px}
+.world-topbar{
+  background:linear-gradient(135deg,#16271e,#223d2f);
+  border:2px solid var(--gold);border-radius:10px;padding:10px 14px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
 }
-h1 small{font-family:var(--body);font-size:11px;color:var(--muted);letter-spacing:0;margin-left:0;font-weight:600}
+.world-topbar h1{margin:0;font-family:var(--display);color:var(--gold);font-size:clamp(17px,3.8vw,23px)}
+.world-topbar p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.top-actions{display:flex;align-items:center;gap:6px}
+
+.taiwan-stage{
+  position:relative;width:100%;min-height:760px;
+  background:radial-gradient(ellipse at center, #13241b 0%, #0a130f 100%);
+  border:2px solid var(--line);border-radius:14px;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+}
+.sea-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(45,70,58,0.2) 1px, transparent 1px),
+                   linear-gradient(90deg, rgba(45,70,58,0.2) 1px, transparent 1px);
+  background-size:40px 40px;pointer-events:none;
+}
+.compass{
+  position:absolute;top:20px;right:20px;width:70px;height:70px;opacity:0.35;pointer-events:none;
+}
+.taiwan-svg{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(440px, 92%);height:auto;
+  filter:drop-shadow(0 15px 25px rgba(0,0,0,0.7));pointer-events:none;
+}
+
+.island-node{
+  position:absolute;transform:translate(-50%, -50%);
+  z-index:10;display:flex;align-items:center;
+}
+.island-anchor{
+  width:54px;height:54px;border-radius:50%;
+  display:grid;place-items:center;font-size:26px;
+  cursor:pointer;position:relative;user-select:none;
+  box-shadow:0 6px 16px rgba(0,0,0,0.6);
+  border:2.5px solid var(--gold);
+  animation:floatIsland 3.2s ease-in-out infinite alternate;
+  background:#1e3327;transition:transform .2s ease;
+}
+.island-anchor:hover{transform:scale(1.12)}
+.island-anchor.locked{
+  filter:grayscale(90%);opacity:0.45;border-color:var(--muted);border-style:dashed;cursor:not-allowed;
+}
+.island-anchor.conquered{
+  border-color:var(--ok);box-shadow:0 0 16px rgba(126,214,160,0.4);
+}
+
+.floating-card{
+  position:absolute;width:190px;
+  background:rgba(22, 38, 29, 0.92);backdrop-filter:blur(6px);
+  border:1.5px solid var(--gold);border-radius:10px;padding:8px 10px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.6);z-index:12;
+  display:flex;flex-direction:column;gap:4px;pointer-events:auto;
+  transition:all .2s ease;
+}
+.floating-card.to-right{left:62px;top:50%;transform:translateY(-50%)}
+.floating-card.to-left{right:62px;top:50%;transform:translateY(-50%)}
+.floating-card.locked{border-color:var(--line);border-style:dashed;opacity:0.65}
+.floating-card.conquered{border-color:var(--ok)}
+
+.fc-badge{font-size:10px;font-weight:900;padding:1px 6px;border-radius:4px;width:fit-content}
+.floating-card:not(.locked) .fc-badge{background:rgba(255,209,102,0.25);color:var(--gold)}
+.floating-card.conquered .fc-badge{background:rgba(126,214,160,0.25);color:var(--ok)}
+.floating-card.locked .fc-badge{background:rgba(255,255,255,0.1);color:var(--muted)}
+
+.fc-title{margin:0;font-family:var(--display);font-size:15px;color:var(--chalk);display:flex;align-items:center;gap:4px}
+.fc-desc{margin:0;font-size:11px;color:var(--muted);line-height:1.3}
+.fc-btn{
+  margin-top:2px;font-size:11px;padding:4px 8px;border-radius:5px;
+  background:var(--tile);color:var(--tile-ink);font-weight:900;border:0;cursor:pointer;
+}
+.fc-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+.island-node:nth-child(2) .island-anchor{animation-delay:-0.5s}
+.island-node:nth-child(3) .island-anchor{animation-delay:-1.2s}
+.island-node:nth-child(4) .island-anchor{animation-delay:-1.8s}
+.island-node:nth-child(5) .island-anchor{animation-delay:-2.4s}
+.island-node:nth-child(6) .island-anchor{animation-delay:-0.9s}
+
+@keyframes floatIsland{
+  0%{transform:translateY(0px)}
+  100%{transform:translateY(-10px)}
+}
+
+/* ==================== 2. 戰鬥塔防視圖 ==================== */
+#battleView{display:flex;flex-direction:column;gap:6px}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(16px,3.8vw,22px);margin:0;color:var(--tile);display:flex;align-items:baseline;gap:4px}
+h1 small{font-family:var(--body);font-size:11px;color:var(--muted);font-weight:600}
+.map-return-btn{background:#1e3327;border:1.5px solid var(--gold);color:var(--gold);font-weight:900;padding:5px 10px;border-radius:6px;cursor:pointer}
 
 .prompt-card{
-  background:#1e3327;
-  border:2px solid var(--tile);
-  border-radius:8px;
-  padding:6px 10px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.3);
+  background:#1e3327;border:2px solid var(--tile);border-radius:8px;padding:6px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 3px 8px rgba(0,0,0,0.3);
 }
 .prompt-main{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .prompt-title{font-size:12px;color:var(--muted)}
 .prompt-zh{font-size:20px;font-weight:900;color:var(--gold)}
-.prompt-level{font-size:10px;background:rgba(242,201,76,0.2);color:var(--tile);padding:1px 5px;border-radius:4px;white-space:nowrap}
-.skip-btn{font-size:11px;padding:4px 8px;background:var(--board);border:1px solid var(--line);color:var(--chalk);border-radius:5px;white-space:nowrap}
-.skip-btn:hover{border-color:var(--gold);color:var(--gold)}
+.prompt-level{font-size:10px;background:rgba(242,201,76,0.2);color:var(--tile);padding:2px 6px;border-radius:4px;white-space:nowrap}
+.prompt-cost{font-size:10px;color:var(--muted)}
+.prompt-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.speak-btn{background:#2a4435;border:1px solid var(--ok);color:var(--ok);font-size:12px;padding:4px 8px;border-radius:5px;cursor:pointer;font-weight:800}
 
-.top{display:flex;flex-direction:column;gap:6px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}
-.stat{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:center;min-width:0}
-.stat b{display:block;font-size:16px;font-variant-numeric:tabular-nums;line-height:1.1}
-.stat span{display:block;font-size:10px;color:var(--muted);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stat.hp b{color:var(--danger)} .stat.gold b{color:var(--gold)}
+.auto-wave-btn{
+  background:#262d29;border:1.5px solid var(--line);color:var(--muted);
+  font-size:12px;padding:4px 9px;border-radius:5px;cursor:pointer;font-weight:900;
+  transition:all .15s ease;
+}
+.auto-wave-btn.active{
+  background:#80211a;border-color:var(--danger);color:#ffffff;
+  box-shadow:0 0 10px rgba(255,107,91,0.6);
+  animation:pulseRed 1.4s infinite alternate;
+}
+@keyframes pulseRed{
+  0%{box-shadow:0 0 4px rgba(255,107,91,0.4)}
+  100%{box-shadow:0 0 12px rgba(255,107,91,0.9)}
+}
+
+.skip-btn{font-size:11px;padding:4px 8px;background:var(--board);border:1px solid var(--line);color:var(--chalk);border-radius:5px}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%}
+.stat{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:4px;text-align:center;min-width:0}
+.stat b{display:block;font-size:15px;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{display:block;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat.hp b{color:var(--danger)} .stat.gold b{color:var(--gold)} .stat.map b{color:var(--ok)}
 
 .rack{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
-.slots{display:flex;gap:4px}
-.slot{width:28px;height:34px;border-radius:5px;border:1.5px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-size:16px;background:rgba(0,0,0,0.15)}
+.slots{display:flex;gap:4px;min-height:36px;align-items:center}
+.slot{width:30px;height:36px;border-radius:5px;border:1.5px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-size:16px;background:rgba(0,0,0,0.2)}
 .slot.f{background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge)}
 .slot.hint-slot{background:#594411;color:#ffe699;border:1.5px solid var(--gold);box-shadow:0 0 6px rgba(255,209,102,0.3)}
 .rack-btns{display:flex;gap:4px}
-button{font-family:var(--body);font-weight:800;font-size:13px;border-radius:6px;border:1px solid var(--line);background:var(--board2);color:var(--chalk);padding:5px 10px;cursor:pointer;transition:transform .08s;white-space:nowrap}
-button:hover:not(:disabled){border-color:var(--muted)}
-button:focus-visible{outline:2px solid var(--tile);outline-offset:2px}
-button:disabled{opacity:.4;cursor:not-allowed}
+button{font-family:var(--body);font-weight:800;font-size:12px;border-radius:6px;border:1px solid var(--line);background:var(--board2);color:var(--chalk);padding:5px 9px;cursor:pointer;transition:transform .08s;white-space:nowrap}
+button:active:not(:disabled){transform:scale(0.96)}
 button.primary{background:var(--tile);color:var(--tile-ink);border-color:var(--tile-edge)}
 button.danger{background:#8b261d;color:#fff;border-color:#b8322a}
-button.danger:hover:not(:disabled){background:#b8322a}
+button:disabled{opacity:.4;cursor:not-allowed}
 .shake{animation:shake .35s}
 @keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 
 .stage{position:relative;border:2px solid var(--tile);border-radius:6px;overflow:hidden;background:var(--board2);box-shadow:0 3px 12px rgba(0,0,0,.4)}
 canvas{display:block;width:100%;touch-action:manipulation;cursor:crosshair}
+.over{position:absolute;inset:0;background:rgba(10,16,13,.9);display:grid;place-items:center;text-align:center;z-index:20;padding:20px}
+.over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 8px;font-size:26px}
 
-.over{position:absolute;inset:0;background:rgba(10,16,13,.86);display:grid;place-items:center;text-align:center;z-index:20}
-.over[hidden],[hidden]{display:none !important}
-
-.over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 8px;font-size:28px}
 .bar{display:grid;grid-template-columns:2fr 1fr;gap:4px;align-items:center}
 .prep-timer{grid-column:1/-1;background:var(--board2);border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:4px}
 .msg{grid-column:1/-1;font-size:12px;color:var(--muted);min-height:16px;line-height:1.2}
@@ -94,77 +185,137 @@ canvas{display:block;width:100%;touch-action:manipulation;cursor:crosshair}
 .pending{background:#2b3d2a;border:1px solid var(--ok);color:var(--ok);border-radius:6px;padding:4px 8px;font-size:12px}
 .sel-box{background:#3a2818;border:1px solid var(--gold);color:var(--gold);border-radius:6px;padding:4px 8px;font-size:12px;display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box}
 
-.kb{display:flex;flex-direction:column;gap:4px;align-items:center}
+.kb{display:flex;flex-direction:column;gap:4px;align-items:center;width:100%}
 .kb-row{display:flex;gap:3px;width:100%;justify-content:center}
-.key{flex:0 1 46px;min-width:0;height:40px;padding:0;font-family:var(--display);font-weight:400;font-size:16px;background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge);border-radius:5px}
-.key:active:not(:disabled){transform:translateY(1.5px);box-shadow:0 0.5px 0 var(--tile-edge)}
-.key.wide{flex-basis:56px;font-family:var(--body);font-weight:900;font-size:11px;background:var(--board2);color:var(--chalk);box-shadow:0 2px 0 var(--line)}
+.key{flex:0 1 44px;min-width:0;height:40px;padding:0;font-family:var(--display);font-weight:400;font-size:15px;background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge);border-radius:5px}
+.key.wide{flex-basis:58px;font-family:var(--body);font-weight:900;font-size:11px;background:var(--board2);color:var(--chalk);box-shadow:0 2px 0 var(--line)}
 .hint{font-size:11px;color:var(--muted);text-align:center}
 
 details{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:8px}
 summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
-.codex-group{margin-top:10px}
-.group-title{font-size:12px;font-weight:900;color:var(--tile);margin-bottom:4px;display:flex;align-items:center;gap:4px}
-.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px}
-.cx{border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:11px;color:var(--muted);min-width:0;cursor:pointer;transition:all .15s;position:relative}
-.cx:hover{border-color:var(--gold);transform:scale(1.02)}
-.cx b{font-family:var(--display);font-weight:400;font-size:13px;color:var(--chalk);display:block}
-.cx.done{border-color:var(--ok)} .cx.done b{color:var(--ok)}
-.cx.locked{opacity:0.38;filter:grayscale(90%);border-style:dashed}
-.cx.locked:hover{opacity:0.65}
-.cx i{font-style:normal;display:inline-block;width:6px;height:6px;border-radius:1.5px;margin-right:3px}
-.lock-tag{float:right;font-size:9px;color:var(--danger)}
-.target-tag{float:right;font-size:9px;color:var(--gold);font-weight:900}
+.codex-group{margin-top:8px}
+.group-title{font-size:11px;font-weight:900;color:var(--tile);margin-bottom:4px}
+.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px}
+.cx{border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:11px;color:var(--muted);cursor:pointer;position:relative;background:rgba(0,0,0,0.15)}
+.cx b{font-family:var(--display);font-size:13px;color:var(--chalk);display:block}
+.cx.target-active{border-color:var(--gold)!important;background:rgba(255,209,102,0.18)!important}
+.cx.target-active b{color:var(--gold)!important}
+.cx.locked{opacity:0.35;filter:grayscale(90%);border-style:dashed}
 
-.cx.target-active{
-  border-color:var(--gold) !important;
-  background:rgba(255, 209, 102, 0.16) !important;
-  animation:target-glow 1.4s infinite alternate ease-in-out;
-  transform:scale(1.02);
-  z-index:2;
-}
-.cx.target-active b{
-  color:var(--gold) !important;
-  text-shadow:0 0 6px rgba(255, 209, 102, 0.5);
-}
-@keyframes target-glow{
-  0%{box-shadow:0 0 4px rgba(255, 209, 102, 0.3);border-color:#ffd166}
-  100%{box-shadow:0 0 12px rgba(255, 209, 102, 0.7);border-color:#ffffff}
+/* ==================== 彈窗通用 ==================== */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
+.modal{background:#1a2b21;border:2px solid var(--gold);border-radius:12px;padding:18px;max-width:460px;width:100%;text-align:center;box-shadow:0 10px 35px rgba(0,0,0,0.85)}
+.modal h2{margin:0 0 10px;color:var(--gold);font-family:var(--display);font-size:22px}
+.modal p{font-size:13px;line-height:1.6;color:var(--chalk);margin:8px 0;text-align:left}
+.modal ul{margin:8px 0;padding-left:20px;font-size:13px;line-height:1.7;color:var(--muted);text-align:left}
+.modal ul b{color:var(--chalk)}
+.modal .reward{background:#102018;border:1px dashed var(--ok);border-radius:6px;padding:10px;margin:12px 0;font-size:14px;color:var(--ok);font-weight:900}
+.modal textarea{
+  width:100%;height:75px;background:#0d1712;border:1px solid var(--line);border-radius:6px;
+  color:var(--gold);font-family:monospace;font-size:11px;padding:6px;box-sizing:border-box;margin:6px 0;resize:none;
 }
 
-@media (max-width:520px){
-  .slot{width:24px;height:30px;font-size:14px}
-  .key{height:36px;font-size:15px}
-  .prompt-zh{font-size:18px}
-  .skip-btn{font-size:10px;padding:3px 6px}
-  .stat b{font-size:14px}
-  .stat span{font-size:9px}
-  button{font-size:12px;padding:4px 8px}
+@media(max-width:600px){
+  .taiwan-stage{min-height:680px}
+  .floating-card{width:160px;padding:6px 8px}
+  .fc-title{font-size:13px}
+  .fc-desc{font-size:10px}
+  .island-anchor{width:46px;height:46px;font-size:22px}
+  .floating-card.to-right{left:52px}
+  .floating-card.to-left{right:52px}
 }
-@media (prefers-reduced-motion:reduce){.shake{animation:none};.cx.target-active{animation:none}}
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <h1>拼字塔防 <small>兒童單字啟蒙・邊玩邊背</small></h1>
 
-  <div class="prompt-card">
-    <div class="prompt-main">
-      <span class="prompt-title">當前目標單字：</span>
-      <span class="prompt-zh" id="pZh">弓</span>
-      <span class="prompt-level" id="pLevel">第 1 等級</span>
+  <!-- ==================== 台灣世界地圖畫面 ==================== -->
+  <div id="worldView">
+    <div class="world-topbar">
+      <div>
+        <h1>🗺️ 台灣群島・奇幻冒險</h1>
+        <p>探索懸浮於台灣各區域的 6 座神秘島嶼，背下 300 單字解鎖新航道！</p>
+      </div>
+      <div class="top-actions">
+        <button class="speak-btn" id="bSaveMgr">💾 存檔管理</button>
+        <button class="speak-btn" id="bHelp">📖 冒險指南</button>
+      </div>
     </div>
-    <button class="skip-btn" id="bSkip" type="button">換一題 ↻</button>
+
+    <div class="taiwan-stage" id="taiwanStage">
+      <div class="sea-grid"></div>
+
+      <svg class="compass" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#2d463a" stroke-width="2" stroke-dasharray="4 4"/>
+        <polygon points="50,10 56,45 50,40 44,45" fill="#f2c94c"/>
+        <polygon points="50,90 56,55 50,60 44,55" fill="#2d463a"/>
+        <text x="50" y="8" fill="#f2c94c" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="900">N</text>
+      </svg>
+
+      <svg class="taiwan-svg" viewBox="0 0 500 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="twGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2d523e"/>
+            <stop offset="45%" stop-color="#1f3b2c"/>
+            <stop offset="100%" stop-color="#172b20"/>
+          </linearGradient>
+          <linearGradient id="ridgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#5a8a6d"/>
+            <stop offset="100%" stop-color="#325340"/>
+          </linearGradient>
+          <filter id="glowEffect">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+
+        <path d="M 245 45 C 290 60 325 75 330 130 C 335 180 325 240 310 320 C 295 400 275 480 250 565 C 235 615 230 670 215 675 C 200 665 190 620 170 560 C 145 490 125 430 135 365 C 145 300 170 240 195 180 C 215 135 225 75 245 45 Z"
+              fill="none" stroke="rgba(126,214,160,0.22)" stroke-width="14" filter="url(#glowEffect)"/>
+
+        <path d="M 245 45 C 290 60 325 75 330 130 C 335 180 325 240 310 320 C 295 400 275 480 250 565 C 235 615 230 670 215 675 C 200 665 190 620 170 560 C 145 490 125 430 135 365 C 145 300 170 240 195 180 C 215 135 225 75 245 45 Z"
+              fill="url(#twGrad)" stroke="#4d7c60" stroke-width="3.5"/>
+
+        <path d="M 255 120 Q 275 230 265 350 Q 250 470 225 580" fill="none" stroke="url(#ridgeGrad)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M 240 160 Q 255 270 245 380 Q 235 480 215 560" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2.5" stroke-dasharray="4 6"/>
+
+        <line x1="80" y1="390" x2="420" y2="390" stroke="rgba(242,201,76,0.3)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="90" y="384" fill="rgba(242,201,76,0.5)" font-size="11" font-family="sans-serif" font-weight="800">23.5°N 北回歸線</text>
+      </svg>
+
+      <div id="islandsContainer"></div>
+    </div>
   </div>
 
-  <div class="top">
+  <!-- ==================== 戰鬥塔防畫面 ==================== -->
+  <div id="battleView" hidden>
+    <header>
+      <h1><span id="mapTitle">萌寵森林</span> <small>第 <span id="mapWaveTxt">1</span> / 30 波</small></h1>
+      <button class="map-return-btn" id="bBackWorld">🗺️ 返回台灣地圖 (自動存檔)</button>
+    </header>
+
+    <div class="prompt-card">
+      <div class="prompt-main">
+        <span class="prompt-title">當前目標：</span>
+        <span class="prompt-zh" id="pZh">貓</span>
+        <span class="prompt-level" id="pLevel">第 1 等級</span>
+        <span class="prompt-cost" id="pCost">(5金/字)</span>
+      </div>
+      <div class="prompt-actions">
+        <button class="speak-btn" id="bListen" type="button">🔊 聽發音</button>
+        <button class="auto-wave-btn" id="bAutoWave" type="button">⚔️ 連續挑戰: 關</button>
+        <button class="skip-btn" id="bSkip" type="button">換一題 ↻</button>
+      </div>
+    </div>
+
     <div class="stats">
+      <div class="stat map"><span>當前島嶼</span><b id="sMap">萌寵森林</b></div>
       <div class="stat hp"><span>基地血量</span><b id="sHp">20</b></div>
       <div class="stat gold"><span>金幣</span><b id="sGold">60</b></div>
-      <div class="stat"><span>波數</span><b id="sWave">0</b></div>
-      <div class="stat"><span>擊倒</span><b id="sKills">0</b></div>
+      <div class="stat"><span>波數</span><b id="sWave">0/30</b></div>
+      <div class="stat"><span>擊倒數</span><b id="sKills">0</b></div>
     </div>
+
     <div class="rack">
       <div class="slots" id="slots"></div>
       <div class="rack-btns">
@@ -172,932 +323,1253 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
         <button id="bClear" disabled="">重填</button>
       </div>
     </div>
-  </div>
 
-  <div class="stage" id="stage">
-    <canvas id="cv" width="975" height="650"></canvas>
-    <div class="over" id="over" hidden>
-      <div>
-        <h2>基地被攻破</h2>
-        <p id="overTxt"></p>
-        <button class="primary" id="bRestart">重新開始</button>
+    <div class="stage" id="stage">
+      <canvas id="cv" width="960" height="640"></canvas>
+      <div class="over" id="over" hidden>
+        <div>
+          <h2>基地被攻破</h2>
+          <p id="overTxt"></p>
+          <button class="primary" id="bRestart">重新挑戰本島</button>
+          <button id="bOverMap" style="margin-top:6px">返回台灣地圖</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="bar">
-    <button class="primary" id="bWave">開始第 1 波</button>
-    <button id="bSpeed">速度 1×</button>
-    <div class="prep-timer" id="prepTimer">⏱️ 早鳥獎勵倒數: 20s</div>
-    <div class="msg" id="msg">請依照上方題目填入剩下的字母！</div>
-  </div>
-
-  <div id="pendWrap" hidden>
-    <span class="pending" id="pend"></span>
-    <button id="bCancel">取消放置</button>
-  </div>
-
-  <div id="selWrap" hidden>
-    <div class="sel-box">
-      <span id="selInfo">已選取單位</span>
-      <button class="danger" id="bRecycle">🗑️ 回收拆除 (+<span id="recGold">0</span>)</button>
-      <button id="bDeselect">取消</button>
+    <div class="bar">
+      <button class="primary" id="bWave">開始第 1 波 ⚔️</button>
+      <button id="bSpeed">速度 1×</button>
+      <div class="prep-timer" id="prepTimer">⏱️ 早鳥獎勵倒數: 20s (開戰+10金)</div>
+      <div class="msg" id="msg">請依照上方題目填入剩下的字母！</div>
     </div>
+
+    <div id="pendWrap" hidden>
+      <span class="pending" id="pend"></span>
+      <button id="bCancel">取消放置</button>
+    </div>
+
+    <div id="selWrap" hidden>
+      <div class="sel-box">
+        <span id="selInfo">已選取單位</span>
+        <button class="danger" id="bRecycle">🗑️ 回收 (+<span id="recGold">0</span>金)</button>
+        <button id="bDeselect">取消</button>
+      </div>
+    </div>
+
+    <div class="kb" id="kb"></div>
+    <div class="hint">提示：進度每波自動保存至本機！放置士兵時有淡紅虛線射程，就定位後隱藏。</div>
+
+    <details id="detailsCodex" open>
+      <summary>本島單字圖鑑（點擊卡片聽真人發音 🔊，共 50 字）</summary>
+      <div id="codexWrap"></div>
+    </details>
   </div>
 
-  <div class="kb" id="kb"></div>
-  <div class="hint">提示：下方字典的發光卡片為當前目標，點擊卡片可聽真人發音；格子放滿時點擊舊單位可直接覆蓋替換！</div>
+</div>
 
-  <details id="detailsCodex" open>
-    <summary>單字圖鑑（按字母數排列，點擊卡片聽真人發音 🔊）</summary>
-    <div id="codexWrap"></div>
-  </details>
+<!-- 新手冒險說明彈窗 -->
+<div class="modal-mask" id="guideModal" hidden>
+  <div class="modal">
+    <h2>🏝️ 歡迎來到拼字塔防！</h2>
+    <p>這是一場用單字守護台灣群島的冒險。探索懸浮於台灣各地的 6 大神秘島嶼，背下 300 個核心單字：</p>
+    <ul>
+      <li><b>⌨️ 拼字召喚</b>：輸入提示的單字召喚防禦士兵，一次拼對不按退格享有<b>「一發入魂 +10 金」</b>！</li>
+      <li><b>⚔️ 連續挑戰</b>：開啟「連續挑戰」按鈕，通關後 3 秒自動開戰下一波，無縫衝刺！</li>
+      <li><b>🎯 攻擊範圍</b>：準備放置士兵時，地面出現<b>「淡紅色虛線圈」</b>預覽射程，擺放後自動隱藏。</li>
+      <li><b>💾 本機自動存檔</b>：進度會自動儲存在本設備瀏覽器中，關閉網頁隨時回來接關！</li>
+    </ul>
+    <button class="primary" id="bCloseGuide" style="width:100%;padding:10px;font-size:15px;margin-top:8px">開始我的島嶼冒險 ⚔️</button>
+  </div>
+</div>
+
+<!-- 存檔管理 / 跨設備引繼彈窗 -->
+<div class="modal-mask" id="saveModal" hidden>
+  <div class="modal">
+    <h2>💾 存檔管理與引繼</h2>
+    <p>遊戲進度已自動儲存於本機。若要將進度轉移至手機或其他電腦，請複製下方的引繼碼：</p>
+    <textarea id="saveCodeBox" readonly></textarea>
+    <div style="display:flex;gap:6px;margin:8px 0">
+      <button class="primary" id="bCopySave" style="flex:1">📋 複製引繼碼</button>
+      <button id="bImportSave" style="flex:1">📥 匯入代碼</button>
+    </div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+    <div style="text-align:left;font-size:11px;color:var(--danger)">
+      危險區域：重設所有關卡、已征服島嶼與陣容資料。
+    </div>
+    <button class="danger" id="bResetAll" style="width:100%;margin-top:6px">🗑️ 清空所有存檔重玩</button>
+    <button id="bCloseSaveModal" style="width:100%;margin-top:8px">關閉視窗</button>
+  </div>
+</div>
+
+<!-- 島嶼征服躍遷彈窗 -->
+<div class="modal-mask" id="conquerModal" hidden>
+  <div class="modal">
+    <h2>🎉 島嶼征服！航道開啟！</h2>
+    <p id="conquerTxt"></p>
+    <div class="reward" id="conquerReward"></div>
+    <button class="primary" id="bBackWorldSuccess" style="width:100%;padding:10px;font-size:15px">前往台灣地圖查看新島嶼 ➔</button>
+  </div>
 </div>
 
 <script>
-// ---------- 單字資料庫 ----------
-const SPEC={
-  BOW:{zh:'弓',k:'single',dmg:7,rng:3.4,rate:1.1},GUN:{zh:'槍',k:'single',dmg:4,rng:2.6,rate:3.5},
-  AXE:{zh:'斧頭',k:'single',dmg:16,rng:1.4,rate:.8},CAT:{zh:'貓',k:'single',dmg:6,rng:1.6,rate:2.5},
-  DOG:{zh:'狗',k:'single',dmg:9,rng:1.7,rate:1.8},OWL:{zh:'貓頭鷹',k:'single',dmg:8,rng:4.2,rate:1},
-  BEE:{zh:'蜜蜂',k:'dot',dmg:2,rng:2,rate:3,dps:3,dur:2},ICE:{zh:'冰',k:'slow',dmg:3,rng:2.3,rate:1,slow:.5,dur:2},
-  MUD:{zh:'泥巴',k:'slow',dmg:1,rng:2,rate:1,slow:.6,dur:2,aoe:.9},ZAP:{zh:'電擊',k:'chain',dmg:6,rng:2.2,rate:2,jumps:2},
-  NET:{zh:'網子',k:'wall',slow:.4},
-  WOLF:{zh:'狼',k:'single',dmg:13,rng:1.7,rate:2},LION:{zh:'獅子',k:'single',dmg:28,rng:1.7,rate:1},
-  BEAR:{zh:'熊',k:'single',dmg:45,rng:1.5,rate:.6},BOMB:{zh:'炸彈',k:'splash',dmg:20,rng:2.3,rate:.6,aoe:1.2},
-  ROCK:{zh:'石頭',k:'splash',dmg:10,rng:2,rate:.9,aoe:.8},FIRE:{zh:'火',k:'dot',dmg:3,rng:2.2,rate:1,dps:6,dur:3},
-  LAVA:{zh:'岩漿',k:'dot',dmg:5,rng:2,rate:.8,dps:12,dur:3,aoe:1},ACID:{zh:'酸液',k:'dot',dmg:2,rng:2.3,rate:1.2,dps:8,dur:4},
-  SNOW:{zh:'雪',k:'slow',dmg:4,rng:2.4,rate:.9,slow:.55,dur:2,aoe:1.1},WIND:{zh:'風',k:'slow',dmg:2,rng:2.6,rate:.8,slow:.6,dur:1.5,aoe:2.6},
-  BOLT:{zh:'閃電',k:'chain',dmg:14,rng:2.8,rate:1,jumps:3},COIN:{zh:'硬幣',k:'income',amt:3,every:6},
-  GOLD:{zh:'黃金',k:'income',amt:7,every:7},BANK:{zh:'銀行',k:'income',amt:16,every:8},
-  HEAL:{zh:'治療',k:'heal',amt:1,every:10},TRAP:{zh:'陷阱',k:'trap',dmg:10,rate:1.2},
-  WALL:{zh:'牆',k:'wall',slow:.2},MINE:{zh:'地雷',k:'mine',dmg:150,aoe:1.4},
-  KING:{zh:'國王',k:'aura',mul:1.5,rng:1.6},
-  KNIFE:{zh:'小刀',k:'single',dmg:7,rng:1.3,rate:3},SWORD:{zh:'劍',k:'single',dmg:22,rng:1.5,rate:1.1},
-  SPEAR:{zh:'長矛',k:'single',dmg:18,rng:2.1,rate:1},ARROW:{zh:'箭',k:'single',dmg:11,rng:3.6,rate:1.3},
-  LASER:{zh:'雷射',k:'single',dmg:7,rng:3,rate:5},EAGLE:{zh:'老鷹',k:'single',dmg:22,rng:5,rate:.9},
-  SHARK:{zh:'鯊魚',k:'single',dmg:38,rng:1.8,rate:1},STORM:{zh:'風暴',k:'splash',dmg:9,rng:2.6,rate:1.6,aoe:1.5},
-  SNAKE:{zh:'蛇',k:'dot',dmg:6,rng:1.8,rate:1,dps:10,dur:3},VENOM:{zh:'毒液',k:'dot',dmg:4,rng:2.4,rate:1,dps:14,dur:4},
-  FROST:{zh:'寒霜',k:'slow',dmg:8,rng:2.6,rate:1,slow:.35,dur:2.5,aoe:1.2},NURSE:{zh:'護士',k:'heal',amt:2,every:10},
-  SPIKE:{zh:'尖刺',k:'trap',dmg:16,rate:1.5},QUEEN:{zh:'女王',k:'aura',mul:1.3,rng:2.6},
-  SNIPER:{zh:'狙擊手',k:'single',dmg:90,rng:7,rate:.35},CANNON:{zh:'大砲',k:'splash',dmg:40,rng:3,rate:.5,aoe:1.3},
-  METEOR:{zh:'隕石',k:'splash',dmg:90,rng:4.5,rate:.25,aoe:1.8},DRAGON:{zh:'龍',k:'splash',dmg:40,rng:2.8,rate:.9,aoe:1.4,dps:10,dur:3},
-  POISON:{zh:'毒藥',k:'dot',dmg:4,rng:2.5,rate:1,dps:18,dur:5,aoe:1},THUNDER:{zh:'雷霆',k:'chain',dmg:28,rng:3.2,rate:.9,jumps:6},
-  DOCTOR:{zh:'醫生',k:'heal',amt:3,every:9}
-};
+// ==================== 1. 6大島嶼設定 ====================
+const ISLANDS = [
+  {
+    id:0, name:'萌寵森林', eng:'Pet Forest', icon:'🌲',
+    desc:'北台灣溫帶森林，棲息著溫馴動物與林間守護者。',
+    x: 52, y: 13, cardDir: 'to-right',
+    board:'#18261f', dirt:'#43392a', line:'#2d463a', tile:'#f2c94c',
+    wp:[[-1,1],[3,1],[3,6],[7,6],[7,2],[10,2],[10,6],[12,6]]
+  },
+  {
+    id:1, name:'深海奇航', eng:'Ocean Odyssey', icon:'🌊',
+    desc:'花蓮外海太平洋海域，面對海盜加農砲與深海巨怪。',
+    x: 73, y: 28, cardDir: 'to-left',
+    board:'#091a24', dirt:'#143445', line:'#1b4a63', tile:'#00f2fe',
+    wp:[[-1,1],[10,1],[10,6],[2,6],[2,3],[7,3],[7,4],[12,4]]
+  },
+  {
+    id:2, name:'冰原城堡', eng:'Frozen Kingdom', icon:'❄️',
+    desc:'雪山與合歡山極地凍土，禦寒建築與冰霜魔法之境。',
+    x: 46, y: 41, cardDir: 'to-left',
+    board:'#101d2d', dirt:'#273e58', line:'#3c5a7e', tile:'#7cc6fe',
+    wp:[[-1,1],[4,1],[1,3],[8,3],[4,5],[10,5],[10,7],[12,7]]
+  },
+  {
+    id:3, name:'熔岩地底', eng:'Molten Underground', icon:'🌋',
+    desc:'嘉南平原深淵裂谷，蘊藏重金屬鍛造與地底巨龍之力。',
+    x: 24, y: 56, cardDir: 'to-right',
+    board:'#190d0d', dirt:'#3d1818', line:'#572424', tile:'#ff5722',
+    wp:[[-1,2],[3,2],[3,5],[6,5],[6,1],[9,1],[9,6],[12,6]]
+  },
+  {
+    id:4, name:'天空神殿', eng:'Sky Temple', icon:'⚡',
+    desc:'台東雲海之上的神聖聖域，充盈著雷霆審判與光明光束。',
+    x: 70, y: 68, cardDir: 'to-left',
+    board:'#172338', dirt:'#304261', line:'#455f8a', tile:'#ffd166',
+    wp:[[-1,4],[5,4],[5,1],[7,1],[7,6],[9,6],[9,4],[12,4]]
+  },
+  {
+    id:5, name:'星際太空', eng:'Cosmic Galaxy', icon:'🚀',
+    desc:'恆春半島南端太空哨站，以軌道重力與光線粉碎外敵。',
+    x: 44, y: 88, cardDir: 'to-right',
+    board:'#090a14', dirt:'#171a33', line:'#2a2f59', tile:'#c084fc',
+    wp:[[-1,2],[8,2],[8,5],[3,5],[3,3],[10,3],[10,6],[12,6]]
+  }
+];
 
-const KIND={
-  single:{c:'#f2c94c',t:'單體攻擊'},splash:{c:'#ff8c42',t:'範圍爆炸'},dot:{c:'#9be564',t:'持續傷害'},
-  slow:{c:'#7cc6fe',t:'減速'},chain:{c:'#c792ea',t:'連鎖電擊'},income:{c:'#ffd166',t:'產金幣'},
-  heal:{c:'#ff9eb5',t:'補血'},trap:{c:'#c9a46a',t:'路上陷阱'},wall:{c:'#a68b63',t:'路上減速'},
-  mine:{c:'#e07a5f',t:'路上自爆'},aura:{c:'#ffffff',t:'周圍增傷'},generic:{c:'#d9d4c7',t:'一般單字'}
-};
-const PATHK=new Set(['trap','wall','mine']);
-const DICT=new Set(Object.keys(SPEC));
+// ==================== 2. 300 單字資料庫 ====================
+const RAW_WORDS = [
+  "CAT:貓:slash,DOG:狗:slash,PIG:豬:slash,HEN:母雞:slash,OWL:貓頭鷹:beam,COW:乳牛:barrier,ANT:螞蟻:slash,FOX:狐狸:beam,BAT:蝙蝠:beam,BEE:蜜蜂:swarm,WOLF:狼:slash,BEAR:熊:slash,DEER:鹿:slash,DUCK:鴨:breath,FROG:青蛙:breath,LION:獅子:slash,GOAT:山羊:slash,TREE:樹木:barrier,WOOD:木頭:barrier,LEAF:樹葉:bomb,DIRT:泥土:ring,ROCK:岩石:bomb,BIRD:鳥:beam,SEED:種子:bomb,BARK:樹皮:barrier,TIGER:老虎:slash,HORSE:馬:barrier,SHEEP:綿羊:ring,PANDA:熊貓:ring,EAGLE:老鷹:drop_spike,SNAKE:蛇:breath,ZEBRA:斑馬:barrier,ROBIN:知更鳥:barrier,PLANT:植物:barrier,GRASS:青草:vortex,ACORN:橡實:drop_spike,STONE:石頭:drop_spike,FRUIT:水果:barrier,TRACK:足跡:barrier,BLOOM:開花:vortex,MONKEY:猴子:swarm,RABBIT:兔子:swarm,BEAVER:河狸:barrier,SPIDER:蜘蛛:ring,FOREST:森林:drop_spike,BRANCH:樹枝:drop_spike,GIRAFFE:長頸鹿:beam,CHEETAH:獵豹:slash,HAMSTER:倉鼠:barrier,MONSTER:怪獸:breath",
+  "SEA:大海:ring,COD:鱈魚:slash,FIN:魚鰭:slash,NET:漁網:barrier,ROD:釣竿:slash,WET:潮濕:ring,BAY:海灣:barrier,OAR:船槳:slash,EEL:鰻魚:chain,DIP:浸入:ring,FISH:魚:swarm,CLAM:蛤蜊:barrier,SEAL:海豹:swarm,TUNA:鮪魚:swarm,SHIP:大船:bomb,WAVE:海浪:ring,TIDE:潮汐:ring,DEEP:深海:vortex,SURF:衝浪:beam,BOAT:小船:bomb,DROP:水滴:breath,SALT:鹽巴:breath,HOOK:魚鉤:beam,REEF:礁石:barrier,SWIM:游泳:beam,SHARK:鯊魚:slash,WHALE:鯨魚:drop_spike,CORAL:珊瑚:barrier,PEARL:珍珠:barrier,SQUID:烏賊:breath,OTTER:海獺:beam,SHELL:貝殼:barrier,OCEAN:海洋:ring,FLOAT:漂浮:drop_spike,ANCHOR:鐵錨:drop_spike,COAST:海岸:ring,DIVER:潛水員:beam,BEACH:海灘:ring,WATER:水:ring,STORM:風暴:vortex,TURTLE:海龜:barrier,SHRIMP:蝦子:beam,WALRUS:海象:slash,SALMON:鮭魚:beam,CANNON:大砲:bomb,PIRATE:海盜:bomb,DOLPHIN:海豚:ring,OCTOPUS:章魚:vortex,PENGUIN:企鵝:breath,TSUNAMI:海嘯:breath",
+  "ICE:冰塊:ring,YAK:氂牛:slash,SKI:滑雪板:ring,FUR:毛皮:barrier,HAT:毛帽:barrier,CAP:便帽:barrier,HUT:小屋:barrier,LOG:木樁:barrier,MUG:馬克杯:barrier,JAM:果醬:barrier,COLD:寒冷:breath,SNOW:雪花:bomb,PALE:灰白:ring,MIST:薄霧:ring,COAT:外套:barrier,BOOT:雪靴:barrier,WOOL:羊毛:barrier,GATE:城門:barrier,WALL:城牆:barrier,FORT:堡壘:barrier,SLED:雪橇:beam,HAIL:冰雹:bomb,PURE:純淨:beam,RINK:滑冰場:beam,VEST:背心:barrier,FROST:寒霜:breath,IGLOO:冰屋:barrier,POLAR:極地:beam,NORTH:北方:beam,WHITE:白色:swarm,CHILL:寒氣:breath,CABIN:木屋:barrier,SCARF:圍巾:barrier,GLOVE:手套:barrier,SLIDE:滑行:beam,SLEET:冰雨:breath,FLAKE:雪花:swarm,CLOAK:披風:barrier,SHARP:銳利:beam,SOLID:堅硬:barrier,FROZEN:冰凍:ring,TUNDRA:凍原:ring,CASTLE:城堡:bomb,SHIVER:發抖:vortex,ICICLE:冰柱:drop_spike,WINTER:冬天:drop_spike,BLIZZARD:暴風雪:breath,GLACIER:冰河:drop_spike,ICEBERG:冰山:drop_spike,CRYSTAL:水晶:beam",
+  "ORE:礦石:barrier,PIT:坑洞:breath,GEM:寶石:barrier,ASH:灰燼:ring,DIG:挖掘:slash,HOT:滾燙:bomb,RED:紅色:ring,TIN:錫礦:barrier,POT:熔鍋:bomb,GAS:瓦斯:breath,FIRE:火焰:breath,LAVA:岩漿:breath,GOLD:黃金:barrier,IRON:鐵礦:barrier,COAL:煤炭:barrier,MINE:地雷:bomb,MUD:泥漿:ring,CAVE:洞穴:vortex,BURN:燃燒:vortex,GLOW:紅光:barrier,DUST:粉塵:ring,PICK:十字鎬:slash,RUST:鐵鏽:slash,HEAT:高溫:barrier,MELT:融化:barrier,MAGMA:岩漿層:breath,FLAME:火苗:swarm,METAL:金屬:barrier,SMOKE:濃煙:chain,FORGE:鐵匠爐:barrier,SPARK:火花:chain,BRICK:磚塊:barrier,DRILL:鑽頭:beam,FLINT:打火石:beam,TORCH:火把:beam,RUBY:紅寶石:beam,ANVIL:鐵砧:drop_spike,CHASM:深淵:vortex,GOLEM:魔像:slash,STEAM:蒸汽:ring,COPPER:銅:chain,BRONZE:青銅:bomb,SILVER:白銀:bomb,TUNNEL:地道:slash,QUARRY:採石場:drop_spike,DRAGON:火龍:breath,VOLCANO:火山:bomb,CRATER:火山口:bomb,FURNACE:熔爐:breath,DIAMOND:鑽石:beam",
+  "SUN:太陽:beam,SKY:天空:ring,AIR:空氣:ring,FLY:飛行:slash,ORB:法球:swarm,FAN:風扇:beam,GOD:神祗:barrier,RAY:光線:beam,TOP:頂端:slash,BOW:長弓:beam,WING:翅膀:swarm,KITE:風箏:swarm,GALE:強風:breath,BOLT:雷電:chain,BEAM:光束:beam,HALO:光環:ring,DUSK:黃昏:barrier,DAWN:黎明:barrier,SOAR:翱翔:breath,PEAK:山峰:barrier,HAWK:獵鷹:slash,DOVE:白鴿:ring,BELL:聖鐘:ring,HIGH:高空:barrier,ARCH:拱門:barrier,CLOUD:白雲:beam,LIGHT:光芒:beam,ANGEL:天使:barrier,FLASH:閃光:ring,TOWER:高塔:barrier,CROWN:皇冠:barrier,ALTAR:祭壇:barrier,CHIRP:啼叫:beam,SHINE:照耀:beam,SOLAR:太陽:beam,GLORY:榮耀:barrier,FAITH:信念:barrier,REALM:國度:barrier,GLIDE:滑翔:bomb,SWIFT:雨燕:swarm,FALCON:游隼:slash,TEMPLE:神殿:barrier,HEAVEN:天堂:barrier,BREEZE:微風:ring,DIVINE:神聖:vortex,SPHERE:天球:vortex,PHOENIX:不死鳥:bomb,PEGASUS:天馬:slash,THUNDER:雷霆:chain,RAINBOW:彩虹:beam",
+  "UFO:幽浮:beam,BOT:機器人:beam,LAB:實驗室:barrier,POD:逃生艙:barrier,BIT:位元:barrier,HUB:轉運站:barrier,MAP:星圖:barrier,KEY:密鑰:barrier,BOX:黑盒:barrier,ARM:機械臂:barrier,MARS:火星:bomb,MOON:月球:ring,STAR:恆星:bomb,NOVA:新星:bomb,ATOM:原子:bomb,BEAT:脈衝:ring,CHIP:晶片:barrier,CORE:核心:barrier,DATA:數據:barrier,GRID:電網:chain,GEAR:齒輪:barrier,WIRE:線路:chain,WARP:躍遷:ring,TECH:科技:barrier,SHED:機庫:barrier,SPACE:太空:ring,COMET:彗星:bomb,ORBIT:軌道:ring,ALIEN:外星人:vortex,ROBOT:機械人:beam,LASER:雷射:beam,RADAR:雷達:barrier,PANEL:光板:barrier,CYBER:賽博:slash,PROBE:探測器:beam,LUNAR:月球:swarm,PILOT:飛行員:beam,STEEL:鋼鐵:barrier,POWER:能量:barrier,DRONE:無人機:swarm,ROCKET:火箭:bomb,PLANET:行星:vortex,GALAXY:銀河:ring,METEOR:流星:bomb,ENERGY:能量:beam,SHIELD:護盾:barrier,GRAVITY:重力:ring,ECLIPSE:日蝕:vortex,JUPITER:木星:vortex,COMMAND:指揮所:beam"
+];
 
-// ---------- 語音合成系統 ----------
-const activeVoices = [];
+const WORLD_SPECS = RAW_WORDS.map(raw => {
+  const dict = {};
+  raw.split(',').forEach(item => {
+    const [w, zh, fx] = item.split(':');
+    if(!w) return;
+    const len = w.length;
+    let dmg = 8, rng = 2.4, rate = 1.3, aoe = 0, slow = 0, dps = 0;
+    if(len === 3){ dmg = 9; rng = 2.4; rate = 1.4; }
+    else if(len === 4){ dmg = 20; rng = 2.5; rate = 1.1; }
+    else if(len === 5){ dmg = 42; rng = 2.8; rate = 0.95; }
+    else { dmg = 95; rng = 3.4; rate = 0.75; }
+
+    if(fx === 'bomb' || fx === 'vortex'){ aoe = len >= 6 ? 1.7 : 1.2; dmg *= 0.8; }
+    if(fx === 'breath'){ dps = Math.round(dmg * 0.45); dmg *= 0.4; }
+    if(fx === 'ring'){ slow = 0.5; dmg *= 0.5; }
+    if(fx === 'chain'){ dmg *= 0.75; }
+
+    dict[w] = { zh, fx, dmg:Math.round(dmg), rng, rate, aoe, slow, dps, dur:2.5, jumps: len>=6?5:3 };
+  });
+  return dict;
+});
+
+// ==================== 3. 語音系統 ====================
+let _currentUtter = null;
 function speakWord(w, zh){
   if(!('speechSynthesis' in window)) return;
   try{
     window.speechSynthesis.cancel();
-    activeVoices.length = 0;
-    const uEn = new SpeechSynthesisUtterance(w.toLowerCase());
-    uEn.lang = 'en-US';
-    uEn.rate = 0.82;
-    activeVoices.push(uEn);
-    uEn.onend = () => {
+    _currentUtter = new SpeechSynthesisUtterance(w.toLowerCase());
+    _currentUtter.lang = 'en-US';
+    _currentUtter.rate = 0.82;
+    _currentUtter.onend = () => {
       if(zh){
         const uZh = new SpeechSynthesisUtterance(zh);
         uZh.lang = 'zh-TW';
         uZh.rate = 1.0;
-        activeVoices.push(uZh);
-        uZh.onend = () => { activeVoices.length = 0; };
+        _currentUtter = uZh;
         window.speechSynthesis.speak(uZh);
-      } else {
-        activeVoices.length = 0;
       }
     };
-    window.speechSynthesis.speak(uEn);
+    window.speechSynthesis.speak(_currentUtter);
   }catch(e){
-    console.warn('SpeechSynthesis error:', e);
+    console.warn('TTS error:', e);
   }
 }
 
-// ---------- 地圖 ----------
-const COLS=12,ROWS=8;
-const WP=[[-1,1],[3,1],[3,6],[7,6],[7,2],[10,2],[10,6],[12,6]];
-const segs=[];let TOTAL=0;const pathSet=new Set();
-for(let i=0;i<WP.length-1;i++){
-  const a=WP[i],b=WP[i+1],len=Math.abs(b[0]-a[0])+Math.abs(b[1]-a[1]);
-  segs.push({a,b,len,start:TOTAL});TOTAL+=len;
-  const sx=Math.sign(b[0]-a[0]),sy=Math.sign(b[1]-a[1]);
-  for(let k=0;k<=len;k++){const x=a[0]+sx*k,y=a[1]+sy*k;if(x>=0&&x<COLS&&y>=0&&y<ROWS)pathSet.add(x+','+y);}
-}
-function posAt(d){
-  for(const s of segs){if(d<=s.start+s.len){const t=(d-s.start)/s.len;return{x:s.a[0]+(s.b[0]-s.a[0])*t+.5,y:s.a[1]+(s.b[1]-s.a[1])*t+.5};}}
-  const l=WP[WP.length-1];return{x:l[0]+.5,y:l[1]+.5};
-}
-const isPath=(x,y)=>pathSet.has(x+','+y);
+// ==================== 4. 本地持久化存檔系統 (LocalStorage) ====================
+const STORAGE_KEY = 'SPELL_TD_SAVE_TW_V1';
 
-// ---------- 狀態 ----------
-const COST=5;
-let st,hover=null;
-const $=id=>document.getElementById(id);
-function say(t,cls=''){const m=$('msg');m.textContent=t;m.className='msg '+cls;}
+let worldProgress = {
+  unlockedMax: 0,
+  conquered: []
+};
+
+// 儲存所有島嶼的歷史陣容狀態
+let islandSavedStates = {};
+
+function saveGameProgress(){
+  try{
+    // 如果正在戰鬥，更新當前島嶼的陣容
+    if(!$('battleView').hidden){
+      islandSavedStates[st.curIslandId] = {
+        wave: st.wave,
+        gold: st.gold,
+        hp: st.hp,
+        kills: st.kills,
+        towers: st.towers.map(t => ({ w: t.w, x: t.x, y: t.y, star: t.star||1 })),
+        built: Array.from(st.built)
+      };
+    }
+    const payload = {
+      worldProgress,
+      islandSavedStates,
+      autoWave: st.autoWave,
+      hasSeenGuide: true,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }catch(e){
+    console.warn('LocalStorage save failed:', e);
+  }
+}
+
+function loadGameProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(data.worldProgress) worldProgress = data.worldProgress;
+    if(data.islandSavedStates) islandSavedStates = data.islandSavedStates;
+    if(typeof data.autoWave === 'boolean'){
+      st.autoWave = data.autoWave;
+      const btn = $('bAutoWave');
+      if(btn){
+        btn.className = st.autoWave ? 'auto-wave-btn active' : 'auto-wave-btn';
+        btn.textContent = st.autoWave ? '🔥 連續挑戰: 開' : '⚔️ 連續挑戰: 關';
+      }
+    }
+    return data;
+  }catch(e){
+    console.warn('LocalStorage load failed:', e);
+    return false;
+  }
+}
+
+// ==================== 5. 遊戲狀態與波數變數 ====================
+const COLS = 12, ROWS = 8;
+let cv, ctx, CS = 50, DPR = 1;
+let hoverCell = null;
+
+let st = {
+  curIslandId: 0, wave: 0, gold: 60, hp: 20, maxHp: 20, kills: 0, inWave: false,
+  enemies: [], towers: [], fx: [], slots: [],
+  targetWord: '', targetSpec: null, pending: null, sel: null,
+  speed: 1, camShake: 0, prepTime: 20, backspaced: false, over: false,
+  autoWave: false, autoWaveTimer: 0,
+  built: new Set()
+};
+
+const $ = id => document.getElementById(id);
+const say = (t, cls='') => { const m=$('msg'); if(m){ m.textContent=t; m.className='msg '+cls; } };
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+function getLetterCost(len){
+  if(len <= 3) return 5;
+  if(len === 4) return 8;
+  if(len === 5) return 12;
+  return 18;
+}
 
 function getTier(wave){
-  if(wave<=5) return {lv:1,maxLen:3,targetLen:3,name:'第 1 等級（3 字）'};
-  if(wave<=10) return {lv:2,maxLen:4,targetLen:4,name:'第 2 等級（4 字）'};
-  if(wave<=15) return {lv:3,maxLen:5,targetLen:5,name:'第 3 等級（5 字）'};
-  return {lv:4,maxLen:8,targetLen:6,name:'第 4 等級（6+ 字）'};
+  if(wave <= 5) return { lv:1, targetLen:3, maxLen:3, name:'第 1 等級 (3 字)' };
+  if(wave <= 10) return { lv:2, targetLen:4, maxLen:4, name:'第 2 等級 (4 字)' };
+  if(wave <= 15) return { lv:3, targetLen:5, maxLen:5, name:'第 3 等級 (5 字)' };
+  return { lv:4, targetLen:6, maxLen:8, name:'第 4 等級 (6+ 字)' };
 }
 
-function pickPrompt(){
-  const tier=getTier(st.wave);
-  const pool=Object.entries(SPEC).filter(([w])=>{
-    return tier.lv>=4 ? w.length>=6 : w.length===tier.targetLen;
+let segs = [], TOTAL_LEN = 0, pathSet = new Set();
+function initMapPath(){
+  segs = []; TOTAL_LEN = 0; pathSet.clear();
+  const theme = ISLANDS[st.curIslandId];
+  const wp = theme.wp;
+  for(let i=0; i<wp.length-1; i++){
+    const a = wp[i], b = wp[i+1], len = Math.abs(b[0]-a[0]) + Math.abs(b[1]-a[1]);
+    segs.push({ a, b, len, start:TOTAL_LEN });
+    TOTAL_LEN += len;
+    const sx = Math.sign(b[0]-a[0]), sy = Math.sign(b[1]-a[1]);
+    for(let k=0; k<=len; k++){
+      const x = a[0] + sx*k, y = a[1] + sy*k;
+      if(x>=0 && x<COLS && y>=0 && y<ROWS) pathSet.add(x+','+y);
+    }
+  }
+}
+function posAt(d){
+  for(const s of segs){
+    if(d <= s.start + s.len){
+      const t = (d - s.start)/s.len;
+      return { x: s.a[0] + (s.b[0] - s.a[0])*t + 0.5, y: s.a[1] + (s.b[1] - s.a[1])*t + 0.5 };
+    }
+  }
+  const l = segs[segs.length-1].b;
+  return { x: l[0]+0.5, y: l[1]+0.5 };
+}
+const isPath = (x,y) => pathSet.has(x+','+y);
+
+// ==================== 6. 台灣大地圖渲染 ====================
+function renderTaiwanMap(){
+  const container = $('islandsContainer');
+  container.innerHTML = '';
+
+  ISLANDS.forEach(isl => {
+    const isUnlocked = isl.id <= worldProgress.unlockedMax;
+    const isDone = worldProgress.conquered.includes(isl.id);
+    const saved = islandSavedStates[isl.id];
+    const waveProgress = saved ? `${saved.wave}/30 波` : (isDone ? '30/30 (完賽)' : '0/30 波');
+
+    const node = document.createElement('div');
+    node.className = 'island-node';
+    node.style.left = `${isl.x}%`;
+    node.style.top = `${isl.y}%`;
+
+    node.innerHTML = `
+      <div class="island-anchor ${isDone ? 'conquered' : ''} ${!isUnlocked ? 'locked' : ''}" title="${isl.name}">
+        ${isl.icon}
+      </div>
+      <div class="floating-card ${isl.cardDir} ${isDone ? 'conquered' : ''} ${!isUnlocked ? 'locked' : ''}">
+        <span class="fc-badge">${isDone ? '👑 已征服' : (isUnlocked ? `⚔️ ${waveProgress}` : '🔒 航道未開')}</span>
+        <h4 class="fc-title">${isl.name} <small style="font-size:10px;color:var(--gold);font-family:var(--body)">${isl.eng}</small></h4>
+        <p class="fc-desc">${isl.desc}</p>
+        <button class="fc-btn" ${!isUnlocked ? 'disabled' : ''}>
+          ${isUnlocked ? (saved && saved.wave > 0 ? '繼續接關 ➔' : (isDone ? '重遊挑戰 ➔' : '立即出征 ➔')) : '尚未解鎖'}
+        </button>
+      </div>
+    `;
+
+    const anchor = node.querySelector('.island-anchor');
+    const btn = node.querySelector('.fc-btn');
+
+    const handleEnter = () => { if(isUnlocked) enterIsland(isl.id); };
+    anchor.onclick = handleEnter;
+    btn.onclick = handleEnter;
+
+    container.appendChild(node);
   });
-  const [w,s]=pool[Math.floor(Math.random()*pool.length)];
-  st.targetWord=w;
-  st.targetSpec=s;
-  st.slots=[w[0]];
-  $('pZh').textContent=s.zh;
-  $('pLevel').textContent=tier.name;
+}
+
+function enterIsland(id, carryoverGold = 60){
+  st.curIslandId = id;
+  const isl = ISLANDS[id];
+
+  document.documentElement.style.setProperty('--board', isl.board);
+  document.documentElement.style.setProperty('--line', isl.line);
+  document.documentElement.style.setProperty('--tile', isl.tile);
+
+  initMapPath();
+
+  // ★ 嘗試載入該島嶼的本機歷史陣容進度 ★
+  const saved = islandSavedStates[id];
+  const dict = WORLD_SPECS[id];
+
+  if(saved && saved.hp > 0 && saved.wave > 0){
+    st.wave = saved.wave;
+    st.gold = saved.gold;
+    st.hp = saved.hp;
+    st.kills = saved.kills;
+    st.built = new Set(saved.built || []);
+    st.towers = saved.towers.map(t => ({
+      w: t.w, s: dict[t.w] || Object.values(dict)[0],
+      x: t.x, y: t.y, star: t.star||1, cd:0, t:0
+    }));
+    say(`已還原【${isl.name}】的存檔陣容！第 ${st.wave} 波待命！`, 'good');
+  } else {
+    // 全新開局
+    st.wave = 0; st.hp = 20; st.gold = carryoverGold; st.kills = 0;
+    st.built.clear();
+    const firstWord = Object.keys(dict)[0];
+    st.towers = [{ w:firstWord, s:dict[firstWord], x:2, y:3, star:1, cd:0, t:0 }];
+    st.built.add(firstWord);
+    say(`已降臨【${isl.name}】！初始啟動金：${carryoverGold} 金幣！`);
+  }
+
+  st.inWave = false; st.enemies = []; st.fx = [];
+  st.pending = null; st.sel = null; st.over = false; st.prepTime = 20;
+  st.autoWaveTimer = 0;
+
+  $('mapTitle').textContent = isl.name;
+  $('sMap').textContent = isl.name;
+  $('over').hidden = true;
+
+  $('worldView').hidden = true;
+  $('battleView').hidden = false;
+
+  pickPrompt();
+  resize();
+  saveGameProgress(); // 存檔同步
+}
+
+function returnToWorldMap(){
+  saveGameProgress(); // 離開前存檔
+  st.autoWaveTimer = 0;
+  $('battleView').hidden = true;
+  $('worldView').hidden = false;
+  hoverCell = null;
+  renderTaiwanMap();
+}
+
+function conquerCurrentIsland(){
+  st.autoWaveTimer = 0;
+  const curId = st.curIslandId;
+  if(!worldProgress.conquered.includes(curId)){
+    worldProgress.conquered.push(curId);
+  }
+  const nextId = curId + 1;
+  const hasNext = nextId < ISLANDS.length;
+  if(hasNext && worldProgress.unlockedMax < nextId){
+    worldProgress.unlockedMax = nextId;
+  }
+
+  let totalAsset = st.gold;
+  st.towers.forEach(t => { totalAsset += getLetterCost(t.w.length) * t.w.length * (t.star||1); });
+  const carryover = 60 + Math.min(60, Math.floor(totalAsset * 0.15));
+
+  // 清除本島的戰鬥記憶，下一輪重置為全新
+  delete islandSavedStates[curId];
+  saveGameProgress();
+
+  const curName = ISLANDS[curId].name;
+  const nextName = hasNext ? ISLANDS[nextId].name : '無 (已征服全群島！)';
+
+  $('conquerTxt').innerHTML = `
+    <b>🎉 成功擊破第 30 波大魔王！</b><br>
+    【${curName}】已被你守護征服！<br>
+    ${hasNext ? `🌊 前往<b>【${nextName}】</b>的航道已經解鎖！` : '🌟 恭喜你達成了全台灣群島完全征服的榮耀！'}
+  `;
+  $('conquerReward').textContent = hasNext ? `殘值折抵股息：帶著 ${carryover} 金幣進軍下座島嶼！` : '全島征服最高榮耀達成！';
+  $('conquerModal').hidden = false;
+
+  $('bBackWorldSuccess').onclick = () => {
+    $('conquerModal').hidden = true;
+    returnToWorldMap();
+  };
+}
+
+// ==================== 7. 拼字操作與智慧糾錯 ====================
+function pickPrompt(){
+  const tier = getTier(st.wave);
+  const dict = WORLD_SPECS[st.curIslandId];
+  const pool = Object.entries(dict).filter(([w]) => {
+    return tier.lv >= 4 ? w.length >= 6 : w.length === tier.targetLen;
+  });
+  const [w, s] = pool[Math.floor(Math.random() * pool.length)];
+  st.targetWord = w;
+  st.targetSpec = s;
+  st.slots = [w[0]];
+  st.backspaced = false;
+
+  $('pZh').textContent = s.zh;
+  $('pLevel').textContent = tier.name;
+  $('pCost').textContent = `(${getLetterCost(w.length)}金/字)`;
   ui();
   buildCodex();
 }
 
 function skipPrompt(){
-  if(st.over||st.pending) return;
-  if(st.slots.length>1){
-    st.gold+=COST*(st.slots.length-1);
-  }
+  if(st.over || st.pending) return;
+  const cost = getLetterCost(st.targetWord.length);
+  if(st.slots.length > 1) st.gold += cost * (st.slots.length - 1);
   pickPrompt();
-  say(`換新題目！請拼出【${st.targetSpec.zh}】（${st.targetWord.length} 個字母）`);
+  say(`換題！請拼出【${st.targetSpec.zh}】`);
 }
 
-function reset(){
-  st={gold:60,hp:20,maxHp:20,wave:0,inWave:false,spawnLeft:0,spawnT:0,boss:false,
-      enemies:[],towers:[],fx:[],slots:[],pending:null,sel:null,kills:0,over:false,speed:1,built:new Set(),
-      camShake:0,prepTime:20,targetWord:'',targetSpec:null};
-  $('over').hidden=true;
-  const d=$('detailsCodex');
-  if(d) d.open=true;
-  pickPrompt();
-  say('請依照上方題目填入剩下的字母！');
-  buildCodex();
-  st.towers.push({w:'BOW',s:SPEC.BOW,x:2,y:3,cd:0,t:0});
-  st.built.add('BOW');
-  buildCodex();
-}
-
-// ---------- 拼字操作 ----------
-function buy(L){
-  if(st.over||st.pending) return;
-  if(!st.targetWord) return;
-  if(st.slots.length>=st.targetWord.length) return say(`只需 ${st.targetWord.length} 個字母！`,'bad');
-  if(st.gold<COST) return say('金幣不夠！','bad');
-  st.gold-=COST;
+function buyLetter(L){
+  if(st.over || st.pending || !st.targetWord) return;
+  const len = st.targetWord.length;
+  if(st.slots.length >= len) return say(`只需 ${len} 個字母！`, 'bad');
+  const cost = getLetterCost(len);
+  if(st.gold < cost) return say('金幣不夠！', 'bad');
+  st.gold -= cost;
   st.slots.push(L);
   ui();
 }
 
-function back(){
-  if(st.slots.length>1){
+function backSlot(){
+  if(st.slots.length > 1){
+    const cost = getLetterCost(st.targetWord.length);
     st.slots.pop();
-    st.gold+=COST;
+    st.gold += cost;
+    st.backspaced = true;
     ui();
   }
 }
 
 function clearSlots(){
-  if(st.slots.length>1){
-    st.gold+=COST*(st.slots.length-1);
-    st.slots=[st.targetWord[0]];
+  if(st.slots.length > 1){
+    const cost = getLetterCost(st.targetWord.length);
+    st.gold += cost * (st.slots.length - 1);
+    st.slots = [st.targetWord[0]];
+    st.backspaced = true;
     ui();
   }
 }
 
-function submit(){
-  if(st.over||st.pending) return;
-  const w=st.slots.join('');
-  if(w.length<st.targetWord.length){
+function submitWord(){
+  if(st.over || st.pending) return;
+  const w = st.slots.join('');
+  const dict = WORLD_SPECS[st.curIslandId];
+  if(w.length < st.targetWord.length){
+    shake(); return say(`還差 ${st.targetWord.length - w.length} 個字母！`, 'bad');
+  }
+
+  if(!dict[w]){
     shake();
-    return say(`還差 ${st.targetWord.length-w.length} 個字母！`,'bad');
+    if(st.targetWord && w.length === st.targetWord.length){
+      let diff = 0;
+      for(let i=0; i<w.length; i++) if(w[i] !== st.targetWord[i]) diff++;
+      if(diff === 1){
+        return say(`差一點點！你輸入了「${w}」，正確是【${st.targetWord}】（${st.targetSpec.zh}）哦！`, 'bad');
+      }
+    }
+    return say(`字典裡找不到「${w}」，請檢查拼法或按退回`, 'bad');
   }
-  if(!DICT.has(w)){
-    shake();
-    return say(`字典裡找不到「${w}」，請檢查拼法或按退回重拼`,'bad');
+
+  const s = dict[w];
+  if(w === st.targetWord && !st.backspaced){
+    st.gold += 10;
+    fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.2 });
+    say(`✨ 完美一發入魂！獲得額外獎勵 +10 金幣！`, 'good');
+  } else {
+    say(`【${w}】召喚成功！在草地上移動游標可看淡紅虛線射程！`, 'good');
   }
-  const s=SPEC[w];
-  if(w===st.targetWord){
-    st.gold+=5;
-  }
-  st.pending={w,s};
-  st.slots=[];
+
+  st.pending = { w, s };
+  st.slots = [];
   st.built.add(w);
-  st.sel=null;
-
-  speakWord(w,s.zh);
-
-  const where=PATHK.has(s.k)?'路上':'草地上';
-  say(`${w}（${s.zh}）召喚成功！點擊${where}放置（點舊單位可直接覆蓋！）`,'good');
+  speakWord(w, s.zh);
   ui();
   buildCodex();
 }
 
-function cancelPending(){
-  if(!st.pending) return;
-  st.slots=st.pending.w.split('');
-  st.pending=null;
-  say('已取消放置');
-  ui();
+function shake(){
+  const e = $('slots');
+  e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake');
 }
 
-function shake(){const e=$('slots');e.classList.remove('shake');void e.offsetWidth;e.classList.add('shake');}
-
-// ---------- 放置與替換 ----------
-function canPlaceTerrain(x,y,s){
-  if(x<0||y<0||x>=COLS||y>=ROWS) return false;
-  return PATHK.has(s.k)?isPath(x,y):!isPath(x,y);
-}
-
-function recycleTower(t){
-  const refund=t.w.length*4;
-  st.gold+=refund;
-  st.towers=st.towers.filter(item=>item!==t);
-  st.sel=null;
-  fx({type:'txt',x:t.x+0.5,y:t.y+0.5,txt:`+${refund} 回收`,col:'#ffd166',life:0.9});
-  say(`已回收【${t.w}】，退還 ${refund} 金幣！`,'good');
-  ui();
-}
-
-function clickCell(x,y){
+// ==================== 8. 放置與升星 ====================
+function clickCell(x, y){
   if(st.over) return;
   if(st.pending){
-    const {w,s}=st.pending;
-    if(!canPlaceTerrain(x,y,s)){
-      return say(PATHK.has(s.k)?'這個單位只能放在路上':'這個單位只能放在草地上','bad');
+    if(isPath(x,y)) return say('士兵只能放置在草地上！', 'bad');
+    const exist = st.towers.find(t => t.x===x && t.y===y);
+    if(exist){
+      if(exist.w === st.pending.w){
+        exist.star = (exist.star || 1) + 1;
+        fx({ type:'ring', x:x+0.5, y:y+0.5, col:'#ffd166', life:0.4 });
+        fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`★${exist.star} 升星!`, col:'#ffd166', life:1.1 });
+        say(`✨【${exist.w}】升級為 ★${exist.star} 級！`, 'good');
+        st.pending = null; hoverCell = null;
+        pickPrompt(); ui(); saveGameProgress();
+        return;
+      } else {
+        const refund = Math.floor(getLetterCost(exist.w.length) * exist.w.length * 0.7);
+        st.gold += refund;
+        st.towers = st.towers.filter(t => t !== exist);
+        st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
+        fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`替換 +${refund}金`, col:'#ffd166', life:1.0 });
+        say(`覆蓋替換！退還舊塔 ${refund} 金幣`, 'good');
+        st.pending = null; hoverCell = null;
+        pickPrompt(); ui(); saveGameProgress();
+        return;
+      }
     }
-    const existing = st.towers.find(t=>t.x===x&&t.y===y);
-    if(existing){
-      const refund = existing.w.length * 4;
-      st.gold += refund;
-      st.towers = st.towers.filter(t=>t!==existing);
-      st.towers.push({w,s,x,y,cd:0,t:0});
-      st.pending = null;
-      fx({type:'txt',x:x+0.5,y:y+0.5,txt:`替換! +${refund}金`,col:'#ffd166',life:1.1});
-      say(`✨ 成功用【${w}】覆蓋替換了【${existing.w}】！退還 ${refund} 金幣！`,'good');
-      pickPrompt();
-      ui();
-      return;
-    }
-    st.towers.push({w,s,x,y,cd:0,t:0});
-    st.pending=null;
-    say(`${w} 就位！`,'good');
-    pickPrompt();
-    ui();
+    st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
+    say(`${st.pending.w} 就位完畢！射程圈已隱藏。`, 'good');
+    st.pending = null; hoverCell = null;
+    pickPrompt(); ui(); saveGameProgress();
     return;
   }
 
-  const t=st.towers.find(t=>t.x===x&&t.y===y);
-  st.sel=t||null;
+  const t = st.towers.find(t => t.x===x && t.y===y);
+  st.sel = t || null;
   if(t){
-    const s=t.s;
-    const refGold=t.w.length*4;
-    $('selInfo').innerHTML=`<b>${t.w}</b>（${s.zh}）${KIND[s.k].t}`;
-    $('recGold').textContent=refGold;
-    say(`選取了【${t.w}】。點擊「回收拆除」可退還 ${refGold} 金幣。`);
+    const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * 0.7);
+    $('selInfo').innerHTML = `<b>${t.w}</b> (★${t.star||1}・${t.s.zh})`;
+    $('recGold').textContent = ref;
   }
   ui();
 }
 
-// ---------- 關卡推進 ----------
-function startWave(){
-  if(st.inWave||st.over) return;
-  st.wave++;
-  st.inWave=true;
-  st.spawnLeft=5+st.wave*2;
-  st.spawnT=0;
-  st.boss=st.wave%5===0;
+function recycleSelected(){
+  if(!st.sel) return;
+  const t = st.sel;
+  const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * 0.7);
+  st.gold += ref;
+  st.towers = st.towers.filter(item => item !== t);
+  st.sel = null;
+  say(`已回收【${t.w}】，退還 ${ref} 金幣！`, 'good');
+  ui();
+  saveGameProgress();
+}
 
-  if(st.prepTime>0){
-    st.gold+=10;
-    say(`⚡ 神速出擊！獲得早鳥獎勵 +10 金幣！第 ${st.wave} 波開戰！`,'good');
-    fx({type:'txt',x:6,y:4,txt:'⚡ 神速獎勵 +10金幣!',col:'#ffd166',life:1.3});
-  }else{
-    say(`第 ${st.wave} 波來襲！${st.boss?'這波有魔王！':''}`);
+// ==================== 9. 戰鬥循環與連續挑戰 ====================
+function toggleAutoWave(){
+  st.autoWave = !st.autoWave;
+  st.autoWaveTimer = 0;
+  const btn = $('bAutoWave');
+  if(st.autoWave){
+    btn.className = 'auto-wave-btn active';
+    btn.textContent = '🔥 連續挑戰: 開';
+    say('⚔️ 已開啟連續挑戰模式！通關後 3 秒自動進軍下一波！', 'good');
+  } else {
+    btn.className = 'auto-wave-btn';
+    btn.textContent = '⚔️ 連續挑戰: 關';
+    say('已關閉連續挑戰模式。');
   }
+  saveGameProgress();
+}
 
-  const d=$('detailsCodex');
-  if(d) d.open=false;
+function startWave(){
+  if(st.inWave || st.over) return;
+  st.autoWaveTimer = 0;
+  st.wave++;
+  st.inWave = true;
+  st.spawnLeft = 6 + st.wave * 2;
+  st.spawnT = 0;
+  st.isBoss = (st.wave % 5 === 0);
 
+  if(st.prepTime > 0){
+    st.gold += 10;
+    say(`⚡ 神速開戰！早鳥獎勵 +10 金幣！第 ${st.wave} 波來襲！`, 'good');
+  } else {
+    say(`第 ${st.wave} 波開戰！${st.isBoss ? '⚠️ 本波有強大魔王！' : ''}`);
+  }
   ui();
   buildCodex();
+  saveGameProgress();
 }
 
-function spawn(type){
-  const base=22*Math.pow(1.18,st.wave-1);
-  const e={d:0,type,slowF:1,slowT:0,dot:0,dotT:0,x:-.5,y:1.5,spd:1.1,hp:base,rew:3};
-  if(type==='fast'){e.spd=1.9;e.hp=base*.6;}
-  if(type==='boss'){e.spd=.6;e.hp=base*9;e.rew=25;}
-  e.max=e.hp;st.enemies.push(e);
-}
-
-// ---------- 特效輔助 ----------
-const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-function fx(o){st.fx.push({...o,life:o.life||.25,t:0});}
-function addShake(val){if(st)st.camShake=Math.min(24,Math.max(st.camShake||0,val));}
-
-function genLightning(x1,y1,x2,y2,branches=2){
-  const pts=[{x:x1,y:y1}];
-  const d=Math.hypot(x2-x1,y2-y1);
-  const steps=Math.max(4,Math.floor(d*6));
-  for(let i=1;i<steps;i++){
-    const t=i/steps;
-    pts.push({x:x1+(x2-x1)*t+(Math.random()-.5)*.45,y:y1+(y2-y1)*t+(Math.random()-.5)*.45});
+function spawnEnemy(type){
+  const base = 24 * Math.pow(1.12, st.wave - 1);
+  const e = { d:0, type, slowF:1, slowT:0, dot:0, dotT:0, x:-0.5, y:1.5, spd:1.1, hp:base, rew:3 };
+  if(type === 'fast'){ e.spd = 1.85; e.hp = base * 0.65; e.rew = 3; }
+  if(type === 'boss'){
+    const isWorldBoss = (st.wave === 30);
+    e.spd = 0.55; e.hp = base * (isWorldBoss ? 16 : 8); e.rew = isWorldBoss ? 60 : 25;
   }
-  pts.push({x:x2,y:y2});
-  const subs=[];
-  for(let b=0;b<branches;b++){
-    const idx=Math.floor(1+Math.random()*(pts.length-2));
-    const sp=pts[idx]||pts[0];
-    const ang=Math.atan2(y2-y1,x2-x1)+(Math.random()-.5)*1.8;
-    const l=.35+Math.random()*.5;
-    subs.push([sp,{x:sp.x+Math.cos(ang)*l*.5+(Math.random()-.5)*.2,y:sp.y+Math.sin(ang)*l*.5+(Math.random()-.5)*.2},{x:sp.x+Math.cos(ang)*l,y:sp.y+Math.sin(ang)*l}]);
-  }
-  return {main:pts,subs};
+  e.max = e.hp;
+  st.enemies.push(e);
 }
 
-function fireTowerFx(t,c,tg,col){
-  const w=t.w,aoe=t.s.aoe||0;
-  if(w==='BOW'||w==='ARROW'){
-    fx({type:'arrow',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,col,life:.24});
-  }else if(w==='GUN'||w==='SNIPER'){
-    if(w==='SNIPER')addShake(5);
-    fx({type:'bullet',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,isSniper:w==='SNIPER',col,life:.2});
-  }else if(w==='LASER'){
-    fx({type:'laser',x:c.x,y:c.y,x2:tg.x,y2:tg.y,col:'#ff007f',life:.28});
-  }else if(['SWORD','AXE','KNIFE','SPEAR'].includes(w)){
-    if(w==='AXE'||w==='SWORD')addShake(3.5);
-    fx({type:'melee',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,life:.32});
-  }else if(['CAT','DOG','OWL','WOLF','LION','BEAR','EAGLE','SHARK'].includes(w)){
-    if(w==='BEAR')addShake(9);
-    else if(w==='LION'||w==='SHARK')addShake(5);
-    else addShake(2.5);
-    fx({type:'beast',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,life:.35});
-  }else if(w==='BOMB'||w==='CANNON'){
-    addShake(w==='CANNON'?6:4.5);
-    fx({type:'cannonball',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,aoe,col,life:.42});
-  }else if(w==='ROCK'){
-    addShake(3);
-    fx({type:'rock_throw',x:c.x,y:c.y,x2:tg.x,y2:tg.y,aoe,life:.4});
-  }else if(['DRAGON','FIRE','LAVA'].includes(w)){
-    addShake(w==='DRAGON'?7.5:3);
-    fx({type:'flame_breath',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,aoe:aoe||(w==='DRAGON'?1.4:0.8),life:.36});
-  }else if(['ZAP','BOLT','THUNDER'].includes(w)){
-    const subs=w==='THUNDER'?4:(w==='BOLT'?2:1);
-    addShake(w==='THUNDER'?6:2);
-    fx({type:'lightning',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,col,bolt:genLightning(c.x,c.y,tg.x,tg.y,subs),life:.26});
-  }else{
-    fx({type:'bullet',x:c.x,y:c.y,x2:tg.x,y2:tg.y,w,isSniper:false,col,life:.2});
-  }
+function fx(o){ st.fx.push({ ...o, life:o.life||0.28, t:0 }); }
+function addShake(v){ st.camShake = Math.min(20, Math.max(st.camShake||0, v)); }
+
+function fireTowerFx(t, c, tg){
+  const fxType = t.s.fx || 'slash';
+  if(fxType === 'beam') fx({ type:'beam', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#00f2fe', life:0.26 });
+  else if(fxType === 'bomb'){ addShake(4); fx({ type:'bomb', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#ff5722', aoe:t.s.aoe||1.2, life:0.36 }); }
+  else if(fxType === 'breath'){ addShake(t.w.length>=6?6:2.5); fx({ type:'breath', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#ff3b30', life:0.34 }); }
+  else if(fxType === 'slash'){ if(t.w.length>=6) addShake(5); fx({ type:'slash', x2:tg.x, y2:tg.y, col:'#ff2a5f', life:0.3 }); }
+  else if(fxType === 'chain'){ addShake(2.5); fx({ type:'chain', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#c084fc', life:0.28 }); }
+  else if(fxType === 'ring') fx({ type:'ring', x:tg.x, y:tg.y, col:'#7cc6fe', life:0.38 });
+  else if(fxType === 'swarm') fx({ type:'swarm', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#ffd166', life:0.34 });
+  else if(fxType === 'drop_spike'){ addShake(6.5); fx({ type:'drop_spike', x2:tg.x, y2:tg.y, col:'#ffffff', life:0.38 }); }
+  else if(fxType === 'vortex') fx({ type:'vortex', x2:tg.x, y2:tg.y, col:'#a855f7', life:0.42 });
+  else fx({ type:'barrier', x:c.x, y:c.y, col:'#7ed6a0', life:0.36 });
 }
 
-// ---------- 主循環 ----------
-function update(dt){
+function update(dt, dtReal){
   if(st.over) return;
-  if(st.camShake>0) st.camShake=Math.max(0,st.camShake-dt*32);
-  
-  if(!st.inWave&&!st.over&&st.prepTime>0){
-    st.prepTime=Math.max(0,st.prepTime-dt);
+  if(st.camShake > 0) st.camShake = Math.max(0, st.camShake - dt*30);
+
+  if(!st.inWave && st.prepTime > 0){
+    st.prepTime = Math.max(0, st.prepTime - dt);
   }
 
-  if(st.inWave&&st.spawnLeft>0){
-    st.spawnT-=dt;
-    if(st.spawnT<=0){
-      spawn(st.wave>=3&&Math.random()<.3?'fast':'normal');
+  // 連續挑戰：通關後 3 秒自動開始下一波
+  if(!st.inWave && !st.over && st.autoWave && st.wave < 30 && st.autoWaveTimer > 0){
+    st.autoWaveTimer -= dtReal;
+    if(st.autoWaveTimer <= 0){
+      st.autoWaveTimer = 0;
+      startWave();
+    } else {
+      say(`🔥 連續挑戰倒數：${Math.ceil(st.autoWaveTimer)} 秒後開戰！`, 'good');
+    }
+  }
+
+  if(st.inWave && st.spawnLeft > 0){
+    st.spawnT -= dt;
+    if(st.spawnT <= 0){
       st.spawnLeft--;
-      st.spawnT=.8;
-      if(st.spawnLeft===0&&st.boss) spawn('boss');
+      st.spawnT = 0.8;
+      if(st.spawnLeft === 0 && st.isBoss){
+        spawnEnemy('boss');
+      } else {
+        spawnEnemy(st.wave>=3 && Math.random()<0.3 ? 'fast' : 'normal');
+      }
     }
   }
 
   for(const e of st.enemies){
-    let f=e.slowT>0?e.slowF:1;
-    for(const t of st.towers) if(t.s.k==='wall'&&dist(e,{x:t.x+.5,y:t.y+.5})<.6) f=Math.min(f,t.s.slow);
-    e.d+=e.spd*f*dt;
-    const p=posAt(e.d);e.x=p.x;e.y=p.y;
-    if(e.slowT>0) e.slowT-=dt;
-    if(e.dotT>0){e.hp-=e.dot*dt;e.dotT-=dt;}
-    if(e.d>=TOTAL){e.leak=true;st.hp-=e.type==='boss'?5:1;addShake(8);}
+    const f = e.slowT > 0 ? e.slowF : 1;
+    e.d += e.spd * f * dt;
+    const p = posAt(e.d); e.x = p.x; e.y = p.y;
+    if(e.slowT > 0) e.slowT -= dt;
+    if(e.dotT > 0){ e.hp -= e.dot * dt; e.dotT -= dt; }
+    if(e.d >= TOTAL_LEN){
+      e.leak = true;
+      st.hp -= e.type==='boss' ? 5 : 1;
+      addShake(8);
+      saveGameProgress();
+    }
   }
 
   for(const t of st.towers){
-    const s=t.s,c={x:t.x+.5,y:t.y+.5};
-    if(s.k==='income'||s.k==='heal'){
-      if(!st.inWave) continue;
-      t.t+=dt;
-      if(t.t>=s.every){
-        t.t=0;
-        if(s.k==='income'){st.gold+=s.amt;fx({type:'income_fx',x:c.x,y:c.y,w:t.w,amt:s.amt,life:.85});fx({type:'txt',x:c.x,y:c.y,txt:'+'+s.amt,col:'#ffd166',life:.9});}
-        else{st.hp=Math.min(st.maxHp,st.hp+s.amt);fx({type:'heal_fx',x:c.x,y:c.y,w:t.w,amt:s.amt,life:.85});fx({type:'txt',x:c.x,y:c.y,txt:'+'+s.amt+' 血',col:'#ff9eb5',life:.9});}
-      }
-      continue;
+    t.cd = (t.cd || 0) - dt;
+    if(t.cd > 0) continue;
+    const c = { x:t.x + 0.5, y:t.y + 0.5 };
+    let tg = null;
+    for(const e of st.enemies){
+      if(dist(e, c) <= t.s.rng && (!tg || e.d > tg.d)) tg = e;
     }
-    if(s.k==='wall'||s.k==='aura') continue;
-    if(s.k==='mine'){
-      if(st.enemies.some(e=>dist(e,c)<.55)){
-        st.enemies.forEach(e=>{if(dist(e,c)<=(s.aoe||1.4))e.hp-=s.dmg;});
-        addShake(14);
-        t.dead=true;
-      }
-      continue;
-    }
-    t.cd-=dt;if(t.cd>0) continue;
-    if(s.k==='trap'){
-      const on=st.enemies.filter(e=>dist(e,c)<.6);
-      if(on.length){
-        on.forEach(e=>e.hp-=s.dmg);
-        t.cd=1/s.rate;
-        addShake(2.5);
-      }
-      continue;
-    }
-
-    let tg=null;
-    for(const e of st.enemies) if(dist(e,c)<=(s.rng||2)&&(!tg||e.d>tg.d)) tg=e;
     if(!tg) continue;
-    let mul=1;
-    for(const a of st.towers) if(a.s.k==='aura'&&a!==t&&dist(c,{x:a.x+.5,y:a.y+.5})<=a.s.rng) mul=Math.max(mul,a.s.mul);
-    const D=s.dmg*mul,col=KIND[s.k].c;
-    
-    if(t.w==='METEOR'){
-      fx({type:'meteor',tx:tg.x,ty:tg.y,dmg:D,aoe:s.aoe||1.8,dmgDone:false,life:1.15,impactP:0.42});
-      t.cd=1/s.rate;
-      continue;
-    }
 
-    fireTowerFx(t,c,tg,col);
+    const starBonus = 1 + ((t.star||1) - 1) * 0.25;
+    const D = t.s.dmg * starBonus;
+    fireTowerFx(t, c, tg);
 
-    const area=s.aoe?st.enemies.filter(e=>dist(e,tg)<=s.aoe):[tg];
-    if(s.k==='chain'){
-      const hit=[tg];tg.hp-=D;let last=tg;
-      for(let j=0;j<s.jumps;j++){
-        let nx=null,bd=1.7;for(const e of st.enemies)if(!hit.includes(e)){const dd=dist(e,last);if(dd<bd){bd=dd;nx=e;}}
-        if(!nx) break;nx.hp-=D;hit.push(nx);
-        fx({type:'lightning',x:last.x,y:last.y,x2:nx.x,y2:nx.y,w:t.w,col,bolt:genLightning(last.x,last.y,nx.x,nx.y,2),life:.26});
-        last=nx;
+    if(t.s.aoe){
+      st.enemies.forEach(e => { if(dist(e, tg) <= t.s.aoe) e.hp -= D; });
+    } else if(t.s.fx === 'chain'){
+      tg.hp -= D;
+      let last = tg;
+      const hit = [tg];
+      for(let j=0; j<t.s.jumps; j++){
+        let nx = null, minD = 2.0;
+        for(const e of st.enemies){
+          if(!hit.includes(e)){
+            const d = dist(e, last);
+            if(d < minD){ minD = d; nx = e; }
+          }
+        }
+        if(!nx) break;
+        nx.hp -= D * 0.8;
+        hit.push(nx);
+        fx({ type:'chain', x:last.x, y:last.y, x2:nx.x, y2:nx.y, col:'#c084fc', life:0.25 });
+        last = nx;
       }
-    }else for(const e of area){
-      e.hp-=D;
-      if(s.dps){e.dot=Math.max(e.dotT>0?e.dot:0,s.dps*mul);e.dotT=s.dur;}
-      if(s.k==='slow'){e.slowF=Math.min(e.slowT>0?e.slowF:1,s.slow);e.slowT=s.dur;}
+    } else {
+      tg.hp -= D;
     }
-    t.cd=1/s.rate;
-  }
-  st.towers=st.towers.filter(t=>!t.dead);
 
-  for(const f of st.fx){
-    if(f.type==='meteor'&&!f.dmgDone&&(f.t/f.life)>=f.impactP){
-      f.dmgDone=true;
-      addShake(10);
-      for(const e of st.enemies) if(dist(e,{x:f.tx,y:f.ty})<=f.aoe) e.hp-=f.dmg;
-    }
+    if(t.s.dps){ tg.dot = t.s.dps * starBonus; tg.dotT = t.s.dur; }
+    if(t.s.slow){ tg.slowF = t.s.slow; tg.slowT = t.s.dur; }
+    t.cd = 1 / t.s.rate;
   }
 
-  st.enemies=st.enemies.filter(e=>{
+  st.enemies = st.enemies.filter(e => {
     if(e.leak) return false;
-    if(e.hp<=0){
-      st.gold+=e.rew;st.kills++;
-      addShake(e.type==='boss'?7:2);
-      fx({type:'death_burst',x:e.x,y:e.y,col:e.type==='boss'?'#ff2244':'#ff9f43',isBoss:e.type==='boss',life:.45});
-      fx({type:'txt',x:e.x,y:e.y,txt:'+'+e.rew,col:'#ffd166',life:.75});
+    if(e.hp <= 0){
+      st.gold += e.rew; st.kills++;
+      addShake(e.type==='boss' ? 7 : 1.5);
+      fx({ type:'txt', x:e.x, y:e.y, txt:'+'+e.rew, col:'#ffd166', life:0.75 });
       return false;
     }
     return true;
   });
 
-  if(st.hp<=0){
-    st.hp=0;st.over=true;
-    $('overTxt').textContent=`撐到第 ${st.wave} 波，擊倒 ${st.kills} 個敵人`;
-    $('over').hidden=false;
+  if(st.hp <= 0){
+    st.hp = 0; st.over = true;
+    st.autoWaveTimer = 0;
+    $('overTxt').textContent = `在【${ISLANDS[st.curIslandId].name}】第 ${st.wave} 波倒下，共擊倒 ${st.kills} 個敵人`;
+    $('over').hidden = false;
+    delete islandSavedStates[st.curIslandId];
+    saveGameProgress();
   }
 
-  if(st.inWave&&st.spawnLeft===0&&!st.enemies.length){
-    st.inWave=false;
-    const bonus=8+st.wave;
-    st.gold+=bonus;
-    st.prepTime=20;
-    say(`第 ${st.wave} 波通關！獎勵 +${bonus} 金幣`,'good');
-    if(st.wave%5===0){
-      const nextTier=getTier(st.wave+1);
-      say(`🎉 恭喜晉級！解鎖${nextTier.name}！`,'good');
+  if(st.inWave && st.spawnLeft === 0 && st.enemies.length === 0){
+    st.inWave = false;
+    const bonus = 10 + st.wave;
+    st.gold += bonus;
+    st.prepTime = 20;
+
+    if(st.wave >= 30){
+      conquerCurrentIsland();
+      return;
     }
+
+    say(`第 ${st.wave} 波通關！獎勵 +${bonus} 金幣！`, 'good');
+    if(st.autoWave) st.autoWaveTimer = 3.0;
+
     pickPrompt();
-    const d=$('detailsCodex');
-    if(d) d.open=true;
+    ui();
     buildCodex();
+    saveGameProgress();
   }
-  st.fx.forEach(f=>f.t+=dt);st.fx=st.fx.filter(f=>f.t<f.life);
+
+  st.fx.forEach(f => f.t += dtReal);
+  st.fx = st.fx.filter(f => f.t < f.life);
 }
 
-// ---------- 繪圖 ----------
-const cv=$('cv'),ctx=cv.getContext('2d');let CS=50,DPR=1;
-function resize(){
-  const w=$('stage').clientWidth;DPR=window.devicePixelRatio||1;CS=w/COLS;
-  cv.width=w*DPR;cv.height=CS*ROWS*DPR;cv.style.height=CS*ROWS+'px';ctx.setTransform(DPR,0,0,DPR,0,0);
-}
-function rr(x,y,w,h,r){
-  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
-  else{ctx.beginPath();ctx.rect(x,y,w,h);}
-}
-
-function drawFx(f){
-  const p=f.t/f.life, a=Math.max(0,1-p);
+// ==================== 10. 畫布渲染與強效粒子 ====================
+function draw(){
+  const W = CS * COLS, H = CS * ROWS;
   ctx.save();
+  if(st.camShake > 0){
+    ctx.translate((Math.random()-0.5)*st.camShake, (Math.random()-0.5)*st.camShake);
+  }
+  const isl = ISLANDS[st.curIslandId];
+
+  ctx.fillStyle = isl.board; ctx.fillRect(0, 0, W, H);
+  for(let y=0; y<ROWS; y++) for(let x=0; x<COLS; x++){
+    if(isPath(x,y)){
+      ctx.fillStyle = (x+y)%2 ? isl.dirt : isl.line;
+      ctx.fillRect(x*CS, y*CS, CS, CS);
+    }
+  }
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+  for(let x=1; x<COLS; x++){ ctx.beginPath(); ctx.moveTo(x*CS,0); ctx.lineTo(x*CS,H); ctx.stroke(); }
+  for(let y=1; y<ROWS; y++){ ctx.beginPath(); ctx.moveTo(0,y*CS); ctx.lineTo(W,y*CS); ctx.stroke(); }
+
+  ctx.font = `900 ${CS*0.22}px Nunito, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ff6b5b'; ctx.fillText('起點', CS*0.5, CS*1.5);
+  ctx.fillStyle = '#7ed6a0'; ctx.fillText('基地', CS*11.5, CS*6.5);
+
+  // 防禦塔
+  for(const t of st.towers){
+    const p = CS * 0.08;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(t.x*CS+p, t.y*CS+p+2, CS-2*p, CS-2*p);
+    ctx.fillStyle = isl.tile; ctx.fillRect(t.x*CS+p, t.y*CS+p, CS-2*p, CS-2*p);
+
+    if(st.sel === t){
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+      ctx.strokeRect(t.x*CS+p-2, t.y*CS+p-2, CS-2*p+4, CS-2*p+4);
+    }
+
+    const fs = Math.min(CS*0.32, (CS*0.84)/(t.w.length*0.65));
+    ctx.fillStyle = '#22200f'; ctx.font = `900 ${fs}px Nunito, sans-serif`;
+    ctx.fillText(t.w, t.x*CS + CS/2, t.y*CS + CS/2 - CS*0.06);
+
+    ctx.font = `800 ${CS*0.16}px Nunito, sans-serif`; ctx.fillStyle = 'rgba(34,32,15,0.8)';
+    const tag = (t.star > 1 ? `★${t.star} ` : '') + t.s.zh;
+    ctx.fillText(tag, t.x*CS + CS/2, t.y*CS + CS*0.75);
+  }
+
+  // 怪物
+  for(const e of st.enemies){
+    const isBoss = (e.type === 'boss');
+    const r = CS * (isBoss ? 0.36 : (e.type==='fast'?0.2:0.25));
+    ctx.fillStyle = isBoss ? '#b8322a' : (e.type==='fast'?'#ffa94d':'#ff6b5b');
+    ctx.beginPath(); ctx.arc(e.x*CS, e.y*CS, r, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#ffffff'; ctx.font = `900 ${r}px Nunito, sans-serif`;
+    ctx.fillText(isBoss ? '👑' : '?', e.x*CS, e.y*CS);
+
+    const bw = r * 2.2;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(e.x*CS - bw/2, e.y*CS - r - 7, bw, 4);
+    ctx.fillStyle = '#7ed6a0'; ctx.fillRect(e.x*CS - bw/2, e.y*CS - r - 7, bw * Math.max(0, e.hp/e.max), 4);
+  }
+
+  // 淡紅色虛線射程圈
+  if(st.pending && hoverCell){
+    const cx = (hoverCell.x + 0.5) * CS;
+    const cy = (hoverCell.y + 0.5) * CS;
+    const rng = (st.pending.s.rng || 2.4) * CS;
+
+    ctx.save();
+    ctx.fillStyle = isPath(hoverCell.x, hoverCell.y) ? 'rgba(255,107,91,0.3)' : 'rgba(126,214,160,0.25)';
+    ctx.fillRect(hoverCell.x*CS, hoverCell.y*CS, CS, CS);
+
+    ctx.setLineDash([7, 6]);
+    ctx.strokeStyle = 'rgba(255, 107, 91, 0.85)';
+    ctx.lineWidth = 2.5;
+    ctx.fillStyle = 'rgba(255, 107, 91, 0.12)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, rng, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  for(const f of st.fx) renderEnhancedFx(f);
+  ctx.restore();
+}
+
+function renderEnhancedFx(f){
+  const p = f.t / f.life, a = Math.max(0, 1 - p);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
   switch(f.type){
-    case 'flame_breath':{
-      const ang=Math.atan2(f.y2-f.y,f.x2-f.x);
-      const distP=Math.hypot(f.x2-f.x,f.y2-f.y)*CS;
-      ctx.translate(f.x*CS,f.y*CS);
-      ctx.rotate(ang);
-      ctx.globalCompositeOperation='lighter';
-
-      const isDragon=f.w==='DRAGON';
-      const reach=distP*Math.min(1.15,0.3+p*1.5);
-      const spread=CS*(isDragon?1.15:0.65)*(0.35+p*0.65);
-
-      const grad=ctx.createRadialGradient(reach*0.6,0,CS*0.1,reach*0.5,0,spread);
-      grad.addColorStop(0,`rgba(255,255,255,${a*0.95})`);
-      grad.addColorStop(0.2,`rgba(255,210,60,${a*0.9})`);
-      grad.addColorStop(0.65,`rgba(255,60,0,${a*0.8})`);
-      grad.addColorStop(1,'rgba(255,0,0,0)');
-
-      ctx.fillStyle=grad;
+    case 'beam':{
+      ctx.strokeStyle = f.col; ctx.lineWidth = CS * 0.28 * a;
+      ctx.beginPath(); ctx.moveTo(f.x*CS, f.y*CS); ctx.lineTo(f.x2*CS, f.y2*CS); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = CS * 0.1 * a;
+      ctx.beginPath(); ctx.moveTo(f.x*CS, f.y*CS); ctx.lineTo(f.x2*CS, f.y2*CS); ctx.stroke();
+      break;
+    }
+    case 'bomb':{
+      const px = f.x + (f.x2 - f.x)*p, py = f.y + (f.y2 - f.y)*p - Math.sin(p*Math.PI)*1.6;
+      if(p < 0.65){
+        ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(px*CS, py*CS, CS*0.22, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(px*CS, py*CS, CS*0.1, 0, Math.PI*2); ctx.fill();
+      } else {
+        const ep = (p-0.65)/0.35, rad = (f.aoe||1.2) * CS * ep * 1.3;
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4 * (1-ep);
+        ctx.beginPath(); ctx.arc(f.x2*CS, f.y2*CS, rad, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x2*CS, f.y2*CS, rad*0.8, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    }
+    case 'breath':{
+      const ang = Math.atan2(f.y2 - f.y, f.x2 - f.x);
+      const d = Math.hypot(f.x2 - f.x, f.y2 - f.y) * CS;
+      ctx.translate(f.x*CS, f.y*CS); ctx.rotate(ang);
+      const grad = ctx.createLinearGradient(0, 0, d*1.1, 0);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.3, f.col);
+      grad.addColorStop(1, 'rgba(255,50,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.moveTo(0,0);
+      ctx.lineTo(d, -CS*0.75*p); ctx.lineTo(d*1.15, 0); ctx.lineTo(d, CS*0.75*p);
+      ctx.closePath(); ctx.fill();
+      break;
+    }
+    case 'slash':{
+      ctx.translate(f.x2*CS, f.y2*CS);
+      const l = CS * 0.75;
+      ctx.strokeStyle = f.col; ctx.lineWidth = 10 * a;
+      ctx.beginPath(); ctx.moveTo(-l,-l); ctx.lineTo(l,l); ctx.moveTo(l,-l); ctx.lineTo(-l,l); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4 * a;
+      ctx.beginPath(); ctx.moveTo(-l,-l); ctx.lineTo(l,l); ctx.moveTo(l,-l); ctx.lineTo(-l,l); ctx.stroke();
+      break;
+    }
+    case 'chain':{
+      ctx.strokeStyle = f.col; ctx.lineWidth = 6 * a;
+      ctx.beginPath(); ctx.moveTo(f.x*CS, f.y*CS);
+      const midX = (f.x + f.x2)/2 + (Math.random()-0.5)*0.8;
+      const midY = (f.y + f.y2)/2 + (Math.random()-0.5)*0.8;
+      ctx.lineTo(midX*CS, midY*CS); ctx.lineTo(f.x2*CS, f.y2*CS); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2 * a; ctx.stroke();
+      break;
+    }
+    case 'ring':{
+      ctx.strokeStyle = f.col; ctx.lineWidth = 7 * a;
+      ctx.beginPath(); ctx.arc(f.x*CS, f.y*CS, CS * 1.6 * p, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5 * a;
+      ctx.beginPath(); ctx.arc(f.x*CS, f.y*CS, CS * 1.6 * p, 0, Math.PI*2); ctx.stroke();
+      break;
+    }
+    case 'swarm':{
+      for(let i=0; i<4; i++){
+        const tp = Math.min(1, p + i*0.08);
+        const sx = (f.x + (f.x2 - f.x)*tp) * CS;
+        const sy = (f.y + (f.y2 - f.y)*tp + Math.sin(tp*Math.PI*2 + i)*0.4) * CS;
+        ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(sx, sy, CS*0.14, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(sx, sy, CS*0.06, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    }
+    case 'drop_spike':{
+      const yPos = (f.y2 - (1-p)*5) * CS;
+      ctx.strokeStyle = f.col; ctx.lineWidth = 9 * a;
+      ctx.beginPath(); ctx.moveTo(f.x2*CS, yPos - CS*1.2); ctx.lineTo(f.x2*CS, yPos); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5 * a; ctx.stroke();
+      break;
+    }
+    case 'vortex':{
+      ctx.strokeStyle = f.col; ctx.lineWidth = 4 * a;
       ctx.beginPath();
-      ctx.moveTo(0,0);
-      ctx.quadraticCurveTo(reach*0.4,-spread,reach,-spread*0.45);
-      ctx.lineTo(reach*1.15,0);
-      ctx.lineTo(reach,spread*0.45);
-      ctx.quadraticCurveTo(reach*0.4,spread,0,0);
-      ctx.closePath();
-      ctx.fill();
-
-      if(p>0.25){
-        const expP=(p-0.25)/0.75;
-        const blastR=CS*(isDragon?1.35:0.75)*expP;
-        const gradBlast=ctx.createRadialGradient(distP,0,0,distP,0,blastR);
-        gradBlast.addColorStop(0,`rgba(255,240,180,${(1-expP)*0.9})`);
-        gradBlast.addColorStop(0.4,`rgba(255,100,0,${(1-expP)*0.7})`);
-        gradBlast.addColorStop(1,'rgba(200,0,0,0)');
-        ctx.fillStyle=gradBlast;
-        ctx.beginPath();
-        ctx.arc(distP,0,blastR,0,Math.PI*2);
-        ctx.fill();
+      for(let rad=0; rad<Math.PI*4; rad+=0.3){
+        const r = CS * 1.35 * (1 - rad/(Math.PI*4));
+        const rot = rad + p*Math.PI*5;
+        const vx = f.x2*CS + Math.cos(rot)*r, vy = f.y2*CS + Math.sin(rot)*r;
+        if(rad===0) ctx.moveTo(vx,vy); else ctx.lineTo(vx,vy);
       }
+      ctx.stroke();
       break;
     }
-    case 'meteor':{
-      const impactP=f.impactP||0.42;
-      const targetX=f.tx*CS, targetY=f.ty*CS;
-      const aoeR=(f.aoe||1.8)*CS;
-      if(p<impactP){
-        const prog=p/impactP, easeProg=Math.pow(prog,2.2);
-        ctx.save();
-        ctx.strokeStyle=`rgba(255, 70, 20, ${0.4+prog*0.5})`;ctx.lineWidth=2.5;ctx.setLineDash([6,6]);
-        ctx.beginPath();ctx.arc(targetX,targetY,aoeR,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-        const shrinkR=aoeR*(2.2-prog*1.5);
-        ctx.strokeStyle=`rgba(255, 200, 50, ${prog*0.9})`;ctx.lineWidth=2;
-        ctx.beginPath();ctx.arc(targetX,targetY,shrinkR,0,Math.PI*2);ctx.stroke();
-        const shadowR=CS*(0.2+prog*0.7);
-        const gradShadow=ctx.createRadialGradient(targetX,targetY,0,targetX,targetY,shadowR);
-        gradShadow.addColorStop(0,`rgba(0,0,0,${0.3+prog*0.55})`);gradShadow.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=gradShadow;ctx.beginPath();ctx.ellipse(targetX,targetY,shadowR*1.2,shadowR*0.7,0,0,Math.PI*2);ctx.fill();
-        ctx.restore();
-
-        const skyDistX=CS*8, skyDistY=CS*15;
-        const curX=targetX+(1-easeProg)*skyDistX, curY=targetY-(1-easeProg)*skyDistY;
-        const flightAngle=Math.atan2(skyDistY,-skyDistX);
-        ctx.save();ctx.translate(curX,curY);ctx.rotate(flightAngle);ctx.globalCompositeOperation='lighter';
-        const curScale=CS*(0.2+prog*0.55), tailLen=CS*(4.5+prog*6);
-        const gradTail=ctx.createLinearGradient(-tailLen,0,0,0);
-        gradTail.addColorStop(0,'rgba(255,0,0,0)');gradTail.addColorStop(0.7,'rgba(255,140,0,0.8)');gradTail.addColorStop(1,'#fff');
-        ctx.fillStyle=gradTail;ctx.beginPath();ctx.moveTo(0,-curScale*0.8);ctx.lineTo(-tailLen,0);ctx.lineTo(0,curScale*0.8);ctx.closePath();ctx.fill();
-        ctx.fillStyle='#ff3700';ctx.beginPath();ctx.arc(0,0,curScale,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ffa200';ctx.beginPath();ctx.arc(0,0,curScale*0.65,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(0,0,curScale*0.35,0,Math.PI*2);ctx.fill();
-        ctx.restore();
-      }else{
-        const expP=(p-impactP)/(1-impactP), expA=Math.max(0,1-expP), maxBlastR=aoeR*1.45;
-        ctx.save();
-        ctx.fillStyle=`rgba(20, 10, 5, ${expA*0.9})`;ctx.beginPath();
-        ctx.ellipse(targetX,targetY,aoeR*0.85,aoeR*0.55,0,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle=`rgba(255, 80, 0, ${expA*0.7})`;ctx.lineWidth=2.5;ctx.stroke();
-        ctx.restore();
-        ctx.save();ctx.globalCompositeOperation='lighter';
-        if(expP<0.2){
-          ctx.fillStyle=`rgba(255,255,255,${(1-expP/0.2)*0.95})`;ctx.beginPath();ctx.arc(targetX,targetY,maxBlastR*0.8,0,Math.PI*2);ctx.fill();
-        }
-        const curBlastR=maxBlastR*Math.pow(expP,0.55);
-        const gradBall=ctx.createRadialGradient(targetX,targetY,0,targetX,targetY,curBlastR);
-        gradBall.addColorStop(0,`rgba(255,255,255,${expA})`);gradBall.addColorStop(0.3,`rgba(255,180,20,${expA*0.9})`);gradBall.addColorStop(1,'rgba(80,0,0,0)');
-        ctx.fillStyle=gradBall;ctx.beginPath();ctx.arc(targetX,targetY,curBlastR,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle=`rgba(255,245,200,${expA})`;ctx.lineWidth=7*expA;ctx.beginPath();ctx.arc(targetX,targetY,maxBlastR*expP*1.3,0,Math.PI*2);ctx.stroke();
-        ctx.restore();
-      }
-      break;
-    }
-    case 'arrow':{
-      const px=f.x+(f.x2-f.x)*p, py=f.y+(f.y2-f.y)*p, ang=Math.atan2(f.y2-f.y,f.x2-f.x);
-      ctx.translate(px*CS,py*CS);ctx.rotate(ang);
-      ctx.strokeStyle=`rgba(255,220,100,${a*0.8})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-CS*.7,0);ctx.lineTo(0,0);ctx.stroke();
-      ctx.strokeStyle='#fdfcdc';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-CS*.3,0);ctx.lineTo(CS*.2,0);ctx.stroke();
-      break;
-    }
-    case 'bullet':{
-      ctx.globalCompositeOperation='lighter';
-      if(f.isSniper){
-        const tx=f.x2*CS,ty=f.y2*CS;
-        ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=8*a;ctx.beginPath();ctx.moveTo(f.x*CS,f.y*CS);ctx.lineTo(tx,ty);ctx.stroke();
-      }else{
-        ctx.strokeStyle=`rgba(255,240,150,${a})`;ctx.lineWidth=4.5;ctx.beginPath();
-        ctx.moveTo((f.x+(f.x2-f.x)*Math.max(0,p-.3))*CS,(f.y+(f.y2-f.y)*Math.max(0,p-.3))*CS);ctx.lineTo((f.x+(f.x2-f.x)*p)*CS,(f.y+(f.y2-f.y)*p)*CS);ctx.stroke();
-      }
-      break;
-    }
-    case 'laser':{
-      ctx.globalCompositeOperation='lighter';
-      ctx.strokeStyle=`rgba(255,50,200,${a*0.8})`;ctx.lineWidth=CS*.24*a;ctx.beginPath();ctx.moveTo(f.x*CS,f.y*CS);ctx.lineTo(f.x2*CS,f.y2*CS);ctx.stroke();
-      break;
-    }
-    case 'melee':{
-      ctx.translate(f.x2*CS,f.y2*CS);ctx.globalCompositeOperation='lighter';
-      ctx.strokeStyle=`rgba(120,220,255,${a})`;ctx.lineWidth=8*a;const len=CS*.75;
-      ctx.beginPath();ctx.moveTo(-len,-len);ctx.lineTo(len,len);ctx.moveTo(len,-len);ctx.lineTo(-len,len);ctx.stroke();
-      break;
-    }
-    case 'beast':{
-      ctx.translate(f.x2*CS,f.y2*CS);ctx.globalCompositeOperation='lighter';
-      ctx.strokeStyle=`rgba(255,10,30,${a})`;ctx.lineWidth=10*a;
-      ctx.beginPath();ctx.moveTo(-CS*.4,-CS*.4);ctx.lineTo(CS*.4,CS*.4);ctx.stroke();
-      break;
-    }
-    case 'cannonball':
-    case 'rock_throw':{
-      const px=f.x+(f.x2-f.x)*p, py=f.y+(f.y2-f.y)*p-Math.sin(p*Math.PI)*1.6;
-      if(p<.7){
-        ctx.fillStyle=f.type==='rock_throw'?'#a0aab2':'#1a1d20';ctx.beginPath();ctx.arc(px*CS,py*CS,CS*.2,0,Math.PI*2);ctx.fill();
-      }else{
-        const ep=(p-.7)/.3, rad=(f.aoe||1.3)*CS*ep*1.3;
-        ctx.globalCompositeOperation='lighter';ctx.fillStyle=f.type==='rock_throw'?`rgba(180,190,205,${1-ep})`:`rgba(255,90,0,${1-ep})`;
-        ctx.beginPath();ctx.arc(f.x2*CS,f.y2*CS,rad,0,Math.PI*2);ctx.fill();
-      }
-      break;
-    }
-    case 'lightning':{
-      ctx.globalCompositeOperation='lighter';
-      if(f.bolt&&f.bolt.main){
-        ctx.strokeStyle=f.col||'#c792ea';ctx.lineWidth=8*a;ctx.beginPath();
-        f.bolt.main.forEach((pt,i)=>{i===0?ctx.moveTo(pt.x*CS,pt.y*CS):ctx.lineTo(pt.x*CS,pt.y*CS);});ctx.stroke();
-      }
-      break;
-    }
-    case 'income_fx':{
-      ctx.translate(f.x*CS,(f.y-p*.9)*CS);ctx.fillStyle='#ffd166';
-      ctx.beginPath();ctx.arc(0,0,CS*.2,0,Math.PI*2);ctx.fill();
-      break;
-    }
-    case 'heal_fx':{
-      ctx.translate(f.x*CS,(f.y-p*.9)*CS);ctx.fillStyle='#ff70a6';ctx.fillRect(-3,-10,6,20);ctx.fillRect(-10,-3,20,6);
-      break;
-    }
-    case 'death_burst':{
-      ctx.globalCompositeOperation='lighter';ctx.strokeStyle=f.col;ctx.lineWidth=4*a;
-      ctx.beginPath();ctx.arc(f.x*CS,f.y*CS,CS*(f.isBoss?0.8:0.45)*p,0,Math.PI*2);ctx.stroke();
+    case 'barrier':{
+      ctx.strokeStyle = f.col; ctx.lineWidth = 6 * a;
+      ctx.beginPath(); ctx.arc(f.x*CS, f.y*CS, CS * 0.75, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fill();
       break;
     }
     case 'txt':{
-      ctx.fillStyle=f.col;ctx.font=`900 ${CS*.32}px Nunito, sans-serif`;ctx.textAlign='center';
-      ctx.fillText(f.txt,f.x*CS,(f.y-f.t*.9)*CS);
+      ctx.fillStyle = f.col; ctx.font = `900 ${CS*0.32}px Nunito, sans-serif`;
+      ctx.textAlign = 'center'; ctx.fillText(f.txt, f.x*CS, (f.y - f.t*0.8)*CS);
       break;
     }
   }
   ctx.restore();
 }
 
-function draw(){
-  const W=CS*COLS,H=CS*ROWS;
-  ctx.save();
-  if(st&&st.camShake>0){
-    ctx.translate((Math.random()-.5)*st.camShake,(Math.random()-.5)*st.camShake);
-  }
-  ctx.fillStyle='#203229';ctx.fillRect(0,0,W,H);
-  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
-    if(isPath(x,y)){ctx.fillStyle=(x+y)%2?'#43392a':'#4d4231';ctx.fillRect(x*CS,y*CS,CS,CS);}
-  }
-  ctx.strokeStyle='rgba(234,241,231,.06)';ctx.lineWidth=1;
-  for(let x=1;x<COLS;x++){ctx.beginPath();ctx.moveTo(x*CS,0);ctx.lineTo(x*CS,H);ctx.stroke();}
-  for(let y=1;y<ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*CS);ctx.lineTo(W,y*CS);ctx.stroke();}
-
-  ctx.font=`900 ${CS*.22}px Nunito, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#ff6b5b';ctx.fillText('入口',CS*.5,CS*.6);
-  ctx.fillStyle='#7ed6a0';ctx.fillText('基地',CS*11.5,CS*7.4);
-
-  if(hover&&st.pending){
-    const validTerrain = canPlaceTerrain(hover.x,hover.y,st.pending.s);
-    const existing = st.towers.find(t=>t.x===hover.x&&t.y===hover.y);
-    if(validTerrain){
-      if(existing){
-        ctx.fillStyle='rgba(255, 209, 102, 0.45)';
-        ctx.fillRect(hover.x*CS,hover.y*CS,CS,CS);
-        ctx.strokeStyle='#ffd166';ctx.lineWidth=2;
-        ctx.strokeRect(hover.x*CS+2,hover.y*CS+2,CS-4,CS-4);
-        ctx.font=`900 ${CS*.2}px Nunito, sans-serif`;ctx.fillStyle='#2a2208';
-        ctx.fillText('替換',hover.x*CS+CS/2,hover.y*CS+CS/2);
-      }else{
-        ctx.fillStyle='rgba(126,214,160,.25)';
-        ctx.fillRect(hover.x*CS,hover.y*CS,CS,CS);
-      }
-    }else{
-      ctx.fillStyle='rgba(255,107,91,.25)';
-      ctx.fillRect(hover.x*CS,hover.y*CS,CS,CS);
-    }
-  }
-
-  for(const t of st.towers){
-    const col=KIND[t.s.k].c,p=CS*.08;
-    ctx.fillStyle='rgba(0,0,0,.35)';rr(t.x*CS+p,t.y*CS+p+3,CS-2*p,CS-2*p,6);ctx.fill();
-    ctx.fillStyle=col;rr(t.x*CS+p,t.y*CS+p,CS-2*p,CS-2*p,6);ctx.fill();
-
-    if(st.sel===t){
-      ctx.strokeStyle='#ffd166';ctx.lineWidth=3;
-      ctx.strokeRect(t.x*CS+p-2,t.y*CS+p-2,CS-2*p+4,CS-2*p+4);
-    }
-
-    const fs=Math.min(CS*.34,(CS*.86)/(t.w.length*.66));
-    ctx.fillStyle='#22200f';ctx.font=`900 ${fs}px Nunito, sans-serif`;ctx.fillText(t.w,t.x*CS+CS/2,t.y*CS+CS/2-CS*.06);
-    ctx.font=`800 ${CS*.17}px Nunito, sans-serif`;ctx.fillStyle='rgba(34,32,15,.75)';ctx.fillText(t.s.zh,t.x*CS+CS/2,t.y*CS+CS*.74);
-  }
-
-  for(const e of st.enemies){
-    const r=CS*(e.type==='boss'?.36:e.type==='fast'?.2:.26),X=e.x*CS,Y=e.y*CS;
-    ctx.fillStyle=e.type==='boss'?'#b8322a':e.type==='fast'?'#ffa94d':'#ff6b5b';
-    ctx.beginPath();ctx.arc(X,Y,r,0,7);ctx.fill();
-    ctx.fillStyle='#1b0d0b';ctx.font=`900 ${r}px Nunito, sans-serif`;ctx.fillText('?',X,Y+1);
-    const bw=r*2;ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(X-r,Y-r-8,bw,4);
-    ctx.fillStyle='#7ed6a0';ctx.fillRect(X-r,Y-r-8,bw*Math.max(0,e.hp/e.max),4);
-  }
-
-  for(const f of st.fx) drawFx(f);
-  ctx.restore();
-}
-
-// ---------- 介面渲染 ----------
-const ROWS_KB=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+// ==================== 11. 鍵盤與圖鑑 ====================
 function buildKb(){
-  const kb=$('kb');kb.innerHTML='';
-  ROWS_KB.forEach((r,i)=>{
-    const row=document.createElement('div');row.className='kb-row';
-    for(const L of r){
-      const b=document.createElement('button');b.className='key';b.textContent=L;b.dataset.l=L;
-      b.onclick=()=>buy(L);row.appendChild(b);
+  const kb = $('kb'); kb.innerHTML = '';
+  ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach((rowStr, i) => {
+    const row = document.createElement('div'); row.className = 'kb-row';
+    for(const L of rowStr){
+      const b = document.createElement('button'); b.className = 'key';
+      b.textContent = L; b.onclick = () => buyLetter(L);
+      row.appendChild(b);
     }
-    if(i===2){
-      const b=document.createElement('button');b.className='key wide';b.textContent='⌫ 退回';b.id='kBack';
-      b.onclick=back;row.appendChild(b);
+    if(i === 2){
+      const b = document.createElement('button'); b.className = 'key wide';
+      b.textContent = '⌫ 退回'; b.onclick = backSlot;
+      row.appendChild(b);
     }
     kb.appendChild(row);
   });
 }
 
-function onCodexClick(w){
-  const s=SPEC[w];
-  speakWord(w,s.zh);
-  const tier=getTier(st.wave);
-  if(w.length<=tier.maxLen){
-    say(`🔊 ${w}（${s.zh}）：${KIND[s.k].t}。`);
-  }else{
-    const reqTier=w.length===4?2:(w.length===5?3:4);
-    const reqWave=(reqTier-1)*5+1;
-    say(`🔒 ${w} 將在第 ${reqWave} 關解鎖！`);
-  }
-}
-
 function buildCodex(){
-  const wrap=$('codexWrap');wrap.innerHTML='';
-  const groups=[
-    {len:3,name:'🌱 3 個字母（1～5 關）'},
-    {len:4,name:'🌿 4 個字母（6～10 關）'},
-    {len:5,name:'🌲 5 個字母（11～15 關）'},
-    {len:6,name:'🔥 6+ 字母大絕招（16 關以上）'}
+  const wrap = $('codexWrap'); wrap.innerHTML = '';
+  const dict = WORLD_SPECS[st.curIslandId];
+  const groups = [
+    { len:3, name:'🌱 3 字基礎 (1~5關)' },
+    { len:4, name:'🌿 4 字核心 (6~10關)' },
+    { len:5, name:'🌲 5 字中堅 (11~15關)' },
+    { len:6, name:'🔥 6+ 字大招 (16~30關)' }
   ];
-  const tier=getTier(st.wave);
+  const tier = getTier(st.wave);
 
-  groups.forEach(g=>{
-    const gDiv=document.createElement('div');gDiv.className='codex-group';
-    gDiv.innerHTML=`<div class="group-title">${g.name}</div>`;
-    const cDiv=document.createElement('div');cDiv.className='codex';
+  groups.forEach(g => {
+    const gDiv = document.createElement('div'); gDiv.className = 'codex-group';
+    gDiv.innerHTML = `<div class="group-title">${g.name}</div>`;
+    const cDiv = document.createElement('div'); cDiv.className = 'codex';
+    const words = Object.entries(dict).filter(([w]) => g.len===6 ? w.length>=6 : w.length===g.len);
 
-    const words=Object.entries(SPEC).filter(([w])=>{
-      return g.len===6 ? w.length>=6 : w.length===g.len;
-    });
-
-    words.forEach(([w,s])=>{
+    words.forEach(([w, s]) => {
       const isLocked = w.length > tier.maxLen;
+      const isCur = (w === st.targetWord);
       const isDone = st.built.has(w);
-      const isCurrentTarget = (w === st.targetWord);
-
-      const card=document.createElement('div');
-      card.className=`cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCurrentTarget?'target-active':''}`;
-      card.onclick=()=>onCodexClick(w);
-      card.innerHTML=`
-        ${isCurrentTarget ? '<span class="target-tag">★ 當前目標</span>' : (isLocked ? '<span class="lock-tag">🔒鎖</span>' : '')}
-        <b>${w}</b>
-        <i style="background:${KIND[s.k].c}"></i>${s.zh}・${KIND[s.k].t}
-      `;
-      cDiv.appendChild(card);
+      const c = document.createElement('div');
+      c.className = `cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCur?'target-active':''}`;
+      c.innerHTML = `<b>${w}</b><i></i>${s.zh}`;
+      c.onclick = () => { speakWord(w, s.zh); say(`🔊 ${w} (${s.zh})・威力:${s.dmg} 射程:${s.rng}`); };
+      cDiv.appendChild(c);
     });
-
     gDiv.appendChild(cDiv);
     wrap.appendChild(gDiv);
   });
 }
 
-let lastUi='';
 function ui(){
-  $('sHp').textContent=Math.ceil(st.hp);$('sGold').textContent=st.gold;$('sWave').textContent=st.wave;$('sKills').textContent=st.kills;
+  $('sHp').textContent = Math.ceil(st.hp);
+  $('sGold').textContent = st.gold;
+  $('sWave').textContent = `${st.wave}/30`;
+  $('mapWaveTxt').textContent = st.wave;
+  $('sKills').textContent = st.kills;
 
-  const sl=$('slots');sl.innerHTML='';
-  const targetL=st.targetWord?st.targetWord.length:3;
-  for(let i=0;i<targetL;i++){
-    const d=document.createElement('div');
-    const isHintSlot = (i===0);
-    d.className='slot'+(st.slots[i]?' f':'')+(isHintSlot?' hint-slot':'');
-    d.textContent=st.slots[i]||'';
+  const sl = $('slots'); sl.innerHTML = '';
+  const len = st.targetWord ? st.targetWord.length : 3;
+  for(let i=0; i<len; i++){
+    const d = document.createElement('div');
+    d.className = 'slot' + (st.slots[i] ? ' f' : '') + (i===0 ? ' hint-slot' : '');
+    d.textContent = st.slots[i] || '';
     sl.appendChild(d);
   }
 
-  const pTimeEl=$('prepTimer');
+  const pEl = $('prepTimer');
   if(st.inWave){
-    pTimeEl.innerHTML=`<span style="color:var(--ok)">⚔️ 第 ${st.wave} 波戰鬥中</span>`;
-  }else if(st.prepTime>0){
-    pTimeEl.innerHTML=`⏱️ 獎勵倒數: <b style="color:var(--gold);font-size:14px">${Math.ceil(st.prepTime)}s</b> <span style="font-size:10px;color:var(--muted)">(開始+10金)</span>`;
-  }else{
-    pTimeEl.innerHTML=`⏳ 準備無上限 (可從容佈置)`;
+    pEl.innerHTML = `<span style="color:var(--ok)">⚔️ 第 ${st.wave} 波戰鬥中</span>`;
+  } else if(st.autoWaveTimer > 0){
+    pEl.innerHTML = `⏱️ 連續開戰倒數: <b style="color:var(--danger);font-size:14px">${Math.ceil(st.autoWaveTimer)}s</b> (下一波即將衝鋒)`;
+  } else if(st.prepTime > 0){
+    pEl.innerHTML = `⏱️ 早鳥獎勵: <b style="color:var(--gold);font-size:14px">${Math.ceil(st.prepTime)}s</b> (開戰+10金)`;
+  } else {
+    pEl.innerHTML = `⏳ 準備就緒 (從容擺位)`;
   }
 
-  const lock=st.over||!!st.pending;
-  document.querySelectorAll('.key[data-l]').forEach(b=>b.disabled=lock||st.gold<COST||st.slots.length>=targetL);
-  $('kBack').disabled=lock||st.slots.length<=1;
-  $('bSubmit').disabled=lock||st.slots.length<targetL;
-  $('bClear').disabled=lock||st.slots.length<=1;
-  $('bWave').disabled=st.inWave||st.over;
-  $('bWave').textContent=st.inWave?`戰鬥中...`:`開始第 ${st.wave+1} 波 ⚔️`;
-  
-  $('pendWrap').hidden=!st.pending;
-  if(st.pending) $('pend').textContent=`待放置：${st.pending.w}。點擊空格或覆蓋舊單位！`;
+  const cost = getLetterCost(len);
+  document.querySelectorAll('.key').forEach(b => {
+    b.disabled = st.over || !!st.pending || st.gold < cost || st.slots.length >= len;
+  });
+  $('bSubmit').disabled = st.over || !!st.pending || st.slots.length < len;
+  $('bClear').disabled = st.over || !!st.pending || st.slots.length <= 1;
+  $('bWave').disabled = st.inWave || st.over;
+  $('bWave').textContent = st.inWave ? '戰鬥中...' : `開始第 ${st.wave+1} 波 ⚔️`;
 
+  $('pendWrap').hidden = !st.pending;
+  if(st.pending) $('pend').textContent = `待放置：${st.pending.w}。在草地上移動游標查看淡紅虛線射程！`;
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
-function liveUi(){
-  const k=[Math.ceil(st.hp),st.gold,st.wave,st.kills,st.inWave,Math.ceil(st.prepTime),st.sel?st.sel.w:'',st.targetWord].join();
-  if(k!==lastUi){lastUi=k;ui();}
+function resize(){
+  const stage = $('stage');
+  const w = stage.clientWidth || 360;
+  DPR = window.devicePixelRatio || 1;
+  CS = w / COLS;
+  cv.width = w * DPR; cv.height = CS * ROWS * DPR;
+  cv.style.height = (CS * ROWS) + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 
-// ---------- 事件監聽 ----------
-function cellFromEvent(ev){const r=cv.getBoundingClientRect();return{x:Math.floor((ev.clientX-r.left)/CS),y:Math.floor((ev.clientY-r.top)/CS)};}
-cv.addEventListener('pointermove',e=>hover=cellFromEvent(e));
-cv.addEventListener('pointerleave',()=>hover=null);
-cv.addEventListener('click',e=>{const c=cellFromEvent(e);clickCell(c.x,c.y);});
-$('bSubmit').onclick=submit;$('bClear').onclick=clearSlots;$('bWave').onclick=startWave;
-$('bCancel').onclick=cancelPending;
-$('bRestart').onclick=reset;
-$('bSkip').onclick=skipPrompt;
-$('bRecycle').onclick=()=>{if(st.sel) recycleTower(st.sel);};
-$('bDeselect').onclick=()=>{st.sel=null;ui();};
-$('bSpeed').onclick=()=>{st.speed=st.speed===1?2:1;$('bSpeed').textContent=`速度 ${st.speed}×`;};
-window.addEventListener('keydown',e=>{
-  if(e.ctrlKey||e.metaKey||e.altKey) return;
-  if(/^[a-z]$/i.test(e.key)){buy(e.key.toUpperCase());e.preventDefault();}
-  else if(e.key==='Backspace'){back();e.preventDefault();}
-  else if(e.key==='Enter'){if(document.activeElement&&document.activeElement.tagName==='BUTTON')return;submit();e.preventDefault();}
-  else if(e.key==='Escape'){cancelPending();st.sel=null;ui();}
+// ==================== 12. 存檔視窗與引繼功能 ====================
+function openSaveModal(){
+  saveGameProgress();
+  const raw = localStorage.getItem(STORAGE_KEY) || '{}';
+  // 將 JSON 編碼為易於複製傳送的 Base64 字串
+  try {
+    $('saveCodeBox').value = btoa(encodeURIComponent(raw));
+  } catch(e) {
+    $('saveCodeBox').value = raw;
+  }
+  $('saveModal').hidden = false;
+}
+
+function copySaveCode(){
+  const box = $('saveCodeBox');
+  box.select();
+  box.setSelectionRange(0, 99999);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(box.value).then(() => {
+      alert('📋 存檔引繼碼已成功複製至剪貼簿！可在手機上貼上匯入！');
+    });
+  } else {
+    document.execCommand('copy');
+    alert('📋 引繼碼已複製！');
+  }
+}
+
+function importSaveCode(){
+  const code = prompt('請在此貼上存檔引繼碼（或備份文字）：');
+  if(!code) return;
+  try{
+    let jsonStr = '';
+    try {
+      jsonStr = decodeURIComponent(atob(code.trim()));
+    } catch(e) {
+      jsonStr = code.trim(); // 若為一般 JSON
+    }
+    const data = JSON.parse(jsonStr);
+    if(data && typeof data === 'object'){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      alert('🎉 存檔引繼成功！正在重新整理頁面載入進度...');
+      location.reload();
+    } else {
+      alert('❌ 存檔格式錯誤，請檢查代碼是否完整！');
+    }
+  }catch(err){
+    alert('❌ 匯入失敗：' + err.message);
+  }
+}
+
+function resetAllData(){
+  if(confirm('⚠️ 警告：這將徹底清空本機的所有島嶼征服紀錄與陣容，無法復原！確定要清空重玩嗎？')){
+    localStorage.removeItem(STORAGE_KEY);
+    alert('已清空所有存檔！');
+    location.reload();
+  }
+}
+
+// ==================== 13. 生命週期初始化 ====================
+window.addEventListener('DOMContentLoaded', () => {
+  cv = $('cv'); ctx = cv.getContext('2d');
+  buildKb();
+
+  // 嘗試載入本地存檔
+  const saved = loadGameProgress();
+  renderTaiwanMap();
+
+  // 若從未看過指南，首次彈出
+  if(!saved || !saved.hasSeenGuide){
+    $('guideModal').hidden = false;
+  }
+  $('bCloseGuide').onclick = () => {
+    $('guideModal').hidden = true;
+    saveGameProgress();
+  };
+  $('bHelp').onclick = () => { $('guideModal').hidden = false; };
+
+  // 存檔管理視窗事件
+  $('bSaveMgr').onclick = openSaveModal;
+  $('bCloseSaveModal').onclick = () => { $('saveModal').hidden = true; };
+  $('bCopySave').onclick = copySaveCode;
+  $('bImportSave').onclick = importSaveCode;
+  $('bResetAll').onclick = resetAllData;
+
+  $('bBackWorld').onclick = returnToWorldMap;
+  $('bOverMap').onclick = returnToWorldMap;
+
+  $('bSubmit').onclick = submitWord;
+  $('bClear').onclick = clearSlots;
+  $('bSkip').onclick = skipPrompt;
+  $('bListen').onclick = () => speakWord(st.targetWord, st.targetSpec.zh);
+  $('bAutoWave').onclick = toggleAutoWave;
+  $('bWave').onclick = startWave;
+  $('bCancel').onclick = () => { st.pending = null; hoverCell = null; ui(); say('已取消放置'); };
+  $('bRestart').onclick = () => enterIsland(st.curIslandId, 60);
+  $('bRecycle').onclick = recycleSelected;
+  $('bDeselect').onclick = () => { st.sel = null; ui(); };
+  $('bSpeed').onclick = () => {
+    st.speed = st.speed === 1 ? 2 : (st.speed === 2 ? 3 : 1);
+    $('bSpeed').textContent = `速度 ${st.speed}×`;
+  };
+
+  function updateHoverPos(clientX, clientY){
+    const r = cv.getBoundingClientRect();
+    const x = Math.floor((clientX - r.left) / CS);
+    const y = Math.floor((clientY - r.top) / CS);
+    if(x >= 0 && x < COLS && y >= 0 && y < ROWS){
+      hoverCell = { x, y };
+    } else {
+      hoverCell = null;
+    }
+  }
+
+  cv.addEventListener('pointermove', e => updateHoverPos(e.clientX, e.clientY));
+  cv.addEventListener('pointerleave', () => { hoverCell = null; });
+  cv.addEventListener('click', e => {
+    const r = cv.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) / CS);
+    const y = Math.floor((e.clientY - r.top) / CS);
+    clickCell(x, y);
+  });
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('keydown', e => {
+    if($('battleView').hidden) return;
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    if(/^[a-z]$/i.test(e.key)){ buyLetter(e.key.toUpperCase()); e.preventDefault(); }
+    else if(e.key === 'Backspace'){ backSlot(); e.preventDefault(); }
+    else if(e.key === 'Enter'){ submitWord(); e.preventDefault(); }
+    else if(e.key === 'Escape'){ st.pending = null; hoverCell = null; st.sel = null; ui(); }
+  });
+
+  let prev = performance.now();
+  function loop(now){
+    const dtReal = Math.min(0.05, (now - prev)/1000);
+    const dt = dtReal * st.speed;
+    prev = now;
+
+    if(!$('battleView').hidden){
+      update(dt, dtReal);
+      draw();
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 });
-window.addEventListener('resize',resize);
-
-let prev=performance.now();
-function loop(now){
-  const dt=Math.min(.05,(now-prev)/1000)*st.speed;prev=now;
-  update(dt);draw();liveUi();requestAnimationFrame(loop);
-}
-
-buildKb();
-reset();
-resize();
-requestAnimationFrame(loop);
 </script>
 
 </body>
