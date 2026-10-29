@@ -218,16 +218,57 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .key.wide{flex-basis:58px;font-family:var(--body);font-weight:900;font-size:11px;background:var(--board2);color:var(--chalk);box-shadow:0 2px 0 var(--line)}
 .hint{font-size:11px;color:var(--muted);text-align:center}
 
-details{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:8px}
+/* ==================== 圖鑑容器與加強版 1.5 倍立體卡片 ==================== */
+details{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:8px;overflow:visible}
 summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 .codex-group{margin-top:8px}
-.group-title{font-size:11px;font-weight:900;color:var(--tile);margin-bottom:4px}
-.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px}
-.cx{border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:11px;color:var(--muted);cursor:pointer;position:relative;background:rgba(0,0,0,0.15)}
+.group-title{font-size:11px;font-weight:900;color:var(--tile);margin-bottom:6px}
+
+/* 外層預留上下 14px、左右 18px 安全緩衝區，確保放大 1.5 倍後絕不超出版面切邊 */
+.codex{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+  gap:8px;
+  padding:14px 18px;
+}
+
+.cx{
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:5px 7px;
+  font-size:11px;
+  color:var(--muted);
+  cursor:pointer;
+  position:relative;
+  background:rgba(0,0,0,0.25);
+  transition:transform .22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .22s ease, background-color .22s ease;
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+  transform:translateZ(0);
+}
 .cx b{font-family:var(--display);font-size:13px;color:var(--chalk);display:block}
-.cx.target-active{border-color:var(--gold)!important;background:rgba(255,209,102,0.18)!important}
-.cx.target-active b{color:var(--gold)!important}
+
+/* 核心加強：1.5 倍放大、實心底色不透光、金色立體發光投影與最高層級 */
+.cx.target-active{
+  border:2px solid var(--gold)!important;
+  background:#1b3124!important; /* 實心深綠底，徹底遮蓋底層文字 */
+  color:var(--chalk)!important;
+  transform:scale(1.5) translateZ(0)!important;
+  z-index:20; /* 浮於所有卡片最上方 */
+  box-shadow:0 12px 28px rgba(0,0,0,0.85), 0 0 16px rgba(255,209,102,0.65)!important;
+  animation:targetPulse 2s infinite alternate ease-in-out;
+}
+.cx.target-active b{
+  color:#ffffff!important;
+  font-size:14px;
+  text-shadow:0 1px 3px rgba(0,0,0,0.8);
+}
 .cx.locked{opacity:0.35;filter:grayscale(90%);border-style:dashed}
+
+@keyframes targetPulse{
+  0%{box-shadow:0 8px 22px rgba(0,0,0,0.8), 0 0 10px rgba(255,209,102,0.45)}
+  100%{box-shadow:0 14px 32px rgba(0,0,0,0.95), 0 0 20px rgba(255,209,102,0.85)}
+}
 
 /* ==================== 彈窗通用 ==================== */
 .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
@@ -242,6 +283,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   color:var(--gold);font-family:monospace;font-size:11px;padding:6px;box-sizing:border-box;margin:6px 0;resize:none;
 }
 
+/* ==================== 手機螢幕響應式適配 ==================== */
 @media(max-width:600px){
   .taiwan-stage{min-height:680px}
   .floating-card{width:160px;padding:6px 8px}
@@ -250,6 +292,18 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   .island-anchor{width:46px;height:46px;font-size:22px}
   .floating-card.to-right{left:52px}
   .floating-card.to-left{right:52px}
+  
+  /* 手機圖鑑網格：保證清晰 3 欄並保留安全外擴空間 */
+  .codex{
+    grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
+    gap:6px;
+    padding:12px 14px;
+  }
+  .cx{padding:4px 5px;font-size:10px}
+  .cx b{font-size:12px}
+  .cx.target-active{
+    transform:scale(1.45) translateZ(0)!important; /* 手機端黃金比例，聚焦且不超出外框 */
+  }
 }
 </style>
 </head>
@@ -384,7 +438,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     </div>
 
     <div class="kb" id="kb"></div>
-    <div class="hint">提示：進度每波自動保存至本機！手機點擊草地可預覽淡紅虛線射程，再點一次確認就位。</div>
+    <div class="hint">提示：進度每波自動保存至本機！點擊草地瞬間完成建造，並展開淡紅射程衝擊波。</div>
 
     <details id="detailsCodex" open>
       <summary>本島單字圖鑑（點擊卡片聽真人發音 🔊，共 50 字）</summary>
@@ -402,7 +456,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <ul>
       <li><b>⌨️ 智慧拼字</b>：完整輸入正確字母後<b>自動召喚就位</b>，無需手動按確定！一次拼對享有<b>「一發入魂 +10 金」</b>！</li>
       <li><b>⚔️ 連續挑戰</b>：開啟「連續挑戰」按鈕，通關後 3 秒自動開戰下一波，無縫衝刺！</li>
-      <li><b>🎯 射程預覽</b>：電腦移至草地即時預覽；手機點選草地鎖定<b>「淡紅虛線射程」</b>，再點同格確認放置。</li>
+      <li><b>🎯 落地即射程</b>：點擊草地瞬間建造，淡紅虛線衝擊波即時反饋涵蓋範圍，放錯可隨時點選單位回收。</li>
       <li><b>💾 本機自動存檔</b>：進度會自動儲存在本設備瀏覽器中，關閉網頁隨時回來接關！</li>
     </ul>
     <button class="primary" id="bCloseGuide" style="width:100%;padding:10px;font-size:15px;margin-top:8px">開始我的島嶼冒險 ⚔️</button>
@@ -605,7 +659,6 @@ function loadGameProgress(){
 const COLS = 12, ROWS = 8;
 let cv, ctx, CS = 50, DPR = 1;
 let hoverCell = null;
-let lastPointerType = 'mouse'; // 紀錄當前輸入設備是 touch 還是 mouse
 
 let st = {
   curIslandId: 0, wave: 0, gold: 60, hp: 20, maxHp: 20, kills: 0, inWave: false,
@@ -809,7 +862,7 @@ function conquerCurrentIsland(){
   };
 }
 
-// ==================== 7. 拼字操作與免按鈕自動召喚 ====================
+// ==================== 7. 拼字操作與智慧免按鈕召喚 ====================
 function pickPrompt(){
   const tier = getTier(st.wave);
   const dict = WORLD_SPECS[st.curIslandId];
@@ -847,7 +900,7 @@ function buyLetter(L){
   st.slots.push(L);
   ui();
 
-  // ★ 核心改動：輸入字母後若長度齊全且完全正確，直接自動召喚，免按按鈕！ ★
+  // 輸入完整且完全正確，直接秒速召喚！
   if(st.slots.length === len && st.slots.join('') === st.targetWord){
     submitWord();
   }
@@ -902,7 +955,7 @@ function submitWord(){
     fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.2 });
     say(`✨ 完美一發入魂！獲得額外獎勵 +10 金幣！`, 'good');
   } else {
-    say(`【${w}】召喚成功！點選草地可預覽淡紅虛線射程，再點一次確認就位！`, 'good');
+    say(`【${w}】召喚成功！點擊草地立即完成建造！`, 'good');
   }
 
   st.pending = { w, s, bonusAwarded };
@@ -918,28 +971,19 @@ function shake(){
   e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake');
 }
 
-// ==================== 8. 放置、手機兩段預覽與升星 ====================
+// ==================== 8. 方案 B：一鍵點擊直接建造 ＋ 落地射程擴散光圈 ====================
 function clickCell(x, y){
   if(st.over) return;
   if(st.pending){
     if(isPath(x,y)) return say('士兵只能放置在草地上！', 'bad');
 
-    // ★ 手機/觸控裝置優化：點第一下鎖定預覽射程圈，再點同格確認就位！ ★
-    if(lastPointerType === 'touch'){
-      if(!hoverCell || hoverCell.x !== x || hoverCell.y !== y){
-        hoverCell = { x, y };
-        say(`🎯 射程預覽中：再次點擊此格確認放置【${st.pending.w}】，或點選其他草地切換位置`, 'good');
-        return;
-      }
-    }
-
-    // 電腦端直接放置，或手機端第二次確認點擊
     const exist = st.towers.find(t => t.x===x && t.y===y);
     if(exist){
       if(exist.w === st.pending.w){
         exist.star = (exist.star || 1) + 1;
         fx({ type:'ring', x:x+0.5, y:y+0.5, col:'#ffd166', life:0.4 });
         fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`★${exist.star} 升星!`, col:'#ffd166', life:1.1 });
+        fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:exist.s.rng||2.4, life:0.55 });
         say(`✨【${exist.w}】升級為 ★${exist.star} 級！`, 'good');
         st.pending = null; hoverCell = null;
         pickPrompt(); ui(); saveGameProgress();
@@ -950,20 +994,23 @@ function clickCell(x, y){
         st.towers = st.towers.filter(t => t !== exist);
         st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
         fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`替換 +${refund}金`, col:'#ffd166', life:1.0 });
+        fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
         say(`覆蓋替換！退還舊塔 ${refund} 金幣`, 'good');
         st.pending = null; hoverCell = null;
         pickPrompt(); ui(); saveGameProgress();
         return;
       }
     }
+
+    // 一鍵直接建造：瞬間激發 0.5 秒淡出擴散光圈
+    fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
     st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
-    say(`${st.pending.w} 就位完畢！射程圈已隱藏。`, 'good');
+    say(`✨【${st.pending.w}】建造完成！射程範圍已展開。`, 'good');
     st.pending = null; hoverCell = null;
     pickPrompt(); ui(); saveGameProgress();
     return;
   }
 
-  // 選取已在場上的防禦塔
   const t = st.towers.find(t => t.x===x && t.y===y);
   st.sel = t || null;
   if(t){
@@ -1077,8 +1124,18 @@ function update(dt, dtReal){
     if(st.spawnT <= 0){
       st.spawnLeft--;
       st.spawnT = 0.8;
+
+      // ★ 新增：魔王登場前 2 秒警示、畫布震動與大字提示 ★
+      if(st.spawnLeft === 1 && st.isBoss){
+        st.spawnT = 2.0; // 延長最後一波小兵間隔 2 秒，營造暴風雨前的寧靜
+        addShake(12);    // 警報地動特效
+        fx({ type:'txt', x:6, y:3.5, txt:'⚠️ 王要出來摟～！', col:'#ff3b30', life:2.0 });
+        say('⚠️ 警報！王要出來摟～請集中火力！', 'bad');
+      }
+
       if(st.spawnLeft === 0 && st.isBoss){
         spawnEnemy('boss');
+        say(st.wave === 30 ? '🔥 世界魔王降臨！全島最高警戒！' : '👿 魔王已現身！全力迎擊！', 'bad');
       } else {
         spawnEnemy(st.wave>=3 && Math.random()<0.3 ? 'fast' : 'normal');
       }
@@ -1175,8 +1232,7 @@ function update(dt, dtReal){
 
     say(`第 ${st.wave} 波通關！獎勵 +${bonus} 金幣！`, 'good');
     if(st.autoWave) st.autoWaveTimer = 3.0;
-
-    pickPrompt();
+  
     ui();
     buildCodex();
     saveGameProgress();
@@ -1233,7 +1289,7 @@ function draw(){
     ctx.fillText(tag, t.x*CS + CS/2, t.y*CS + CS*0.75);
   }
 
-  // ==================== 怪物精緻繪製模組 ====================
+  // 怪物精緻繪製模組
   const nowTime = performance.now() * 0.003;
 
   for(const e of st.enemies){
@@ -1246,7 +1302,6 @@ function draw(){
     ctx.translate(ex, ey);
 
     if(isBoss){
-      // 1. Boss 專屬脈動暗黑光暈
       const pulse = 1 + Math.sin(nowTime * 4) * 0.12;
       const auraR = CS * (isWorldBoss ? 0.75 : 0.6) * pulse;
       const auraGrad = ctx.createRadialGradient(0, 0, CS * 0.1, 0, 0, auraR);
@@ -1256,7 +1311,6 @@ function draw(){
       ctx.fillStyle = auraGrad;
       ctx.beginPath(); ctx.arc(0, 0, auraR, 0, Math.PI * 2); ctx.fill();
 
-      // 2. Boss 旋轉外環棘刺裝甲 (6~8角星芒)
       ctx.save();
       ctx.rotate(nowTime * (isWorldBoss ? 2.5 : 1.5));
       const spikes = isWorldBoss ? 8 : 6;
@@ -1276,7 +1330,6 @@ function draw(){
       ctx.fill(); ctx.stroke();
       ctx.restore();
 
-      // 3. Boss 核心重裝甲球體
       const coreR = CS * (isWorldBoss ? 0.32 : 0.26);
       const bodyGrad = ctx.createRadialGradient(-coreR*0.3, -coreR*0.3, coreR*0.1, 0, 0, coreR);
       bodyGrad.addColorStop(0, isWorldBoss ? '#fb7185' : '#f87171');
@@ -1285,7 +1338,6 @@ function draw(){
       ctx.fillStyle = bodyGrad;
       ctx.beginPath(); ctx.arc(0, 0, coreR, 0, Math.PI * 2); ctx.fill();
 
-      // 4. 魔王雙眼 (血紅微光裂縫)
       ctx.fillStyle = '#fef08a';
       ctx.shadowColor = '#facc15'; ctx.shadowBlur = 8;
       ctx.beginPath();
@@ -1294,14 +1346,12 @@ function draw(){
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // 瞳孔
       ctx.fillStyle = '#450a0a';
       ctx.beginPath();
       ctx.arc(-coreR*0.35, -coreR*0.1, coreR*0.06, 0, Math.PI*2);
       ctx.arc(coreR*0.35, -coreR*0.1, coreR*0.06, 0, Math.PI*2);
       ctx.fill();
 
-      // 5. 魔王頭頂角冠
       ctx.fillStyle = '#ffd166';
       ctx.font = `900 ${CS * 0.28}px Nunito, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1363,7 +1413,6 @@ function draw(){
       ctx.beginPath(); ctx.arc(0, -r * 0.1, r * 0.08, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 怪物血條渲染
     const r = CS * (isBoss ? (isWorldBoss ? 0.44 : 0.36) : 0.25);
     const bw = isBoss ? r * 2.8 : r * 2.2;
     const bh = isBoss ? 6 : 4;
@@ -1394,7 +1443,7 @@ function draw(){
     ctx.restore();
   }
 
-  // ★ 淡紅色虛線射程圈（電腦懸停 或 手機點選鎖定） ★
+  // 電腦端滑鼠移動時的游標射程圈預覽
   if(st.pending && hoverCell){
     const cx = (hoverCell.x + 0.5) * CS;
     const cy = (hoverCell.y + 0.5) * CS;
@@ -1416,7 +1465,7 @@ function draw(){
     ctx.restore();
   }
 
-  // 選取已存在場上的防禦塔時，同步顯示金色射程圈
+  // 選取已存在場上的單位時，同步顯示金色射程圈
   if(st.sel){
     const cx = (st.sel.x + 0.5) * CS;
     const cy = (st.sel.y + 0.5) * CS;
@@ -1444,6 +1493,20 @@ function renderEnhancedFx(f){
   ctx.globalCompositeOperation = 'lighter';
 
   switch(f.type){
+    // 落地瞬間以正弦波向外擴散 0.5 秒並自然淡出的半透明衝擊波
+    case 'spawn_range':{
+      const ease = Math.sin(p * Math.PI * 0.5);
+      const rCur = (f.rng || 2.4) * CS * (0.35 + 0.65 * ease);
+      ctx.setLineDash([7, 6]);
+      ctx.strokeStyle = `rgba(255, 107, 91, ${0.9 * a})`;
+      ctx.lineWidth = 2.5;
+      ctx.fillStyle = `rgba(255, 107, 91, ${0.18 * a})`;
+      ctx.beginPath();
+      ctx.arc(f.x * CS, f.y * CS, rCur, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      break;
+    }
     case 'beam':{
       ctx.strokeStyle = f.col; ctx.lineWidth = CS * 0.28 * a;
       ctx.beginPath(); ctx.moveTo(f.x*CS, f.y*CS); ctx.lineTo(f.x2*CS, f.y2*CS); ctx.stroke();
@@ -1635,7 +1698,7 @@ function ui(){
   $('bWave').textContent = st.inWave ? '戰鬥中...' : `開始第 ${st.wave+1} 波 ⚔️`;
 
   $('pendWrap').hidden = !st.pending;
-  if(st.pending) $('pend').textContent = `待放置：${st.pending.w}。點選草地預覽淡紅虛線射程，再點一次確認就位！`;
+  if(st.pending) $('pend').textContent = `待放置：${st.pending.w}。點選草地立即建造並展開射程範圍！`;
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
@@ -1708,7 +1771,6 @@ function resetAllData(){
 
 // ==================== 13. 生命週期初始化 ====================
 window.addEventListener('DOMContentLoaded', () => {
-  // 防止 iOS / LINE 雙指縮放與雙擊縮放
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('gesturechange', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault());
@@ -1764,7 +1826,6 @@ window.addEventListener('DOMContentLoaded', () => {
     $('bSpeed').textContent = `速度 ${st.speed}×`;
   };
 
-  // 高精度座標映射，依據實際 Canvas 顯示大小消除偏差
   function updateHoverPos(clientX, clientY){
     const r = cv.getBoundingClientRect();
     if(r.width === 0 || r.height === 0) return;
@@ -1775,19 +1836,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 跨設備指針事件監聽（精確區分滑鼠與觸控）
-  cv.addEventListener('pointerdown', e => {
-    lastPointerType = e.pointerType;
-    updateHoverPos(e.clientX, e.clientY);
-  });
-
   cv.addEventListener('pointermove', e => {
-    lastPointerType = e.pointerType;
-    updateHoverPos(e.clientX, e.clientY);
+    if(e.pointerType === 'mouse'){
+      updateHoverPos(e.clientX, e.clientY);
+    }
   });
 
   cv.addEventListener('pointerleave', e => {
-    // 電腦滑鼠移出時清空預覽；手機觸控手指抬起時保留預覽射程圈
     if(e.pointerType === 'mouse'){
       hoverCell = null;
     }
