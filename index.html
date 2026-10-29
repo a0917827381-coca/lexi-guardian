@@ -16,6 +16,25 @@ if (/Line/i.test(navigator.userAgent)) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
 <style>
+/* 徹底封殺 iOS / LINE 快速連點放大與長按選取 */
+*, html, body, button, .key, .island-anchor {
+  touch-action: manipulation !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* 戰鬥畫布強制獨立手勢捕獲，防止拖曳預覽射程時觸發瀏覽器滾動 */
+canvas {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+}
+
 :root{
   --board:#18261f; --board2:#203229; --line:#2d463a;
   --chalk:#eaf1e7; --muted:#9db3a7;
@@ -183,7 +202,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 
 .stage{position:relative;border:2px solid var(--tile);border-radius:6px;overflow:hidden;background:var(--board2);box-shadow:0 3px 12px rgba(0,0,0,.4)}
-canvas{display:block;width:100%;touch-action:manipulation;cursor:crosshair}
 .over{position:absolute;inset:0;background:rgba(10,16,13,.9);display:grid;place-items:center;text-align:center;z-index:20;padding:20px}
 .over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 8px;font-size:26px}
 
@@ -366,7 +384,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     </div>
 
     <div class="kb" id="kb"></div>
-    <div class="hint">提示：進度每波自動保存至本機！放置士兵時有淡紅虛線射程，就定位後隱藏。</div>
+    <div class="hint">提示：進度每波自動保存至本機！手機點擊草地可預覽淡紅虛線射程，再點一次確認就位。</div>
 
     <details id="detailsCodex" open>
       <summary>本島單字圖鑑（點擊卡片聽真人發音 🔊，共 50 字）</summary>
@@ -382,9 +400,9 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <h2>🏝️ 歡迎來到拼字塔防！</h2>
     <p>這是一場用單字守護台灣群島的冒險。探索懸浮於台灣各地的 6 大神秘島嶼，背下 300 個核心單字：</p>
     <ul>
-      <li><b>⌨️ 拼字召喚</b>：輸入提示的單字召喚防禦士兵，一次拼對不按退格享有<b>「一發入魂 +10 金」</b>！</li>
+      <li><b>⌨️ 智慧拼字</b>：完整輸入正確字母後<b>自動召喚就位</b>，無需手動按確定！一次拼對享有<b>「一發入魂 +10 金」</b>！</li>
       <li><b>⚔️ 連續挑戰</b>：開啟「連續挑戰」按鈕，通關後 3 秒自動開戰下一波，無縫衝刺！</li>
-      <li><b>🎯 攻擊範圍</b>：準備放置士兵時，地面出現<b>「淡紅色虛線圈」</b>預覽射程，擺放後自動隱藏。</li>
+      <li><b>🎯 射程預覽</b>：電腦移至草地即時預覽；手機點選草地鎖定<b>「淡紅虛線射程」</b>，再點同格確認放置。</li>
       <li><b>💾 本機自動存檔</b>：進度會自動儲存在本設備瀏覽器中，關閉網頁隨時回來接關！</li>
     </ul>
     <button class="primary" id="bCloseGuide" style="width:100%;padding:10px;font-size:15px;margin-top:8px">開始我的島嶼冒險 ⚔️</button>
@@ -523,7 +541,7 @@ function speakWord(w, zh){
   }
 }
 
-// ==================== 4. 本地持久化存檔系統 (LocalStorage) ====================
+// ==================== 4. 本地持久化存檔系統 ====================
 const STORAGE_KEY = 'SPELL_TD_SAVE_TW_V1';
 
 let worldProgress = {
@@ -532,12 +550,10 @@ let worldProgress = {
   bonusGold: 60
 };
 
-// 儲存所有島嶼的歷史陣容狀態
 let islandSavedStates = {};
 
 function saveGameProgress(){
   try{
-    // 如果正在戰鬥且未失敗，更新當前島嶼的陣容（若在波數進行中離開，波數退回上一波避免跳關漏洞）
     if(!$('battleView').hidden && !st.over){
       islandSavedStates[st.curIslandId] = {
         wave: st.inWave ? Math.max(0, st.wave - 1) : st.wave,
@@ -585,10 +601,11 @@ function loadGameProgress(){
   }
 }
 
-// ==================== 5. 遊戲狀態與波數變數 ====================
+// ==================== 5. 遊戲狀態變數 ====================
 const COLS = 12, ROWS = 8;
 let cv, ctx, CS = 50, DPR = 1;
 let hoverCell = null;
+let lastPointerType = 'mouse'; // 紀錄當前輸入設備是 touch 還是 mouse
 
 let st = {
   curIslandId: 0, wave: 0, gold: 60, hp: 20, maxHp: 20, kills: 0, inWave: false,
@@ -696,7 +713,6 @@ function enterIsland(id, carryoverGold = 60){
 
   initMapPath();
 
-  // ★ 嘗試載入該島嶼的本機歷史陣容進度 ★
   const saved = islandSavedStates[id];
   const dict = WORLD_SPECS[id];
 
@@ -712,7 +728,6 @@ function enterIsland(id, carryoverGold = 60){
     }));
     say(`已還原【${isl.name}】的存檔陣容！第 ${st.wave} 波待命！`, 'good');
   } else {
-    // 全新開局（找第一個非路徑的草地格放置初始塔）
     st.wave = 0; st.hp = 20; st.gold = carryoverGold; st.kills = 0;
     st.built.clear();
     const firstWord = Object.keys(dict)[0];
@@ -743,11 +758,11 @@ function enterIsland(id, carryoverGold = 60){
 
   pickPrompt();
   resize();
-  saveGameProgress(); // 存檔同步
+  saveGameProgress();
 }
 
 function returnToWorldMap(){
-  saveGameProgress(); // 離開前存檔
+  saveGameProgress();
   st.inWave = false;
   st.enemies = [];
   st.autoWaveTimer = 0;
@@ -774,7 +789,6 @@ function conquerCurrentIsland(){
   const carryover = 60 + Math.min(60, Math.floor(totalAsset * 0.15));
   worldProgress.bonusGold = carryover;
 
-  // 清除本島的戰鬥記憶，下一輪重置為全新
   delete islandSavedStates[curId];
   saveGameProgress();
 
@@ -795,7 +809,7 @@ function conquerCurrentIsland(){
   };
 }
 
-// ==================== 7. 拼字操作與智慧糾錯 ====================
+// ==================== 7. 拼字操作與免按鈕自動召喚 ====================
 function pickPrompt(){
   const tier = getTier(st.wave);
   const dict = WORLD_SPECS[st.curIslandId];
@@ -832,6 +846,11 @@ function buyLetter(L){
   st.gold -= cost;
   st.slots.push(L);
   ui();
+
+  // ★ 核心改動：輸入字母後若長度齊全且完全正確，直接自動召喚，免按按鈕！ ★
+  if(st.slots.length === len && st.slots.join('') === st.targetWord){
+    submitWord();
+  }
 }
 
 function backSlot(){
@@ -883,7 +902,7 @@ function submitWord(){
     fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.2 });
     say(`✨ 完美一發入魂！獲得額外獎勵 +10 金幣！`, 'good');
   } else {
-    say(`【${w}】召喚成功！在草地上移動游標可看淡紅虛線射程！`, 'good');
+    say(`【${w}】召喚成功！點選草地可預覽淡紅虛線射程，再點一次確認就位！`, 'good');
   }
 
   st.pending = { w, s, bonusAwarded };
@@ -899,11 +918,22 @@ function shake(){
   e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake');
 }
 
-// ==================== 8. 放置與升星 ====================
+// ==================== 8. 放置、手機兩段預覽與升星 ====================
 function clickCell(x, y){
   if(st.over) return;
   if(st.pending){
     if(isPath(x,y)) return say('士兵只能放置在草地上！', 'bad');
+
+    // ★ 手機/觸控裝置優化：點第一下鎖定預覽射程圈，再點同格確認就位！ ★
+    if(lastPointerType === 'touch'){
+      if(!hoverCell || hoverCell.x !== x || hoverCell.y !== y){
+        hoverCell = { x, y };
+        say(`🎯 射程預覽中：再次點擊此格確認放置【${st.pending.w}】，或點選其他草地切換位置`, 'good');
+        return;
+      }
+    }
+
+    // 電腦端直接放置，或手機端第二次確認點擊
     const exist = st.towers.find(t => t.x===x && t.y===y);
     if(exist){
       if(exist.w === st.pending.w){
@@ -933,12 +963,14 @@ function clickCell(x, y){
     return;
   }
 
+  // 選取已在場上的防禦塔
   const t = st.towers.find(t => t.x===x && t.y===y);
   st.sel = t || null;
   if(t){
     const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
     $('selInfo').innerHTML = `<b>${t.w}</b> (★${t.star||1}・${t.s.zh})`;
     $('recGold').textContent = ref;
+    say(`已選取【${t.w}】(★${t.star||1})，射程範圍已標記！`);
   }
   ui();
 }
@@ -1030,7 +1062,6 @@ function update(dt, dtReal){
     st.prepTime = Math.max(0, st.prepTime - dt);
   }
 
-  // 連續挑戰：通關後 3 秒自動開始下一波
   if(!st.inWave && !st.over && st.autoWave && st.wave < 30 && st.autoWaveTimer > 0){
     st.autoWaveTimer -= dtReal;
     if(st.autoWaveTimer <= 0){
@@ -1202,22 +1233,168 @@ function draw(){
     ctx.fillText(tag, t.x*CS + CS/2, t.y*CS + CS*0.75);
   }
 
-  // 怪物
+  // ==================== 怪物精緻繪製模組 ====================
+  const nowTime = performance.now() * 0.003;
+
   for(const e of st.enemies){
     const isBoss = (e.type === 'boss');
-    const r = CS * (isBoss ? 0.36 : (e.type==='fast'?0.2:0.25));
-    ctx.fillStyle = isBoss ? '#b8322a' : (e.type==='fast'?'#ffa94d':'#ff6b5b');
-    ctx.beginPath(); ctx.arc(e.x*CS, e.y*CS, r, 0, Math.PI*2); ctx.fill();
+    const isWorldBoss = isBoss && (st.wave === 30);
+    const ex = e.x * CS;
+    const ey = e.y * CS;
 
-    ctx.fillStyle = '#ffffff'; ctx.font = `900 ${r}px Nunito, sans-serif`;
-    ctx.fillText(isBoss ? '👑' : '?', e.x*CS, e.y*CS);
+    ctx.save();
+    ctx.translate(ex, ey);
 
-    const bw = r * 2.2;
-    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(e.x*CS - bw/2, e.y*CS - r - 7, bw, 4);
-    ctx.fillStyle = '#7ed6a0'; ctx.fillRect(e.x*CS - bw/2, e.y*CS - r - 7, bw * Math.max(0, e.hp/e.max), 4);
+    if(isBoss){
+      // 1. Boss 專屬脈動暗黑光暈
+      const pulse = 1 + Math.sin(nowTime * 4) * 0.12;
+      const auraR = CS * (isWorldBoss ? 0.75 : 0.6) * pulse;
+      const auraGrad = ctx.createRadialGradient(0, 0, CS * 0.1, 0, 0, auraR);
+      auraGrad.addColorStop(0, isWorldBoss ? 'rgba(255, 42, 95, 0.65)' : 'rgba(220, 38, 38, 0.55)');
+      auraGrad.addColorStop(0.6, isWorldBoss ? 'rgba(168, 85, 247, 0.3)' : 'rgba(185, 28, 28, 0.2)');
+      auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = auraGrad;
+      ctx.beginPath(); ctx.arc(0, 0, auraR, 0, Math.PI * 2); ctx.fill();
+
+      // 2. Boss 旋轉外環棘刺裝甲 (6~8角星芒)
+      ctx.save();
+      ctx.rotate(nowTime * (isWorldBoss ? 2.5 : 1.5));
+      const spikes = isWorldBoss ? 8 : 6;
+      const outerR = CS * (isWorldBoss ? 0.44 : 0.38);
+      const innerR = CS * (isWorldBoss ? 0.28 : 0.24);
+      ctx.fillStyle = isWorldBoss ? '#4a044e' : '#3f0c10';
+      ctx.strokeStyle = isWorldBoss ? '#f43f5e' : '#ef4444';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for(let i=0; i<spikes*2; i++){
+        const r = (i % 2 === 0) ? outerR : innerR;
+        const ang = (i * Math.PI) / spikes;
+        const sx = Math.cos(ang) * r, sy = Math.sin(ang) * r;
+        if(i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+      }
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
+
+      // 3. Boss 核心重裝甲球體
+      const coreR = CS * (isWorldBoss ? 0.32 : 0.26);
+      const bodyGrad = ctx.createRadialGradient(-coreR*0.3, -coreR*0.3, coreR*0.1, 0, 0, coreR);
+      bodyGrad.addColorStop(0, isWorldBoss ? '#fb7185' : '#f87171');
+      bodyGrad.addColorStop(0.5, isWorldBoss ? '#9f1239' : '#991b1b');
+      bodyGrad.addColorStop(1, '#180305');
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath(); ctx.arc(0, 0, coreR, 0, Math.PI * 2); ctx.fill();
+
+      // 4. 魔王雙眼 (血紅微光裂縫)
+      ctx.fillStyle = '#fef08a';
+      ctx.shadowColor = '#facc15'; ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.ellipse(-coreR*0.35, -coreR*0.1, coreR*0.22, coreR*0.12, -0.2, 0, Math.PI*2);
+      ctx.ellipse(coreR*0.35, -coreR*0.1, coreR*0.22, coreR*0.12, 0.2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // 瞳孔
+      ctx.fillStyle = '#450a0a';
+      ctx.beginPath();
+      ctx.arc(-coreR*0.35, -coreR*0.1, coreR*0.06, 0, Math.PI*2);
+      ctx.arc(coreR*0.35, -coreR*0.1, coreR*0.06, 0, Math.PI*2);
+      ctx.fill();
+
+      // 5. 魔王頭頂角冠
+      ctx.fillStyle = '#ffd166';
+      ctx.font = `900 ${CS * 0.28}px Nunito, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(isWorldBoss ? '👑' : '😈', 0, -coreR * 0.85);
+
+    } else if(e.type === 'fast'){
+      const r = CS * 0.2;
+      ctx.fillStyle = 'rgba(251, 146, 60, 0.4)';
+      ctx.beginPath();
+      ctx.moveTo(-r * 1.5, -r * 0.5);
+      ctx.lineTo(-r * 2.2, 0);
+      ctx.lineTo(-r * 1.5, r * 0.5);
+      ctx.fill();
+
+      const bodyGrad = ctx.createLinearGradient(-r, 0, r, 0);
+      bodyGrad.addColorStop(0, '#ea580c');
+      bodyGrad.addColorStop(1, '#fde047');
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 1.25, r * 0.75, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.15, r * 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath(); ctx.arc(r * 0.45, -r * 0.15, r * 0.08, 0, Math.PI * 2); ctx.fill();
+
+    } else {
+      const squash = 1 + Math.sin(nowTime * 6 + e.d) * 0.09;
+      const r = CS * 0.22;
+
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(0, r * 0.85, r * 0.9, r * 0.35, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const blobGrad = ctx.createRadialGradient(-r*0.2, -r*0.3, r*0.1, 0, 0, r);
+      blobGrad.addColorStop(0, '#f87171');
+      blobGrad.addColorStop(0.7, '#dc2626');
+      blobGrad.addColorStop(1, '#450a0a');
+      ctx.fillStyle = blobGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r / squash, r * squash, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.moveTo(-r*0.5, -r*0.8); ctx.lineTo(-r*0.2, -r*1.2); ctx.lineTo(0, -r*0.7);
+      ctx.moveTo(r*0.5, -r*0.8); ctx.lineTo(r*0.2, -r*1.2); ctx.lineTo(0, -r*0.7);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, -r * 0.1, r * 0.38, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#b91c1c';
+      ctx.beginPath(); ctx.arc(0, -r * 0.1, r * 0.18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#000000';
+      ctx.beginPath(); ctx.arc(0, -r * 0.1, r * 0.08, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 怪物血條渲染
+    const r = CS * (isBoss ? (isWorldBoss ? 0.44 : 0.36) : 0.25);
+    const bw = isBoss ? r * 2.8 : r * 2.2;
+    const bh = isBoss ? 6 : 4;
+    const barY = -r - (isBoss ? 16 : 9);
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillRect(-bw/2 - 1, barY - 1, bw + 2, bh + 2);
+
+    const hpRatio = Math.max(0, e.hp / e.max);
+    let hpColor = '#7ed6a0';
+    if(hpRatio < 0.3) hpColor = '#ef4444';
+    else if(hpRatio < 0.6) hpColor = '#facc15';
+
+    ctx.fillStyle = hpColor;
+    ctx.fillRect(-bw/2, barY, bw * hpRatio, bh);
+
+    if(isBoss){
+      ctx.strokeStyle = isWorldBoss ? '#ffd166' : '#cbd5e1';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(-bw/2 - 1, barY - 1, bw + 2, bh + 2);
+
+      ctx.font = `900 ${CS * 0.14}px Nunito, sans-serif`;
+      ctx.fillStyle = isWorldBoss ? '#ffd166' : '#f87171';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(isWorldBoss ? '★ WORLD BOSS ★' : 'BOSS', 0, barY - 2);
+    }
+
+    ctx.restore();
   }
 
-  // 淡紅色虛線射程圈
+  // ★ 淡紅色虛線射程圈（電腦懸停 或 手機點選鎖定） ★
   if(st.pending && hoverCell){
     const cx = (hoverCell.x + 0.5) * CS;
     const cy = (hoverCell.y + 0.5) * CS;
@@ -1231,6 +1408,24 @@ function draw(){
     ctx.strokeStyle = 'rgba(255, 107, 91, 0.85)';
     ctx.lineWidth = 2.5;
     ctx.fillStyle = 'rgba(255, 107, 91, 0.12)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, rng, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  // 選取已存在場上的防禦塔時，同步顯示金色射程圈
+  if(st.sel){
+    const cx = (st.sel.x + 0.5) * CS;
+    const cy = (st.sel.y + 0.5) * CS;
+    const rng = (st.sel.s.rng || 2.4) * CS;
+    ctx.save();
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = 'rgba(255, 209, 102, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = 'rgba(255, 209, 102, 0.08)';
     ctx.beginPath();
     ctx.arc(cx, cy, rng, 0, Math.PI * 2);
     ctx.fill();
@@ -1440,7 +1635,7 @@ function ui(){
   $('bWave').textContent = st.inWave ? '戰鬥中...' : `開始第 ${st.wave+1} 波 ⚔️`;
 
   $('pendWrap').hidden = !st.pending;
-  if(st.pending) $('pend').textContent = `待放置：${st.pending.w}。在草地上移動游標查看淡紅虛線射程！`;
+  if(st.pending) $('pend').textContent = `待放置：${st.pending.w}。點選草地預覽淡紅虛線射程，再點一次確認就位！`;
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
@@ -1458,7 +1653,6 @@ function resize(){
 function openSaveModal(){
   saveGameProgress();
   const raw = localStorage.getItem(STORAGE_KEY) || '{}';
-  // 將 JSON 編碼為易於複製傳送的 Base64 字串
   try {
     $('saveCodeBox').value = btoa(encodeURIComponent(raw));
   } catch(e) {
@@ -1489,7 +1683,7 @@ function importSaveCode(){
     try {
       jsonStr = decodeURIComponent(atob(code.trim()));
     } catch(e) {
-      jsonStr = code.trim(); // 若為一般 JSON
+      jsonStr = code.trim();
     }
     const data = JSON.parse(jsonStr);
     if(data && typeof data === 'object'){
@@ -1514,14 +1708,17 @@ function resetAllData(){
 
 // ==================== 13. 生命週期初始化 ====================
 window.addEventListener('DOMContentLoaded', () => {
+  // 防止 iOS / LINE 雙指縮放與雙擊縮放
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('gesturechange', e => e.preventDefault());
+  document.addEventListener('dblclick', e => e.preventDefault());
+
   cv = $('cv'); ctx = cv.getContext('2d');
   buildKb();
 
-  // 嘗試載入本地存檔
   const saved = loadGameProgress();
   renderTaiwanMap();
 
-  // 若從未看過指南，首次彈出
   if(!saved || !saved.hasSeenGuide){
     $('guideModal').hidden = false;
   }
@@ -1531,7 +1728,6 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   $('bHelp').onclick = () => { $('guideModal').hidden = false; };
 
-  // 存檔管理視窗事件
   $('bSaveMgr').onclick = openSaveModal;
   $('bCloseSaveModal').onclick = () => { $('saveModal').hidden = true; };
   $('bCopySave').onclick = copySaveCode;
@@ -1551,7 +1747,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if(st.pending){
       const len = st.pending.w.length;
       const refund = getLetterCost(len) * (len - 1);
-      // 退還買字母成本，若剛剛領了一發入魂獎勵則收回，防止反覆洗錢
       st.gold = Math.max(0, st.gold + refund - (st.pending.bonusAwarded ? 10 : 0));
       st.pending = null; hoverCell = null;
       pickPrompt(); ui();
@@ -1569,23 +1764,40 @@ window.addEventListener('DOMContentLoaded', () => {
     $('bSpeed').textContent = `速度 ${st.speed}×`;
   };
 
+  // 高精度座標映射，依據實際 Canvas 顯示大小消除偏差
   function updateHoverPos(clientX, clientY){
     const r = cv.getBoundingClientRect();
-    const x = Math.floor((clientX - r.left) / CS);
-    const y = Math.floor((clientY - r.top) / CS);
+    if(r.width === 0 || r.height === 0) return;
+    const x = Math.floor((clientX - r.left) / (r.width / COLS));
+    const y = Math.floor((clientY - r.top) / (r.height / ROWS));
     if(x >= 0 && x < COLS && y >= 0 && y < ROWS){
       hoverCell = { x, y };
-    } else {
-      hoverCell = null;
     }
   }
 
-  cv.addEventListener('pointermove', e => updateHoverPos(e.clientX, e.clientY));
-  cv.addEventListener('pointerleave', () => { hoverCell = null; });
+  // 跨設備指針事件監聽（精確區分滑鼠與觸控）
+  cv.addEventListener('pointerdown', e => {
+    lastPointerType = e.pointerType;
+    updateHoverPos(e.clientX, e.clientY);
+  });
+
+  cv.addEventListener('pointermove', e => {
+    lastPointerType = e.pointerType;
+    updateHoverPos(e.clientX, e.clientY);
+  });
+
+  cv.addEventListener('pointerleave', e => {
+    // 電腦滑鼠移出時清空預覽；手機觸控手指抬起時保留預覽射程圈
+    if(e.pointerType === 'mouse'){
+      hoverCell = null;
+    }
+  });
+
   cv.addEventListener('click', e => {
     const r = cv.getBoundingClientRect();
-    const x = Math.floor((e.clientX - r.left) / CS);
-    const y = Math.floor((e.clientY - r.top) / CS);
+    if(r.width === 0 || r.height === 0) return;
+    const x = Math.floor((e.clientX - r.left) / (r.width / COLS));
+    const y = Math.floor((e.clientY - r.top) / (r.height / ROWS));
     clickCell(x, y);
   });
 
