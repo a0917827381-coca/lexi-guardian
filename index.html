@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <script>
-// 偵測是否在 LINE 內建瀏覽器中
+// 偵測是否在 LINE 內建瀏覽器開啟，強制跳轉外部瀏覽器避免相容性與語音 API 受限問題
 if (/Line/i.test(navigator.userAgent)) {
   if (!location.search.includes('openExternalBrowser=1')) {
     const search = location.search ? location.search + '&openExternalBrowser=1' : '?openExternalBrowser=1';
@@ -16,7 +16,7 @@ if (/Line/i.test(navigator.userAgent)) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
 <style>
-/* 徹底封殺 iOS / LINE 快速連點放大與長按選取 */
+/* 徹底封殺行動裝置與 LINE 快速連點放大、選取與長按彈窗行為 */
 *, html, body, button, .key, .island-anchor {
   touch-action: manipulation !important;
   -webkit-touch-callout: none !important;
@@ -35,6 +35,7 @@ canvas {
   cursor: crosshair;
 }
 
+/* 全域主題色彩變數 */
 :root{
   --board:#18261f; --board2:#203229; --line:#2d463a;
   --chalk:#eaf1e7; --muted:#9db3a7;
@@ -54,7 +55,7 @@ body{
 .wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
 [hidden]{display:none !important}
 
-/* ==================== 1. 台灣世界地圖 ==================== */
+/* ==================== 1. 台灣世界地圖樣式 ==================== */
 #worldView{display:flex;flex-direction:column;gap:8px;padding-bottom:16px}
 .world-topbar{
   background:linear-gradient(135deg,#16271e,#223d2f);
@@ -145,7 +146,7 @@ body{
   100%{transform:translateY(-10px)}
 }
 
-/* ==================== 2. 戰鬥塔防視圖 ==================== */
+/* ==================== 2. 戰鬥塔防視圖樣式 ==================== */
 #battleView{display:flex;flex-direction:column;gap:6px}
 header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(16px,3.8vw,22px);margin:0;color:var(--tile);display:flex;align-items:baseline;gap:4px}
@@ -218,13 +219,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .key.wide{flex-basis:58px;font-family:var(--body);font-weight:900;font-size:11px;background:var(--board2);color:var(--chalk);box-shadow:0 2px 0 var(--line)}
 .hint{font-size:11px;color:var(--muted);text-align:center}
 
-/* ==================== 圖鑑容器與加強版 1.5 倍立體卡片 ==================== */
+/* ==================== 圖鑑容器與聚焦立體卡片 ==================== */
 details{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:8px;overflow:visible}
 summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 .codex-group{margin-top:8px}
 .group-title{font-size:11px;font-weight:900;color:var(--tile);margin-bottom:6px}
 
-/* 外層預留上下 14px、左右 18px 安全緩衝區，確保放大 1.5 倍後絕不超出版面切邊 */
 .codex{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
@@ -248,13 +248,12 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 }
 .cx b{font-family:var(--display);font-size:13px;color:var(--chalk);display:block}
 
-/* 核心加強：1.5 倍放大、實心底色不透光、金色立體發光投影與最高層級 */
 .cx.target-active{
   border:2px solid var(--gold)!important;
-  background:#1b3124!important; /* 實心深綠底，徹底遮蓋底層文字 */
+  background:#1b3124!important;
   color:var(--chalk)!important;
   transform:scale(1.5) translateZ(0)!important;
-  z-index:20; /* 浮於所有卡片最上方 */
+  z-index:20;
   box-shadow:0 12px 28px rgba(0,0,0,0.85), 0 0 16px rgba(255,209,102,0.65)!important;
   animation:targetPulse 2s infinite alternate ease-in-out;
 }
@@ -270,7 +269,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   100%{box-shadow:0 14px 32px rgba(0,0,0,0.95), 0 0 20px rgba(255,209,102,0.85)}
 }
 
-/* ==================== 彈窗通用 ==================== */
+/* ==================== 彈窗通用樣式 ==================== */
 .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
 .modal{background:#1a2b21;border:2px solid var(--gold);border-radius:12px;padding:18px;max-width:460px;width:100%;text-align:center;box-shadow:0 10px 35px rgba(0,0,0,0.85)}
 .modal h2{margin:0 0 10px;color:var(--gold);font-family:var(--display);font-size:22px}
@@ -283,7 +282,6 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   color:var(--gold);font-family:monospace;font-size:11px;padding:6px;box-sizing:border-box;margin:6px 0;resize:none;
 }
 
-/* ==================== 手機螢幕響應式適配 ==================== */
 @media(max-width:600px){
   .taiwan-stage{min-height:680px}
   .floating-card{width:160px;padding:6px 8px}
@@ -292,8 +290,6 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   .island-anchor{width:46px;height:46px;font-size:22px}
   .floating-card.to-right{left:52px}
   .floating-card.to-left{right:52px}
-  
-  /* 手機圖鑑網格：保證清晰 3 欄並保留安全外擴空間 */
   .codex{
     grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
     gap:6px;
@@ -302,7 +298,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   .cx{padding:4px 5px;font-size:10px}
   .cx b{font-size:12px}
   .cx.target-active{
-    transform:scale(1.45) translateZ(0)!important; /* 手機端黃金比例，聚焦且不超出外框 */
+    transform:scale(1.45) translateZ(0)!important;
   }
 }
 </style>
@@ -311,7 +307,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 
 <div class="wrap">
 
-  <!-- ==================== 台灣世界地圖畫面 ==================== -->
+  <!-- ==================== 1. 台灣世界地圖畫面 ==================== -->
   <div id="worldView">
     <div class="world-topbar">
       <div>
@@ -327,6 +323,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <div class="taiwan-stage" id="taiwanStage">
       <div class="sea-grid"></div>
 
+      <!-- 羅盤裝飾圖示 -->
       <svg class="compass" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="45" fill="none" stroke="#2d463a" stroke-width="2" stroke-dasharray="4 4"/>
         <polygon points="50,10 56,45 50,40 44,45" fill="#f2c94c"/>
@@ -334,6 +331,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
         <text x="50" y="8" fill="#f2c94c" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="900">N</text>
       </svg>
 
+      <!-- 台灣地形向量主視覺 -->
       <svg class="taiwan-svg" viewBox="0 0 500 750" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="twGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -364,17 +362,19 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
         <text x="90" y="384" fill="rgba(242,201,76,0.5)" font-size="11" font-family="sans-serif" font-weight="800">23.5°N 北回歸線</text>
       </svg>
 
+      <!-- 動態島嶼節點掛載容器 -->
       <div id="islandsContainer"></div>
     </div>
   </div>
 
-  <!-- ==================== 戰鬥塔防畫面 ==================== -->
+  <!-- ==================== 2. 戰鬥塔防視圖 ==================== -->
   <div id="battleView" hidden>
     <header>
       <h1><span id="mapTitle">萌寵森林</span> <small>第 <span id="mapWaveTxt">1</span> / 30 波</small></h1>
       <button class="map-return-btn" id="bBackWorld">🗺️ 返回台灣地圖 (自動存檔)</button>
     </header>
 
+    <!-- 題目提示與操作卡 -->
     <div class="prompt-card">
       <div class="prompt-main">
         <span class="prompt-title">當前目標：</span>
@@ -389,6 +389,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       </div>
     </div>
 
+    <!-- 即時狀態面板 -->
     <div class="stats">
       <div class="stat map"><span>當前島嶼</span><b id="sMap">萌寵森林</b></div>
       <div class="stat hp"><span>基地血量</span><b id="sHp">20</b></div>
@@ -397,6 +398,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       <div class="stat"><span>擊倒數</span><b id="sKills">0</b></div>
     </div>
 
+    <!-- 拼字輸入槽與操作按鈕 -->
     <div class="rack">
       <div class="slots" id="slots"></div>
       <div class="rack-btns">
@@ -405,6 +407,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       </div>
     </div>
 
+    <!-- 塔防遊戲 Canvas 畫布與結束結算面板 -->
     <div class="stage" id="stage">
       <canvas id="cv" width="960" height="640"></canvas>
       <div class="over" id="over" hidden>
@@ -417,6 +420,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       </div>
     </div>
 
+    <!-- 戰鬥進程控制列 -->
     <div class="bar">
       <button class="primary" id="bWave">開始第 1 波 ⚔️</button>
       <button id="bSpeed">速度 1×</button>
@@ -424,11 +428,13 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       <div class="msg" id="msg">請依照上方題目填入剩下的字母！</div>
     </div>
 
+    <!-- 待放置士兵提示 -->
     <div id="pendWrap" hidden>
       <span class="pending" id="pend"></span>
       <button id="bCancel">取消放置</button>
     </div>
 
+    <!-- 選取已建造單位回收資訊 -->
     <div id="selWrap" hidden>
       <div class="sel-box">
         <span id="selInfo">已選取單位</span>
@@ -437,6 +443,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       </div>
     </div>
 
+    <!-- 虛擬鍵盤與單字圖鑑 -->
     <div class="kb" id="kb"></div>
     <div class="hint">提示：進度每波自動保存至本機！點擊草地瞬間完成建造，並展開淡紅射程衝擊波。</div>
 
@@ -493,7 +500,8 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 </div>
 
 <script>
-// ==================== 1. 6大島嶼設定 ====================
+// ==================== 1. 6 大島嶼基本資料設定 ====================
+// 定義島嶼坐標、風格色彩與怪物路徑點（wp: Waypoints）
 const ISLANDS = [
   {
     id:0, name:'萌寵森林', eng:'Pet Forest', icon:'🌲',
@@ -539,7 +547,8 @@ const ISLANDS = [
   }
 ];
 
-// ==================== 2. 300 單字資料庫 ====================
+// ==================== 2. 300 單字資料庫與技能屬性解析 ====================
+// 格式為：英文:中文:技能特徵
 const RAW_WORDS = [
   "CAT:貓:slash,DOG:狗:slash,PIG:豬:slash,HEN:母雞:slash,OWL:貓頭鷹:beam,COW:乳牛:barrier,ANT:螞蟻:slash,FOX:狐狸:beam,BAT:蝙蝠:beam,BEE:蜜蜂:swarm,WOLF:狼:slash,BEAR:熊:slash,DEER:鹿:slash,DUCK:鴨:breath,FROG:青蛙:breath,LION:獅子:slash,GOAT:山羊:slash,TREE:樹木:barrier,WOOD:木頭:barrier,LEAF:樹葉:bomb,DIRT:泥土:ring,ROCK:岩石:bomb,BIRD:鳥:beam,SEED:種子:bomb,BARK:樹皮:barrier,TIGER:老虎:slash,HORSE:馬:barrier,SHEEP:綿羊:ring,PANDA:熊貓:ring,EAGLE:老鷹:drop_spike,SNAKE:蛇:breath,ZEBRA:斑馬:barrier,ROBIN:知更鳥:barrier,PLANT:植物:barrier,GRASS:青草:vortex,ACORN:橡實:drop_spike,STONE:石頭:drop_spike,FRUIT:水果:barrier,TRACK:足跡:barrier,BLOOM:開花:vortex,MONKEY:猴子:swarm,RABBIT:兔子:swarm,BEAVER:河狸:barrier,SPIDER:蜘蛛:ring,FOREST:森林:drop_spike,BRANCH:樹枝:drop_spike,GIRAFFE:長頸鹿:beam,CHEETAH:獵豹:slash,HAMSTER:倉鼠:barrier,MONSTER:怪獸:breath",
   "SEA:大海:ring,COD:鱈魚:slash,FIN:魚鰭:slash,NET:漁網:barrier,ROD:釣竿:slash,WET:潮濕:ring,BAY:海灣:barrier,OAR:船槳:slash,EEL:鰻魚:chain,DIP:浸入:ring,FISH:魚:swarm,CLAM:蛤蜊:barrier,SEAL:海豹:swarm,TUNA:鮪魚:swarm,SHIP:大船:bomb,WAVE:海浪:ring,TIDE:潮汐:ring,DEEP:深海:vortex,SURF:衝浪:beam,BOAT:小船:bomb,DROP:水滴:breath,SALT:鹽巴:breath,HOOK:魚鉤:beam,REEF:礁石:barrier,SWIM:游泳:beam,SHARK:鯊魚:slash,WHALE:鯨魚:drop_spike,CORAL:珊瑚:barrier,PEARL:珍珠:barrier,SQUID:烏賊:breath,OTTER:海獺:beam,SHELL:貝殼:barrier,OCEAN:海洋:ring,FLOAT:漂浮:drop_spike,ANCHOR:鐵錨:drop_spike,COAST:海岸:ring,DIVER:潛水員:beam,BEACH:海灘:ring,WATER:水:ring,STORM:風暴:vortex,TURTLE:海龜:barrier,SHRIMP:蝦子:beam,WALRUS:海象:slash,SALMON:鮭魚:beam,CANNON:大砲:bomb,PIRATE:海盜:bomb,DOLPHIN:海豚:ring,OCTOPUS:章魚:vortex,PENGUIN:企鵝:breath,TSUNAMI:海嘯:breath",
@@ -549,6 +558,7 @@ const RAW_WORDS = [
   "UFO:幽浮:beam,BOT:機器人:beam,LAB:實驗室:barrier,POD:逃生艙:barrier,BIT:位元:barrier,HUB:轉運站:barrier,MAP:星圖:barrier,KEY:密鑰:barrier,BOX:黑盒:barrier,ARM:機械臂:barrier,MARS:火星:bomb,MOON:月球:ring,STAR:恆星:bomb,NOVA:新星:bomb,ATOM:原子:bomb,BEAT:脈衝:ring,CHIP:晶片:barrier,CORE:核心:barrier,DATA:數據:barrier,GRID:電網:chain,GEAR:齒輪:barrier,WIRE:線路:chain,WARP:躍遷:ring,TECH:科技:barrier,SHED:機庫:barrier,SPACE:太空:ring,COMET:彗星:bomb,ORBIT:軌道:ring,ALIEN:外星人:vortex,ROBOT:機械人:beam,LASER:雷射:beam,RADAR:雷達:barrier,PANEL:光板:barrier,CYBER:賽博:slash,PROBE:探測器:beam,LUNAR:月球:swarm,PILOT:飛行員:beam,STEEL:鋼鐵:barrier,POWER:能量:barrier,DRONE:無人機:swarm,ROCKET:火箭:bomb,PLANET:行星:vortex,GALAXY:銀河:ring,METEOR:流星:bomb,ENERGY:能量:beam,SHIELD:護盾:barrier,GRAVITY:重力:ring,ECLIPSE:日蝕:vortex,JUPITER:木星:vortex,COMMAND:指揮所:beam"
 ];
 
+// 將字串陣列解析為結構化字典，並依單字長度計算基礎傷害、射程與攻速
 const WORLD_SPECS = RAW_WORDS.map(raw => {
   const dict = {};
   raw.split(',').forEach(item => {
@@ -561,6 +571,7 @@ const WORLD_SPECS = RAW_WORDS.map(raw => {
     else if(len === 5){ dmg = 42; rng = 2.8; rate = 0.95; }
     else { dmg = 95; rng = 3.4; rate = 0.75; }
 
+    // 特殊技能微調
     if(fx === 'bomb' || fx === 'vortex'){ aoe = len >= 6 ? 1.7 : 1.2; dmg *= 0.8; }
     if(fx === 'breath'){ dps = Math.round(dmg * 0.45); dmg *= 0.4; }
     if(fx === 'ring'){ slow = 0.5; dmg *= 0.5; }
@@ -571,41 +582,95 @@ const WORLD_SPECS = RAW_WORDS.map(raw => {
   return dict;
 });
 
-// ==================== 3. 語音系統 ====================
-let _currentUtter = null;
-function speakWord(w, zh){
-  if(!('speechSynthesis' in window)) return;
+// ==================== 3. 非同步語音排程佇列系統 ====================
+// 使用先進先出佇列（FIFO Queue）依序播放發音，徹底解決前音未完與後音重疊混音的問題
+const speechQueue = [];
+let isSpeaking = false;
+
+/**
+ * 將發音任務推進排程佇列
+ * @param {string} w 英文單字
+ * @param {string} zh 中文翻譯（選填，若只需單字發音則傳入空字串或省略）
+ */
+function speakWord(w, zh = ''){
+  if(!('speechSynthesis' in window) || !w) return;
+  speechQueue.push({ w, zh });
+  processSpeechQueue();
+}
+
+/**
+ * 處理語音佇列的調度核心
+ */
+function processSpeechQueue(){
+  // 若目前已有語音正在播報，或佇列已空，則直接退出等待事件喚醒
+  if(isSpeaking || speechQueue.length === 0) return;
+
+  isSpeaking = true;
+  const current = speechQueue.shift();
+
   try{
-    window.speechSynthesis.cancel();
-    _currentUtter = new SpeechSynthesisUtterance(w.toLowerCase());
-    _currentUtter.lang = 'en-US';
-    _currentUtter.rate = 0.82;
-    _currentUtter.onend = () => {
-      if(zh){
-        const uZh = new SpeechSynthesisUtterance(zh);
+    // 實例化英文語音對象
+    const uEn = new SpeechSynthesisUtterance(current.w.toLowerCase());
+    uEn.lang = 'en-US';
+    uEn.rate = 0.85; // 稍慢節奏便於聽辨拼字細節
+
+    let finished = false;
+    // 確保當前發音結尾正確釋放並觸發下一個排程的統整函式
+    const finishCurrent = () => {
+      if(finished) return;
+      finished = true;
+      clearTimeout(safetyTimer);
+      // 發音之間保留 200 毫秒聽覺空隙，避免緊貼黏連
+      setTimeout(() => {
+        isSpeaking = false;
+        processSpeechQueue();
+      }, 200);
+    };
+
+    // 行動端/iOS Chrome 防卡死安全閥（若 6 秒內未收到 onend 強制釋放鎖）
+    const safetyTimer = setTimeout(() => {
+      finishCurrent();
+    }, 6000);
+
+    uEn.onend = () => {
+      // 若該發音任務含有中文解釋，英文結束後接續播報中文
+      if(current.zh){
+        const uZh = new SpeechSynthesisUtterance(current.zh);
         uZh.lang = 'zh-TW';
         uZh.rate = 1.0;
-        _currentUtter = uZh;
+        uZh.onend = finishCurrent;
+        uZh.onerror = finishCurrent;
         window.speechSynthesis.speak(uZh);
+      } else {
+        finishCurrent();
       }
     };
-    window.speechSynthesis.speak(_currentUtter);
+
+    uEn.onerror = finishCurrent;
+    window.speechSynthesis.speak(uEn);
   }catch(e){
     console.warn('TTS error:', e);
+    isSpeaking = false;
+    processSpeechQueue();
   }
 }
 
 // ==================== 4. 本地持久化存檔系統 ====================
 const STORAGE_KEY = 'SPELL_TD_SAVE_TW_V1';
 
+// 世界進度：已解鎖最高島嶼、已完全征服島嶼、開局殘值獎金
 let worldProgress = {
   unlockedMax: 0,
   conquered: [],
   bonusGold: 60
 };
 
+// 記錄個別島嶼內部陣容與波數存檔
 let islandSavedStates = {};
 
+/**
+ * 將當前遊戲完整進度寫入 LocalStorage
+ */
 function saveGameProgress(){
   try{
     if(!$('battleView').hidden && !st.over){
@@ -631,6 +696,9 @@ function saveGameProgress(){
   }
 }
 
+/**
+ * 從 LocalStorage 載入已保存的遊戲資料
+ */
 function loadGameProgress(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -655,7 +723,7 @@ function loadGameProgress(){
   }
 }
 
-// ==================== 5. 遊戲狀態變數 ====================
+// ==================== 5. 遊戲全域狀態變數 ====================
 const COLS = 12, ROWS = 8;
 let cv, ctx, CS = 50, DPR = 1;
 let hoverCell = null;
@@ -673,6 +741,7 @@ const $ = id => document.getElementById(id);
 const say = (t, cls='') => { const m=$('msg'); if(m){ m.textContent=t; m.className='msg '+cls; } };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
+// 計算不同單字長度購買單一字母的造價
 function getLetterCost(len){
   if(len <= 3) return 5;
   if(len === 4) return 8;
@@ -680,6 +749,7 @@ function getLetterCost(len){
   return 18;
 }
 
+// 根據目前挑戰波數判斷題庫難度區間
 function getTier(wave){
   if(wave <= 5) return { lv:1, targetLen:3, maxLen:3, name:'第 1 等級 (3 字)' };
   if(wave <= 10) return { lv:2, targetLen:4, maxLen:4, name:'第 2 等級 (4 字)' };
@@ -687,6 +757,7 @@ function getTier(wave){
   return { lv:4, targetLen:6, maxLen:8, name:'第 4 等級 (6+ 字)' };
 }
 
+// 地圖路徑線段與長度計算
 let segs = [], TOTAL_LEN = 0, pathSet = new Set();
 function initMapPath(){
   segs = []; TOTAL_LEN = 0; pathSet.clear();
@@ -703,6 +774,8 @@ function initMapPath(){
     }
   }
 }
+
+// 根據怪物行進距離計算其實際座標 (x, y)
 function posAt(d){
   for(const s of segs){
     if(d <= s.start + s.len){
@@ -715,7 +788,7 @@ function posAt(d){
 }
 const isPath = (x,y) => pathSet.has(x+','+y);
 
-// ==================== 6. 台灣大地圖渲染 ====================
+// ==================== 6. 台灣大地圖渲染與關卡切換 ====================
 function renderTaiwanMap(){
   const container = $('islandsContainer');
   container.innerHTML = '';
@@ -756,10 +829,14 @@ function renderTaiwanMap(){
   });
 }
 
+/**
+ * 進入指定島嶼展開塔防戰役
+ */
 function enterIsland(id, carryoverGold = 60){
   st.curIslandId = id;
   const isl = ISLANDS[id];
 
+  // 動態切換島嶼專屬色票
   document.documentElement.style.setProperty('--board', isl.board);
   document.documentElement.style.setProperty('--line', isl.line);
   document.documentElement.style.setProperty('--tile', isl.tile);
@@ -814,6 +891,9 @@ function enterIsland(id, carryoverGold = 60){
   saveGameProgress();
 }
 
+/**
+ * 返回台灣大地圖並儲存
+ */
 function returnToWorldMap(){
   saveGameProgress();
   st.inWave = false;
@@ -825,6 +905,9 @@ function returnToWorldMap(){
   renderTaiwanMap();
 }
 
+/**
+ * 擊破第 30 波魔王，完成當前島嶼征服
+ */
 function conquerCurrentIsland(){
   st.autoWaveTimer = 0;
   const curId = st.curIslandId;
@@ -837,6 +920,7 @@ function conquerCurrentIsland(){
     worldProgress.unlockedMax = nextId;
   }
 
+  // 計算結算殘值折抵金幣
   let totalAsset = st.gold;
   st.towers.forEach(t => { totalAsset += getLetterCost(t.w.length) * t.w.length * (t.star||1); });
   const carryover = 60 + Math.min(60, Math.floor(totalAsset * 0.15));
@@ -862,7 +946,10 @@ function conquerCurrentIsland(){
   };
 }
 
-// ==================== 7. 拼字操作與智慧免按鈕召喚 ====================
+// ==================== 7. 拼字核心與自動發音控制 ====================
+/**
+ * 隨機抽取新單字題目，並在字首填入輸入框時自動排程發音
+ */
 function pickPrompt(){
   const tier = getTier(st.wave);
   const dict = WORLD_SPECS[st.curIslandId];
@@ -872,7 +959,7 @@ function pickPrompt(){
   const [w, s] = pool[Math.floor(Math.random() * pool.length)];
   st.targetWord = w;
   st.targetSpec = s;
-  st.slots = [w[0]];
+  st.slots = [w[0]]; // 題目預設提供第 1 個字首字母
   st.backspaced = false;
 
   $('pZh').textContent = s.zh;
@@ -880,6 +967,9 @@ function pickPrompt(){
   $('pCost').textContent = `(${getLetterCost(w.length)}金/字)`;
   ui();
   buildCodex();
+
+  // ★ 核心功能：當字首出現在輸入框時，排隊朗讀完整單字（排隊等待上一句念完，不搶音）
+  speakWord(w);
 }
 
 function skipPrompt(){
@@ -900,7 +990,7 @@ function buyLetter(L){
   st.slots.push(L);
   ui();
 
-  // 輸入完整且完全正確，直接秒速召喚！
+  // 完整輸入正確字母後，免手動按確認直接秒速自動召喚
   if(st.slots.length === len && st.slots.join('') === st.targetWord){
     submitWord();
   }
@@ -949,6 +1039,7 @@ function submitWord(){
 
   const s = dict[w];
   let bonusAwarded = false;
+  // 一發入魂獎勵判定：完全未退回且一次拼對
   if(w === st.targetWord && !st.backspaced){
     st.gold += 10;
     bonusAwarded = true;
@@ -961,6 +1052,7 @@ function submitWord(){
   st.pending = { w, s, bonusAwarded };
   st.slots = [];
   st.built.add(w);
+  // 召喚成功：排隊朗讀單字與中文翻譯
   speakWord(w, s.zh);
   ui();
   buildCodex();
@@ -971,7 +1063,7 @@ function shake(){
   e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake');
 }
 
-// ==================== 8. 方案 B：一鍵點擊直接建造 ＋ 落地射程擴散光圈 ====================
+// ==================== 8. 放置、升星、回收與淡紅衝擊波 ====================
 function clickCell(x, y){
   if(st.over) return;
   if(st.pending){
@@ -979,6 +1071,7 @@ function clickCell(x, y){
 
     const exist = st.towers.find(t => t.x===x && t.y===y);
     if(exist){
+      // 同單字重疊：直接升星提升屬性
       if(exist.w === st.pending.w){
         exist.star = (exist.star || 1) + 1;
         fx({ type:'ring', x:x+0.5, y:y+0.5, col:'#ffd166', life:0.4 });
@@ -989,6 +1082,7 @@ function clickCell(x, y){
         pickPrompt(); ui(); saveGameProgress();
         return;
       } else {
+        // 不同單字重疊：退款 70% 舊單位並以新單字覆蓋
         const refund = Math.floor(getLetterCost(exist.w.length) * exist.w.length * (exist.star || 1) * 0.7);
         st.gold += refund;
         st.towers = st.towers.filter(t => t !== exist);
@@ -1002,7 +1096,7 @@ function clickCell(x, y){
       }
     }
 
-    // 一鍵直接建造：瞬間激發 0.5 秒淡出擴散光圈
+    // 點擊空草地：建造並激發淡紅射程擴散光圈
     fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
     st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
     say(`✨【${st.pending.w}】建造完成！射程範圍已展開。`, 'good');
@@ -1011,6 +1105,7 @@ function clickCell(x, y){
     return;
   }
 
+  // 未持有待放置單位時，點選現有單位查看射程與回收資訊
   const t = st.towers.find(t => t.x===x && t.y===y);
   st.sel = t || null;
   if(t){
@@ -1034,7 +1129,7 @@ function recycleSelected(){
   saveGameProgress();
 }
 
-// ==================== 9. 戰鬥循環與連續挑戰 ====================
+// ==================== 9. 戰鬥循環更新與魔王警報 ====================
 function toggleAutoWave(){
   st.autoWave = !st.autoWave;
   st.autoWaveTimer = 0;
@@ -1087,6 +1182,7 @@ function spawnEnemy(type){
 function fx(o){ st.fx.push({ ...o, life:o.life||0.28, t:0 }); }
 function addShake(v){ st.camShake = Math.min(20, Math.max(st.camShake||0, v)); }
 
+// 依照技能類型發動攻擊動畫特效
 function fireTowerFx(t, c, tg){
   const fxType = t.s.fx || 'slash';
   if(fxType === 'beam') fx({ type:'beam', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#00f2fe', life:0.26 });
@@ -1109,6 +1205,7 @@ function update(dt, dtReal){
     st.prepTime = Math.max(0, st.prepTime - dt);
   }
 
+  // 連續挑戰倒數計時
   if(!st.inWave && !st.over && st.autoWave && st.wave < 30 && st.autoWaveTimer > 0){
     st.autoWaveTimer -= dtReal;
     if(st.autoWaveTimer <= 0){
@@ -1119,16 +1216,17 @@ function update(dt, dtReal){
     }
   }
 
+  // 生成怪物流程
   if(st.inWave && st.spawnLeft > 0){
     st.spawnT -= dt;
     if(st.spawnT <= 0){
       st.spawnLeft--;
       st.spawnT = 0.8;
 
-      // ★ 新增：魔王登場前 2 秒警示、畫布震動與大字提示 ★
+      // 魔王登場前 2 秒警示特效與震動
       if(st.spawnLeft === 1 && st.isBoss){
-        st.spawnT = 2.0; // 延長最後一波小兵間隔 2 秒，營造暴風雨前的寧靜
-        addShake(12);    // 警報地動特效
+        st.spawnT = 2.0;
+        addShake(12);
         fx({ type:'txt', x:6, y:3.5, txt:'⚠️ 王要出來摟～！', col:'#ff3b30', life:2.0 });
         say('⚠️ 警報！王要出來摟～請集中火力！', 'bad');
       }
@@ -1142,6 +1240,7 @@ function update(dt, dtReal){
     }
   }
 
+  // 更新怪物位移與狀態效果
   for(const e of st.enemies){
     const f = e.slowT > 0 ? e.slowF : 1;
     e.d += e.spd * f * dt;
@@ -1156,6 +1255,7 @@ function update(dt, dtReal){
     }
   }
 
+  // 防禦塔索敵與開火
   for(const t of st.towers){
     t.cd = (t.cd || 0) - dt;
     if(t.cd > 0) continue;
@@ -1199,6 +1299,7 @@ function update(dt, dtReal){
     t.cd = 1 / t.s.rate;
   }
 
+  // 清除死亡怪物與結算賞金
   st.enemies = st.enemies.filter(e => {
     if(e.leak) return false;
     if(e.hp <= 0){
@@ -1210,6 +1311,7 @@ function update(dt, dtReal){
     return true;
   });
 
+  // 基地損毀結算
   if(st.hp <= 0){
     st.hp = 0; st.over = true;
     st.autoWaveTimer = 0;
@@ -1219,6 +1321,7 @@ function update(dt, dtReal){
     saveGameProgress();
   }
 
+  // 波數完全通關結算
   if(st.inWave && st.spawnLeft === 0 && st.enemies.length === 0){
     st.inWave = false;
     const bonus = 10 + st.wave;
@@ -1242,7 +1345,7 @@ function update(dt, dtReal){
   st.fx = st.fx.filter(f => f.t < f.life);
 }
 
-// ==================== 10. 畫布渲染與強效粒子 ====================
+// ==================== 10. 畫布渲染系統 ====================
 function draw(){
   const W = CS * COLS, H = CS * ROWS;
   ctx.save();
@@ -1251,6 +1354,7 @@ function draw(){
   }
   const isl = ISLANDS[st.curIslandId];
 
+  // 繪製地圖網格與步道
   ctx.fillStyle = isl.board; ctx.fillRect(0, 0, W, H);
   for(let y=0; y<ROWS; y++) for(let x=0; x<COLS; x++){
     if(isPath(x,y)){
@@ -1263,13 +1367,14 @@ function draw(){
   for(let x=1; x<COLS; x++){ ctx.beginPath(); ctx.moveTo(x*CS,0); ctx.lineTo(x*CS,H); ctx.stroke(); }
   for(let y=1; y<ROWS; y++){ ctx.beginPath(); ctx.moveTo(0,y*CS); ctx.lineTo(W,y*CS); ctx.stroke(); }
 
+  // 起點與基地標籤
   ctx.font = `900 ${CS*0.22}px Nunito, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const startY = isl.wp[0][1] + 0.5;
   const endY = isl.wp[isl.wp.length - 1][1] + 0.5;
   ctx.fillStyle = '#ff6b5b'; ctx.fillText('起點', CS*0.5, CS*startY);
   ctx.fillStyle = '#7ed6a0'; ctx.fillText('基地', CS*11.5, CS*endY);
 
-  // 防禦塔
+  // 繪製防禦塔
   for(const t of st.towers){
     const p = CS * 0.08;
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(t.x*CS+p, t.y*CS+p+2, CS-2*p, CS-2*p);
@@ -1289,7 +1394,7 @@ function draw(){
     ctx.fillText(tag, t.x*CS + CS/2, t.y*CS + CS*0.75);
   }
 
-  // 怪物精緻繪製模組
+  // 繪製各類型怪物視覺與血條
   const nowTime = performance.now() * 0.003;
 
   for(const e of st.enemies){
@@ -1443,7 +1548,7 @@ function draw(){
     ctx.restore();
   }
 
-  // 電腦端滑鼠移動時的游標射程圈預覽
+  // 滑鼠懸停預覽射程圈
   if(st.pending && hoverCell){
     const cx = (hoverCell.x + 0.5) * CS;
     const cy = (hoverCell.y + 0.5) * CS;
@@ -1465,7 +1570,7 @@ function draw(){
     ctx.restore();
   }
 
-  // 選取已存在場上的單位時，同步顯示金色射程圈
+  // 選取已存在單位時標記射程圈
   if(st.sel){
     const cx = (st.sel.x + 0.5) * CS;
     const cy = (st.sel.y + 0.5) * CS;
@@ -1487,13 +1592,16 @@ function draw(){
   ctx.restore();
 }
 
+/**
+ * 特效與衝擊波渲染模組
+ */
 function renderEnhancedFx(f){
   const p = f.t / f.life, a = Math.max(0, 1 - p);
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
 
   switch(f.type){
-    // 落地瞬間以正弦波向外擴散 0.5 秒並自然淡出的半透明衝擊波
+    // 單位落地瞬間向外擴散淡出的半透明淡紅衝擊波
     case 'spawn_range':{
       const ease = Math.sin(p * Math.PI * 0.5);
       const rCur = (f.rng || 2.4) * CS * (0.35 + 0.65 * ease);
@@ -1610,7 +1718,7 @@ function renderEnhancedFx(f){
   ctx.restore();
 }
 
-// ==================== 11. 鍵盤與圖鑑 ====================
+// ==================== 11. 鍵盤與單字圖鑑建構 ====================
 function buildKb(){
   const kb = $('kb'); kb.innerHTML = '';
   ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach((rowStr, i) => {
@@ -1653,6 +1761,7 @@ function buildCodex(){
       const c = document.createElement('div');
       c.className = `cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCur?'target-active':''}`;
       c.innerHTML = `<b>${w}</b><i></i>${s.zh}`;
+      // 點擊圖鑑卡片發音（同樣接入佇列依序發音）
       c.onclick = () => { speakWord(w, s.zh); say(`🔊 ${w} (${s.zh})・威力:${s.dmg} 射程:${s.rng}`); };
       cDiv.appendChild(c);
     });
@@ -1661,6 +1770,7 @@ function buildCodex(){
   });
 }
 
+// 刷新各項 UI 面板狀態
 function ui(){
   $('sHp').textContent = Math.ceil(st.hp);
   $('sGold').textContent = st.gold;
@@ -1702,6 +1812,7 @@ function ui(){
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
+// 根據視窗寬度自適應重繪畫布尺寸與 DPR
 function resize(){
   const stage = $('stage');
   const w = stage.clientWidth || 360;
@@ -1769,8 +1880,9 @@ function resetAllData(){
   }
 }
 
-// ==================== 13. 生命週期初始化 ====================
+// ==================== 13. 生命週期初始化與事件綁定 ====================
 window.addEventListener('DOMContentLoaded', () => {
+  // 阻止 Safari / 行動端手勢縮放
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('gesturechange', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault());
@@ -1826,6 +1938,7 @@ window.addEventListener('DOMContentLoaded', () => {
     $('bSpeed').textContent = `速度 ${st.speed}×`;
   };
 
+  // 取得滑鼠游標在遊戲網格上的位置
   function updateHoverPos(clientX, clientY){
     const r = cv.getBoundingClientRect();
     if(r.width === 0 || r.height === 0) return;
@@ -1857,6 +1970,8 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('resize', resize);
+  
+  // 實體鍵盤監聽事件
   window.addEventListener('keydown', e => {
     if($('battleView').hidden) return;
     if(e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1869,6 +1984,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 主動畫更新循環
   let prev = performance.now();
   function loop(now){
     const dtReal = Math.min(0.05, (now - prev)/1000);
