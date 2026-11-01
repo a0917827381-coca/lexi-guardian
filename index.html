@@ -1167,7 +1167,7 @@ function startWave(){
 }
 
 function spawnEnemy(type){
-  const base = 24 * Math.pow(1.12, st.wave - 1);
+  const base = 60 * Math.pow(1.12, st.wave - 1);
   const startPos = posAt(0);
   const e = { d:0, type, slowF:1, slowT:0, dot:0, dotT:0, x:startPos.x, y:startPos.y, spd:1.1, hp:base, rew:3 };
   if(type === 'fast'){ e.spd = 1.85; e.hp = base * 0.65; e.rew = 3; }
