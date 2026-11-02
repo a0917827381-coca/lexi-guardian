@@ -12,7 +12,7 @@ if (/Line/i.test(navigator.userAgent)) {
   }
 }
 </script>
-<title>拼字塔防 - 台灣群島自動存檔版</title>
+<title>拼字塔防 - 台灣群島傳奇皇家版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800;900&display=swap">
 <style>
@@ -22,9 +22,9 @@ if (/Line/i.test(navigator.userAgent)) {
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
+  box-sizing: border-box;
 }
 
-/* 戰鬥畫布強制獨立手勢捕獲，防止拖曳預覽射程時觸發瀏覽器滾動 */
 canvas {
   touch-action: none !important;
   -webkit-touch-callout: none !important;
@@ -35,57 +35,73 @@ canvas {
   cursor: crosshair;
 }
 
-/* 全域主題色彩變數 */
 :root{
-  --board:#18261f; --board2:#203229; --line:#2d463a;
-  --chalk:#eaf1e7; --muted:#9db3a7;
-  --tile:#f2c94c; --tile-ink:#2a2208; --tile-edge:#b58f1f;
-  --danger:#ff6b5b; --ok:#7ed6a0; --gold:#ffd166;
+  --board:#122019; --board2:#1a2e24; --line:#2e5240;
+  --chalk:#f4fbf7; --muted:#9ab5a6;
+  --tile:#ffd166; --tile-ink:#241c04; --tile-edge:#b8860b;
+  --danger:#ff5a5f; --ok:#06d6a0; --gold:#ffd166; --accent:#118ab2;
   --display:"Bungee","Nunito",system-ui,sans-serif;
   --body:"Nunito","PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
   color-scheme:dark;
 }
-html,body{background:#09120e;color:var(--chalk);margin:0;padding:0;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+html,body{
+  background:radial-gradient(circle at 50% 0%, #162a22 0%, #070e0b 100%);
+  color:var(--chalk);margin:0;padding:0;overflow-x:hidden;-webkit-tap-highlight-color:transparent;
+  min-height:100vh;
+}
 body{
   font-family:var(--body);
   padding-left:max(8px,env(safe-area-inset-left,0px));
   padding-right:max(8px,env(safe-area-inset-right,0px));
-  padding-block:6px 20px;
+  padding-block:8px 24px;
 }
-.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 [hidden]{display:none !important}
 
-/* ==================== 1. 台灣世界地圖樣式 ==================== */
-#worldView{display:flex;flex-direction:column;gap:8px;padding-bottom:16px}
+/* ==================== 1. 台灣世界地圖皇家級樣式 ==================== */
+#worldView{display:flex;flex-direction:column;gap:10px;padding-bottom:16px}
 .world-topbar{
-  background:linear-gradient(135deg,#16271e,#223d2f);
-  border:2px solid var(--gold);border-radius:10px;padding:10px 14px;
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+  background:linear-gradient(135deg, rgba(28,53,41,0.92), rgba(15,29,23,0.95));
+  backdrop-filter:blur(12px);
+  border:2px solid rgba(255,209,102,0.75);border-radius:14px;padding:12px 16px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.15);
 }
-.world-topbar h1{margin:0;font-family:var(--display);color:var(--gold);font-size:clamp(17px,3.8vw,23px)}
-.world-topbar p{margin:2px 0 0;font-size:12px;color:var(--muted)}
-.top-actions{display:flex;align-items:center;gap:6px}
+.world-topbar h1{
+  margin:0;font-family:var(--display);color:var(--gold);
+  font-size:clamp(18px,4vw,25px);
+  text-shadow:0 2px 10px rgba(255,209,102,0.4);
+  letter-spacing:0.5px;
+}
+.world-topbar p{margin:3px 0 0;font-size:12.5px;color:var(--muted);font-weight:700}
+.top-actions{display:flex;align-items:center;gap:8px}
 
 .taiwan-stage{
-  position:relative;width:100%;min-height:760px;
-  background:radial-gradient(ellipse at center, #13241b 0%, #0a130f 100%);
-  border:2px solid var(--line);border-radius:14px;overflow:hidden;
-  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+  position:relative;width:100%;min-height:770px;
+  background:radial-gradient(ellipse at 50% 45%, #13334c 0%, #091926 60%, #050d14 100%);
+  border:2px solid rgba(124,198,254,0.3);border-radius:18px;overflow:hidden;
+  box-shadow:0 14px 40px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,242,254,0.08);
 }
 .sea-grid{
   position:absolute;inset:0;
-  background-image:linear-gradient(rgba(45,70,58,0.2) 1px, transparent 1px),
-                   linear-gradient(90deg, rgba(45,70,58,0.2) 1px, transparent 1px);
-  background-size:40px 40px;pointer-events:none;
+  background-image:
+    radial-gradient(rgba(0,242,254,0.12) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:28px 28px, 56px 56px, 56px 56px;
+  pointer-events:none;
 }
 .compass{
-  position:absolute;top:20px;right:20px;width:70px;height:70px;opacity:0.35;pointer-events:none;
+  position:absolute;top:22px;right:22px;width:78px;height:78px;opacity:0.55;pointer-events:none;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+  animation:spinSlow 60s linear infinite;
 }
+@keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
 .taiwan-svg{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:min(440px, 92%);height:auto;
-  filter:drop-shadow(0 15px 25px rgba(0,0,0,0.7));pointer-events:none;
+  width:min(450px, 92%);height:auto;
+  filter:drop-shadow(0 20px 35px rgba(0,0,0,0.85));pointer-events:none;
 }
 
 .island-node{
@@ -93,47 +109,63 @@ body{
   z-index:10;display:flex;align-items:center;
 }
 .island-anchor{
-  width:54px;height:54px;border-radius:50%;
-  display:grid;place-items:center;font-size:26px;
+  width:60px;height:60px;border-radius:50%;
+  display:grid;place-items:center;font-size:28px;
   cursor:pointer;position:relative;user-select:none;
-  box-shadow:0 6px 16px rgba(0,0,0,0.6);
-  border:2.5px solid var(--gold);
+  background:radial-gradient(circle at 30% 30%, #2f5c46, #13281e);
+  box-shadow:0 8px 20px rgba(0,0,0,0.75), 0 0 0 4px rgba(255,209,102,0.2), inset 0 2px 4px rgba(255,255,255,0.35);
+  border:3px solid var(--gold);
   animation:floatIsland 3.2s ease-in-out infinite alternate;
-  background:#1e3327;transition:transform .2s ease;
+  transition:transform .25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .25s ease;
 }
-.island-anchor:hover{transform:scale(1.12)}
+.island-anchor:hover{
+  transform:scale(1.18) translateY(-4px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.85), 0 0 22px rgba(255,209,102,0.75), inset 0 2px 6px rgba(255,255,255,0.5);
+}
 .island-anchor.locked{
-  filter:grayscale(90%);opacity:0.45;border-color:var(--muted);border-style:dashed;cursor:not-allowed;
+  filter:grayscale(95%);opacity:0.5;border-color:var(--muted);border-style:dashed;cursor:not-allowed;
+  box-shadow:0 4px 10px rgba(0,0,0,0.5);
 }
 .island-anchor.conquered{
-  border-color:var(--ok);box-shadow:0 0 16px rgba(126,214,160,0.4);
+  border-color:var(--ok);
+  background:radial-gradient(circle at 30% 30%, #1f5e4b, #0d2b22);
+  box-shadow:0 0 24px rgba(6,214,160,0.55), inset 0 2px 4px rgba(255,255,255,0.35);
 }
 
 .floating-card{
-  position:absolute;width:190px;
-  background:rgba(22, 38, 29, 0.92);backdrop-filter:blur(6px);
-  border:1.5px solid var(--gold);border-radius:10px;padding:8px 10px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.6);z-index:12;
-  display:flex;flex-direction:column;gap:4px;pointer-events:auto;
-  transition:all .2s ease;
+  position:absolute;width:200px;
+  background:linear-gradient(145deg, rgba(24, 44, 34, 0.94), rgba(12, 23, 18, 0.96));
+  backdrop-filter:blur(10px);
+  border:1.5px solid rgba(255,209,102,0.75);border-radius:12px;padding:10px 12px;
+  box-shadow:0 10px 28px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.12);
+  z-index:12;display:flex;flex-direction:column;gap:5px;pointer-events:auto;
+  transition:transform .25s ease, box-shadow .25s ease;
 }
-.floating-card.to-right{left:62px;top:50%;transform:translateY(-50%)}
-.floating-card.to-left{right:62px;top:50%;transform:translateY(-50%)}
-.floating-card.locked{border-color:var(--line);border-style:dashed;opacity:0.65}
+.floating-card:hover{
+  transform:translateY(-50%) scale(1.03);
+  box-shadow:0 14px 34px rgba(0,0,0,0.9), 0 0 15px rgba(255,209,102,0.25);
+}
+.floating-card.to-right{left:68px;top:50%;transform:translateY(-50%)}
+.floating-card.to-left{right:68px;top:50%;transform:translateY(-50%)}
+.floating-card.locked{border-color:rgba(154,181,166,0.35);border-style:dashed;opacity:0.65}
 .floating-card.conquered{border-color:var(--ok)}
 
-.fc-badge{font-size:10px;font-weight:900;padding:1px 6px;border-radius:4px;width:fit-content}
-.floating-card:not(.locked) .fc-badge{background:rgba(255,209,102,0.25);color:var(--gold)}
-.floating-card.conquered .fc-badge{background:rgba(126,214,160,0.25);color:var(--ok)}
-.floating-card.locked .fc-badge{background:rgba(255,255,255,0.1);color:var(--muted)}
+.fc-badge{font-size:10.5px;font-weight:900;padding:2px 7px;border-radius:99px;width:fit-content;letter-spacing:0.3px}
+.floating-card:not(.locked) .fc-badge{background:rgba(255,209,102,0.22);color:var(--gold);border:1px solid rgba(255,209,102,0.4)}
+.floating-card.conquered .fc-badge{background:rgba(6,214,160,0.22);color:var(--ok);border:1px solid rgba(6,214,160,0.4)}
+.floating-card.locked .fc-badge{background:rgba(255,255,255,0.08);color:var(--muted)}
 
-.fc-title{margin:0;font-family:var(--display);font-size:15px;color:var(--chalk);display:flex;align-items:center;gap:4px}
-.fc-desc{margin:0;font-size:11px;color:var(--muted);line-height:1.3}
+.fc-title{margin:0;font-family:var(--display);font-size:15.5px;color:var(--chalk);display:flex;align-items:center;gap:5px}
+.fc-desc{margin:0;font-size:11px;color:var(--muted);line-height:1.35}
 .fc-btn{
-  margin-top:2px;font-size:11px;padding:4px 8px;border-radius:5px;
-  background:var(--tile);color:var(--tile-ink);font-weight:900;border:0;cursor:pointer;
+  margin-top:3px;font-size:11.5px;padding:6px 10px;border-radius:7px;
+  background:linear-gradient(180deg, #ffe082 0%, #f2c94c 55%, #d9a714 100%);
+  color:var(--tile-ink);font-weight:900;border:0;cursor:pointer;
+  box-shadow:0 3px 0 #9e7608, 0 4px 10px rgba(0,0,0,0.4);
+  transition:all .12s ease;
 }
-.fc-btn:disabled{opacity:0.4;cursor:not-allowed}
+.fc-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #9e7608}
+.fc-btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
 
 .island-node:nth-child(2) .island-anchor{animation-delay:-0.5s}
 .island-node:nth-child(3) .island-anchor{animation-delay:-1.2s}
@@ -143,162 +175,261 @@ body{
 
 @keyframes floatIsland{
   0%{transform:translateY(0px)}
-  100%{transform:translateY(-10px)}
+  100%{transform:translateY(-9px)}
 }
 
-/* ==================== 2. 戰鬥塔防視圖樣式 ==================== */
-#battleView{display:flex;flex-direction:column;gap:6px}
-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(16px,3.8vw,22px);margin:0;color:var(--tile);display:flex;align-items:baseline;gap:4px}
-h1 small{font-family:var(--body);font-size:11px;color:var(--muted);font-weight:600}
-.map-return-btn{background:#1e3327;border:1.5px solid var(--gold);color:var(--gold);font-weight:900;padding:5px 10px;border-radius:6px;cursor:pointer}
+/* ==================== 2. 戰鬥塔防視圖高級手遊樣式 ==================== */
+#battleView{display:flex;flex-direction:column;gap:7px}
+header{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
+  background:rgba(20,36,28,0.75);padding:6px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);
+}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(17px,3.8vw,22px);margin:0;color:var(--tile);display:flex;align-items:baseline;gap:6px;text-shadow:0 2px 6px rgba(0,0,0,0.6)}
+h1 small{font-family:var(--body);font-size:12px;color:var(--ok);font-weight:800;background:rgba(6,214,160,0.15);padding:2px 8px;border-radius:99px}
+.map-return-btn{
+  background:linear-gradient(180deg, #274435, #182b21);
+  border:1.5px solid var(--gold);color:var(--gold);font-weight:900;padding:6px 12px;border-radius:8px;cursor:pointer;
+  box-shadow:0 3px 0 #0e1a14;
+}
 
 .prompt-card{
-  background:#1e3327;border:2px solid var(--tile);border-radius:8px;padding:6px 10px;
-  display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 3px 8px rgba(0,0,0,0.3);
+  background:linear-gradient(135deg, rgba(32,58,45,0.95), rgba(18,34,26,0.98));
+  border:2px solid var(--tile);border-radius:12px;padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
 }
-.prompt-main{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.prompt-title{font-size:12px;color:var(--muted)}
-.prompt-zh{font-size:20px;font-weight:900;color:var(--gold)}
-.prompt-level{font-size:10px;background:rgba(242,201,76,0.2);color:var(--tile);padding:2px 6px;border-radius:4px;white-space:nowrap}
-.prompt-cost{font-size:10px;color:var(--muted)}
-.prompt-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.speak-btn{background:#2a4435;border:1px solid var(--ok);color:var(--ok);font-size:12px;padding:4px 8px;border-radius:5px;cursor:pointer;font-weight:800}
+.prompt-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.prompt-title{font-size:12px;color:var(--muted);font-weight:800}
+.prompt-zh{
+  font-size:22px;font-weight:900;color:#fff;
+  background:linear-gradient(135deg, rgba(255,209,102,0.28), rgba(255,159,28,0.15));
+  border:1px solid rgba(255,209,102,0.5);
+  padding:2px 10px;border-radius:8px;
+  text-shadow:0 2px 4px rgba(0,0,0,0.5);
+}
+.prompt-level{font-size:11px;font-weight:900;background:rgba(6,214,160,0.2);color:var(--ok);padding:3px 8px;border-radius:6px;white-space:nowrap}
+.prompt-cost{font-size:11px;color:var(--gold);font-weight:800}
+.prompt-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.speak-btn{
+  background:linear-gradient(180deg, #1f4d3b, #143327);
+  border:1.5px solid var(--ok);color:var(--ok);font-size:12px;padding:5px 10px;border-radius:7px;cursor:pointer;font-weight:900;
+  box-shadow:0 2px 0 #0c2119;
+}
 
 .auto-wave-btn{
-  background:#262d29;border:1.5px solid var(--line);color:var(--muted);
-  font-size:12px;padding:4px 9px;border-radius:5px;cursor:pointer;font-weight:900;
-  transition:all .15s ease;
+  background:#232c27;border:1.5px solid var(--line);color:var(--muted);
+  font-size:12px;padding:5px 10px;border-radius:7px;cursor:pointer;font-weight:900;
+  transition:all .15s ease;box-shadow:0 2px 0 #111714;
 }
 .auto-wave-btn.active{
-  background:#80211a;border-color:var(--danger);color:#ffffff;
-  box-shadow:0 0 10px rgba(255,107,91,0.6);
+  background:linear-gradient(180deg, #c92a2a, #801919);border-color:#ff8787;color:#ffffff;
+  box-shadow:0 2px 0 #4a0d0d, 0 0 14px rgba(255,107,91,0.75);
   animation:pulseRed 1.4s infinite alternate;
 }
 @keyframes pulseRed{
-  0%{box-shadow:0 0 4px rgba(255,107,91,0.4)}
-  100%{box-shadow:0 0 12px rgba(255,107,91,0.9)}
+  0%{box-shadow:0 2px 0 #4a0d0d, 0 0 6px rgba(255,107,91,0.4)}
+  100%{box-shadow:0 2px 0 #4a0d0d, 0 0 16px rgba(255,107,91,0.95)}
 }
 
-.skip-btn{font-size:11px;padding:4px 8px;background:var(--board);border:1px solid var(--line);color:var(--chalk);border-radius:5px}
+.skip-btn{font-size:11.5px;padding:5px 9px;background:var(--board);border:1px solid var(--line);color:var(--chalk);border-radius:7px;box-shadow:0 2px 0 #0b1410}
 
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%}
-.stat{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:4px;text-align:center;min-width:0}
-.stat b{display:block;font-size:15px;font-variant-numeric:tabular-nums;line-height:1.1}
-.stat span{display:block;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stat.hp b{color:var(--danger)} .stat.gold b{color:var(--gold)} .stat.map b{color:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
+.stat{
+  background:linear-gradient(180deg, rgba(34,56,45,0.85), rgba(20,34,27,0.92));
+  border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:5px 4px;text-align:center;min-width:0;
+  box-shadow:0 3px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.stat b{display:block;font-size:15.5px;font-variant-numeric:tabular-nums;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
+.stat span{display:block;font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat.hp b{color:#ff6b6b} .stat.gold b{color:var(--gold)} .stat.map b{color:var(--ok)}
 
-.rack{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
-.slots{display:flex;gap:4px;min-height:36px;align-items:center}
-.slot{width:30px;height:36px;border-radius:5px;border:1.5px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-size:16px;background:rgba(0,0,0,0.2)}
-.slot.f{background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge)}
-.slot.hint-slot{background:#594411;color:#ffe699;border:1.5px solid var(--gold);box-shadow:0 0 6px rgba(255,209,102,0.3)}
-.rack-btns{display:flex;gap:4px}
-button{font-family:var(--body);font-weight:800;font-size:12px;border-radius:6px;border:1px solid var(--line);background:var(--board2);color:var(--chalk);padding:5px 9px;cursor:pointer;transition:transform .08s;white-space:nowrap}
-button:active:not(:disabled){transform:scale(0.96)}
-button.primary{background:var(--tile);color:var(--tile-ink);border-color:var(--tile-edge)}
-button.danger{background:#8b261d;color:#fff;border-color:#b8322a}
-button:disabled{opacity:.4;cursor:not-allowed}
+.rack{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+  background:rgba(15,26,20,0.65);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);
+}
+.slots{display:flex;gap:6px;min-height:40px;align-items:center;flex-wrap:wrap}
+.slot{
+  width:34px;height:40px;border-radius:8px;border:2px dashed rgba(154,181,166,0.4);
+  display:grid;place-items:center;font-family:var(--display);font-size:18px;
+  background:rgba(0,0,0,0.35);
+  transition:transform .15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.slot.f{
+  background:linear-gradient(180deg, #ffe388 0%, #f2c94c 65%, #d9a714 100%);
+  color:var(--tile-ink);border:1px solid #fff3c4;
+  box-shadow:0 3px 0 var(--tile-edge), 0 4px 8px rgba(0,0,0,0.45);
+  animation:popSlot .18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.slot.hint-slot{
+  background:linear-gradient(180deg, #6e5516, #47360c);
+  color:#ffea9f;border:2px solid var(--gold);
+  box-shadow:0 3px 0 #2b2005, 0 0 10px rgba(255,209,102,0.4);
+}
+@keyframes popSlot{0%{transform:scale(0.6)}100%{transform:scale(1)}}
+
+.rack-btns{display:flex;gap:6px}
+button{
+  font-family:var(--body);font-weight:900;font-size:12px;border-radius:8px;
+  border:1px solid var(--line);background:linear-gradient(180deg, #284235, #192b22);
+  color:var(--chalk);padding:6px 11px;cursor:pointer;transition:transform .08s, filter .15s;white-space:nowrap;
+  box-shadow:0 3px 0 #0e1914;
+}
+button:hover:not(:disabled){filter:brightness(1.1)}
+button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #0e1914}
+button.primary{
+  background:linear-gradient(180deg, #ffe082 0%, #f2c94c 60%, #e0ab1b 100%);
+  color:var(--tile-ink);border-color:#fff2bd;
+  box-shadow:0 3px 0 var(--tile-edge), 0 4px 12px rgba(242,201,76,0.28);
+}
+button.danger{
+  background:linear-gradient(180deg, #e03131, #9c1f1f);
+  color:#fff;border-color:#ff8787;box-shadow:0 3px 0 #5c0f0f;
+}
+button:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(40%)}
 .shake{animation:shake .35s}
-@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
-.stage{position:relative;border:2px solid var(--tile);border-radius:6px;overflow:hidden;background:var(--board2);box-shadow:0 3px 12px rgba(0,0,0,.4)}
-.over{position:absolute;inset:0;background:rgba(10,16,13,.9);display:grid;place-items:center;text-align:center;z-index:20;padding:20px}
-.over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 8px;font-size:26px}
+.stage{
+  position:relative;border:2.5px solid var(--tile);border-radius:12px;overflow:hidden;
+  background:#0c1712;
+  box-shadow:0 10px 30px rgba(0,0,0,.65), 0 0 20px rgba(255,209,102,0.12);
+}
+.over{
+  position:absolute;inset:0;background:rgba(8,14,11,.92);backdrop-filter:blur(6px);
+  display:grid;place-items:center;text-align:center;z-index:20;padding:24px;
+}
+.over h2{font-family:var(--display);font-weight:400;color:var(--danger);margin:0 0 10px;font-size:30px;text-shadow:0 0 16px rgba(255,90,95,0.6)}
 
-.bar{display:grid;grid-template-columns:2fr 1fr;gap:4px;align-items:center}
-.prep-timer{grid-column:1/-1;background:var(--board2);border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:4px}
-.msg{grid-column:1/-1;font-size:12px;color:var(--muted);min-height:16px;line-height:1.2}
-.msg.good{color:var(--ok)} .msg.bad{color:var(--danger)}
-.pending{background:#2b3d2a;border:1px solid var(--ok);color:var(--ok);border-radius:6px;padding:4px 8px;font-size:12px}
-.sel-box{background:#3a2818;border:1px solid var(--gold);color:var(--gold);border-radius:6px;padding:4px 8px;font-size:12px;display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box}
+.bar{display:grid;grid-template-columns:2fr 1fr;gap:6px;align-items:center}
+.prep-timer{
+  grid-column:1/-1;background:linear-gradient(90deg, rgba(26,46,36,0.9), rgba(34,62,48,0.9), rgba(26,46,36,0.9));
+  border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:900;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.msg{grid-column:1/-1;font-size:12.5px;font-weight:800;color:var(--muted);min-height:18px;line-height:1.25;text-align:center}
+.msg.good{color:var(--ok);text-shadow:0 0 10px rgba(6,214,160,0.35)}
+.msg.bad{color:var(--danger);text-shadow:0 0 10px rgba(255,90,95,0.35)}
+.pending{
+  background:linear-gradient(90deg, #1b4332, #2d6a4f);
+  border:1.5px solid var(--ok);color:#fff;border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:900;
+  box-shadow:0 0 15px rgba(6,214,160,0.4);
+}
+.sel-box{
+  background:linear-gradient(90deg, #3d2814, #593a1b);
+  border:1.5px solid var(--gold);color:var(--gold);border-radius:8px;padding:6px 12px;font-size:12.5px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+}
 
-.kb{display:flex;flex-direction:column;gap:4px;align-items:center;width:100%}
-.kb-row{display:flex;gap:3px;width:100%;justify-content:center}
-.key{flex:0 1 44px;min-width:0;height:40px;padding:0;font-family:var(--display);font-weight:400;font-size:15px;background:var(--tile);color:var(--tile-ink);border:0;box-shadow:0 2px 0 var(--tile-edge);border-radius:5px}
-.key.wide{flex-basis:58px;font-family:var(--body);font-weight:900;font-size:11px;background:var(--board2);color:var(--chalk);box-shadow:0 2px 0 var(--line)}
-.hint{font-size:11px;color:var(--muted);text-align:center}
+/* 街機級立體鍵盤 */
+.kb{display:flex;flex-direction:column;gap:6px;align-items:center;width:100%;margin-top:2px}
+.kb-row{display:flex;gap:4px;width:100%;justify-content:center}
+.key{
+  flex:0 1 46px;min-width:0;height:42px;padding:0;
+  font-family:var(--display);font-weight:400;font-size:16px;
+  background:linear-gradient(180deg, #ffe694 0%, #f2c94c 65%, #dea818 100%);
+  color:var(--tile-ink);border:1px solid #fff5cc;
+  box-shadow:0 4px 0 var(--tile-edge), 0 5px 8px rgba(0,0,0,0.4);
+  border-radius:7px;transition:transform .06s;
+}
+.key:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--tile-edge)}
+.key.wide{
+  flex-basis:64px;font-family:var(--body);font-weight:900;font-size:11.5px;
+  background:linear-gradient(180deg, #345243, #20362b);
+  color:var(--chalk);border-color:#49705c;
+  box-shadow:0 4px 0 #111f18, 0 5px 8px rgba(0,0,0,0.4);
+}
+.hint{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
 
 /* ==================== 圖鑑容器與聚焦立體卡片 ==================== */
-details{background:var(--board2);border:1px solid var(--line);border-radius:6px;padding:8px;overflow:visible}
-summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
-.codex-group{margin-top:8px}
-.group-title{font-size:11px;font-weight:900;color:var(--tile);margin-bottom:6px}
+details{
+  background:rgba(22,38,30,0.85);border:1px solid var(--line);border-radius:10px;padding:10px;overflow:visible;
+  box-shadow:0 4px 14px rgba(0,0,0,0.35);
+}
+summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(--gold)}
+.codex-group{margin-top:10px}
+.group-title{font-size:11.5px;font-weight:900;color:var(--ok);margin-bottom:6px;letter-spacing:0.5px}
 
 .codex{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(108px,1fr));
   gap:8px;
   padding:14px 18px;
 }
 
 .cx{
-  border:1px solid var(--line);
-  border-radius:6px;
-  padding:5px 7px;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;
+  padding:6px 8px;
   font-size:11px;
   color:var(--muted);
   cursor:pointer;
   position:relative;
-  background:rgba(0,0,0,0.25);
+  background:linear-gradient(145deg, rgba(30,52,41,0.7), rgba(14,26,20,0.85));
   transition:transform .22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .22s ease, background-color .22s ease;
   -webkit-backface-visibility:hidden;
   backface-visibility:hidden;
   transform:translateZ(0);
 }
-.cx b{font-family:var(--display);font-size:13px;color:var(--chalk);display:block}
+.cx:hover{border-color:rgba(255,209,102,0.5);transform:translateY(-2px)}
+.cx b{font-family:var(--display);font-size:13.5px;color:var(--chalk);display:block;letter-spacing:0.4px}
+.cx.done{border-color:rgba(6,214,160,0.5);background:linear-gradient(145deg, rgba(22,64,48,0.75), rgba(12,36,27,0.9))}
 
 .cx.target-active{
   border:2px solid var(--gold)!important;
-  background:#1b3124!important;
+  background:linear-gradient(135deg, #2b4c39, #172e21)!important;
   color:var(--chalk)!important;
-  transform:scale(1.5) translateZ(0)!important;
+  transform:scale(1.48) translateZ(0)!important;
   z-index:20;
-  box-shadow:0 12px 28px rgba(0,0,0,0.85), 0 0 16px rgba(255,209,102,0.65)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,0.9), 0 0 18px rgba(255,209,102,0.75)!important;
   animation:targetPulse 2s infinite alternate ease-in-out;
 }
 .cx.target-active b{
-  color:#ffffff!important;
-  font-size:14px;
-  text-shadow:0 1px 3px rgba(0,0,0,0.8);
+  color:var(--gold)!important;
+  font-size:14.5px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.9);
 }
 .cx.locked{opacity:0.35;filter:grayscale(90%);border-style:dashed}
 
 @keyframes targetPulse{
-  0%{box-shadow:0 8px 22px rgba(0,0,0,0.8), 0 0 10px rgba(255,209,102,0.45)}
-  100%{box-shadow:0 14px 32px rgba(0,0,0,0.95), 0 0 20px rgba(255,209,102,0.85)}
+  0%{box-shadow:0 8px 22px rgba(0,0,0,0.85), 0 0 10px rgba(255,209,102,0.45)}
+  100%{box-shadow:0 14px 32px rgba(0,0,0,0.95), 0 0 22px rgba(255,209,102,0.9)}
 }
 
 /* ==================== 彈窗通用樣式 ==================== */
-.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
-.modal{background:#1a2b21;border:2px solid var(--gold);border-radius:12px;padding:18px;max-width:460px;width:100%;text-align:center;box-shadow:0 10px 35px rgba(0,0,0,0.85)}
-.modal h2{margin:0 0 10px;color:var(--gold);font-family:var(--display);font-size:22px}
-.modal p{font-size:13px;line-height:1.6;color:var(--chalk);margin:8px 0;text-align:left}
-.modal ul{margin:8px 0;padding-left:20px;font-size:13px;line-height:1.7;color:var(--muted);text-align:left}
-.modal ul b{color:var(--chalk)}
-.modal .reward{background:#102018;border:1px dashed var(--ok);border-radius:6px;padding:10px;margin:12px 0;font-size:14px;color:var(--ok);font-weight:900}
+.modal-mask{position:fixed;inset:0;background:rgba(4,9,7,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px}
+.modal{
+  background:linear-gradient(160deg, #1f362a, #111f18);
+  border:2px solid var(--gold);border-radius:16px;padding:22px;max-width:460px;width:100%;text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(255,209,102,0.18);
+}
+.modal h2{margin:0 0 10px;color:var(--gold);font-family:var(--display);font-size:23px;text-shadow:0 2px 8px rgba(0,0,0,0.6)}
+.modal p{font-size:13.5px;line-height:1.6;color:var(--chalk);margin:8px 0;text-align:left}
+.modal ul{margin:10px 0;padding-left:20px;font-size:13px;line-height:1.75;color:var(--muted);text-align:left}
+.modal ul b{color:var(--gold)}
+.modal .reward{background:rgba(6,214,160,0.12);border:1.5px dashed var(--ok);border-radius:8px;padding:12px;margin:14px 0;font-size:14px;color:var(--ok);font-weight:900}
 .modal textarea{
-  width:100%;height:75px;background:#0d1712;border:1px solid var(--line);border-radius:6px;
-  color:var(--gold);font-family:monospace;font-size:11px;padding:6px;box-sizing:border-box;margin:6px 0;resize:none;
+  width:100%;height:75px;background:#0a120e;border:1px solid var(--line);border-radius:8px;
+  color:var(--gold);font-family:monospace;font-size:11px;padding:8px;box-sizing:border-box;margin:6px 0;resize:none;
 }
 
 @media(max-width:600px){
   .taiwan-stage{min-height:680px}
-  .floating-card{width:160px;padding:6px 8px}
+  .floating-card{width:162px;padding:7px 9px}
   .fc-title{font-size:13px}
   .fc-desc{font-size:10px}
-  .island-anchor{width:46px;height:46px;font-size:22px}
-  .floating-card.to-right{left:52px}
-  .floating-card.to-left{right:52px}
+  .island-anchor{width:48px;height:48px;font-size:23px}
+  .floating-card.to-right{left:54px}
+  .floating-card.to-left{right:54px}
   .codex{
-    grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(86px,1fr));
     gap:6px;
     padding:12px 14px;
   }
-  .cx{padding:4px 5px;font-size:10px}
+  .cx{padding:4px 6px;font-size:10px}
   .cx b{font-size:12px}
   .cx.target-active{
-    transform:scale(1.45) translateZ(0)!important;
+    transform:scale(1.42) translateZ(0)!important;
   }
 }
 </style>
@@ -311,8 +442,8 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   <div id="worldView">
     <div class="world-topbar">
       <div>
-        <h1>🗺️ 台灣群島・奇幻冒險</h1>
-        <p>探索懸浮於台灣各區域的 6 座神秘島嶼，背下 300 單字解鎖新航道！</p>
+        <h1>🗺️ 台灣群島・奇幻單字王國</h1>
+        <p>探索懸浮於台灣各區域的 6 座魔法島嶼，背下 300 單字解鎖傳奇戰塔！</p>
       </div>
       <div class="top-actions">
         <button class="speak-btn" id="bSaveMgr">💾 存檔管理</button>
@@ -325,41 +456,49 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 
       <!-- 羅盤裝飾圖示 -->
       <svg class="compass" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="#2d463a" stroke-width="2" stroke-dasharray="4 4"/>
-        <polygon points="50,10 56,45 50,40 44,45" fill="#f2c94c"/>
-        <polygon points="50,90 56,55 50,60 44,55" fill="#2d463a"/>
-        <text x="50" y="8" fill="#f2c94c" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="900">N</text>
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="4 4"/>
+        <circle cx="50" cy="50" r="36" fill="none" stroke="rgba(0,242,254,0.4)" stroke-width="1"/>
+        <polygon points="50,8 57,45 50,39 43,45" fill="#ffd166"/>
+        <polygon points="50,92 57,55 50,61 43,55" fill="#48755e"/>
+        <text x="50" y="7" fill="#ffd166" font-size="9" text-anchor="middle" font-family="sans-serif" font-weight="900">N</text>
       </svg>
 
-      <!-- 台灣地形向量主視覺 -->
+      <!-- 台灣地形向量與魔法航道主視覺 -->
       <svg class="taiwan-svg" viewBox="0 0 500 750" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="twGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#2d523e"/>
-            <stop offset="45%" stop-color="#1f3b2c"/>
-            <stop offset="100%" stop-color="#172b20"/>
+            <stop offset="0%" stop-color="#386b52"/>
+            <stop offset="50%" stop-color="#224534"/>
+            <stop offset="100%" stop-color="#13291e"/>
           </linearGradient>
           <linearGradient id="ridgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#5a8a6d"/>
-            <stop offset="100%" stop-color="#325340"/>
+            <stop offset="0%" stop-color="#74b391"/>
+            <stop offset="100%" stop-color="#355c47"/>
           </linearGradient>
           <filter id="glowEffect">
-            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feGaussianBlur stdDeviation="5" result="blur"/>
             <feComposite in="SourceGraphic" in2="blur" operator="over"/>
           </filter>
         </defs>
 
+        <!-- 海岸淺灘微光 -->
         <path d="M 245 45 C 290 60 325 75 330 130 C 335 180 325 240 310 320 C 295 400 275 480 250 565 C 235 615 230 670 215 675 C 200 665 190 620 170 560 C 145 490 125 430 135 365 C 145 300 170 240 195 180 C 215 135 225 75 245 45 Z"
-              fill="none" stroke="rgba(126,214,160,0.22)" stroke-width="14" filter="url(#glowEffect)"/>
+              fill="none" stroke="rgba(0,242,254,0.28)" stroke-width="18" filter="url(#glowEffect)"/>
 
+        <!-- 台灣本島塊面 -->
         <path d="M 245 45 C 290 60 325 75 330 130 C 335 180 325 240 310 320 C 295 400 275 480 250 565 C 235 615 230 670 215 675 C 200 665 190 620 170 560 C 145 490 125 430 135 365 C 145 300 170 240 195 180 C 215 135 225 75 245 45 Z"
-              fill="url(#twGrad)" stroke="#4d7c60" stroke-width="3.5"/>
+              fill="url(#twGrad)" stroke="#68a885" stroke-width="4"/>
 
-        <path d="M 255 120 Q 275 230 265 350 Q 250 470 225 580" fill="none" stroke="url(#ridgeGrad)" stroke-width="7" stroke-linecap="round"/>
-        <path d="M 240 160 Q 255 270 245 380 Q 235 480 215 560" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2.5" stroke-dasharray="4 6"/>
+        <!-- 中央山脈脊線 -->
+        <path d="M 255 120 Q 275 230 265 350 Q 250 470 225 580" fill="none" stroke="url(#ridgeGrad)" stroke-width="8" stroke-linecap="round"/>
+        <path d="M 240 160 Q 255 270 245 380 Q 235 480 215 560" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2.5" stroke-dasharray="4 6"/>
 
-        <line x1="80" y1="390" x2="420" y2="390" stroke="rgba(242,201,76,0.3)" stroke-width="1.5" stroke-dasharray="6 4"/>
-        <text x="90" y="384" fill="rgba(242,201,76,0.5)" font-size="11" font-family="sans-serif" font-weight="800">23.5°N 北回歸線</text>
+        <!-- 6大島嶼魔法航道能量連線 -->
+        <polyline points="260,98 365,210 230,308 120,420 350,510 220,660"
+                  fill="none" stroke="rgba(255,209,102,0.45)" stroke-width="3" stroke-dasharray="7 6"/>
+
+        <line x1="70" y1="390" x2="430" y2="390" stroke="rgba(255,209,102,0.35)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="80" y="383" fill="rgba(255,209,102,0.65)" font-size="11" font-family="sans-serif" font-weight="900">23.5°N 北回歸線</text>
       </svg>
 
       <!-- 動態島嶼節點掛載容器 -->
@@ -370,14 +509,14 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
   <!-- ==================== 2. 戰鬥塔防視圖 ==================== -->
   <div id="battleView" hidden>
     <header>
-      <h1><span id="mapTitle">萌寵森林</span> <small>第 <span id="mapWaveTxt">1</span> / 30 波</small></h1>
+      <h1><span id="mapTitle">萌寵森林</span> <small>WAVE <span id="mapWaveTxt">1</span> / 30</small></h1>
       <button class="map-return-btn" id="bBackWorld">🗺️ 返回台灣地圖 (自動存檔)</button>
     </header>
 
     <!-- 題目提示與操作卡 -->
     <div class="prompt-card">
       <div class="prompt-main">
-        <span class="prompt-title">當前目標：</span>
+        <span class="prompt-title">🎯 召喚目標：</span>
         <span class="prompt-zh" id="pZh">貓</span>
         <span class="prompt-level" id="pLevel">第 1 等級</span>
         <span class="prompt-cost" id="pCost">(5金/字)</span>
@@ -391,18 +530,18 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 
     <!-- 即時狀態面板 -->
     <div class="stats">
-      <div class="stat map"><span>當前島嶼</span><b id="sMap">萌寵森林</b></div>
-      <div class="stat hp"><span>基地血量</span><b id="sHp">20</b></div>
-      <div class="stat gold"><span>金幣</span><b id="sGold">60</b></div>
-      <div class="stat"><span>波數</span><b id="sWave">0/30</b></div>
-      <div class="stat"><span>擊倒數</span><b id="sKills">0</b></div>
+      <div class="stat map"><span>🏝️ 當前島嶼</span><b id="sMap">萌寵森林</b></div>
+      <div class="stat hp"><span>🏰 基地水晶</span><b id="sHp">20</b></div>
+      <div class="stat gold"><span>🪙 魔法金幣</span><b id="sGold">60</b></div>
+      <div class="stat"><span>🌊 進攻波數</span><b id="sWave">0/30</b></div>
+      <div class="stat"><span>💀 擊破敵軍</span><b id="sKills">0</b></div>
     </div>
 
     <!-- 拼字輸入槽與操作按鈕 -->
     <div class="rack">
       <div class="slots" id="slots"></div>
       <div class="rack-btns">
-        <button class="primary" id="bSubmit" disabled="">拼出單字 ⏎</button>
+        <button class="primary" id="bSubmit" disabled="">召喚戰塔 ⏎</button>
         <button id="bClear" disabled="">重填</button>
       </div>
     </div>
@@ -412,10 +551,10 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
       <canvas id="cv" width="960" height="640"></canvas>
       <div class="over" id="over" hidden>
         <div>
-          <h2>基地被攻破</h2>
-          <p id="overTxt"></p>
-          <button class="primary" id="bRestart">重新挑戰本島</button>
-          <button id="bOverMap" style="margin-top:6px">返回台灣地圖</button>
+          <h2>💔 守護水晶被攻破</h2>
+          <p id="overTxt" style="text-align:center;color:var(--chalk);margin-bottom:14px"></p>
+          <button class="primary" id="bRestart">🔄 重新挑戰本島</button>
+          <button id="bOverMap" style="margin-left:8px">🗺️ 返回台灣地圖</button>
         </div>
       </div>
     </div>
@@ -423,14 +562,14 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <!-- 戰鬥進程控制列 -->
     <div class="bar">
       <button class="primary" id="bWave">開始第 1 波 ⚔️</button>
-      <button id="bSpeed">速度 1×</button>
+      <button id="bSpeed">⚡ 速度 1×</button>
       <div class="prep-timer" id="prepTimer">⏱️ 早鳥獎勵倒數: 20s (開戰+10金)</div>
       <div class="msg" id="msg">請依照上方題目填入剩下的字母！</div>
     </div>
 
     <!-- 待放置士兵提示 -->
-    <div id="pendWrap" hidden>
-      <span class="pending" id="pend"></span>
+    <div id="pendWrap" hidden style="display:flex;gap:8px;align-items:center">
+      <span class="pending" id="pend" style="flex:1"></span>
       <button id="bCancel">取消放置</button>
     </div>
 
@@ -438,17 +577,19 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <div id="selWrap" hidden>
       <div class="sel-box">
         <span id="selInfo">已選取單位</span>
-        <button class="danger" id="bRecycle">🗑️ 回收 (+<span id="recGold">0</span>金)</button>
-        <button id="bDeselect">取消</button>
+        <div style="display:flex;gap:6px">
+          <button class="danger" id="bRecycle">🗑️ 回收 (+<span id="recGold">0</span>金)</button>
+          <button id="bDeselect">關閉</button>
+        </div>
       </div>
     </div>
 
     <!-- 虛擬鍵盤與單字圖鑑 -->
     <div class="kb" id="kb"></div>
-    <div class="hint">提示：進度每波自動保存至本機！點擊草地瞬間完成建造，並展開淡紅射程衝擊波。</div>
+    <div class="hint">💡 技巧：點擊草地瞬間建造魔法戰塔；重複放置相同單字於同一塔上可直接【升星強化】！</div>
 
     <details id="detailsCodex" open>
-      <summary>本島單字圖鑑（點擊卡片聽真人發音 🔊，共 50 字）</summary>
+      <summary>📖 本島單字魔法圖鑑（點擊卡片聽真人發音 🔊，共 50 字）</summary>
       <div id="codexWrap"></div>
     </details>
   </div>
@@ -459,14 +600,14 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 <div class="modal-mask" id="guideModal" hidden>
   <div class="modal">
     <h2>🏝️ 歡迎來到拼字塔防！</h2>
-    <p>這是一場用單字守護台灣群島的冒險。探索懸浮於台灣各地的 6 大神秘島嶼，背下 300 個核心單字：</p>
+    <p>這是一場用英語單字守護台灣群島的奇幻冒險。探索 6 大魔法島嶼，收服 300 座單字水晶戰塔：</p>
     <ul>
-      <li><b>⌨️ 智慧拼字</b>：完整輸入正確字母後<b>自動召喚就位</b>，無需手動按確定！一次拼對享有<b>「一發入魂 +10 金」</b>！</li>
-      <li><b>⚔️ 連續挑戰</b>：開啟「連續挑戰」按鈕，通關後 3 秒自動開戰下一波，無縫衝刺！</li>
-      <li><b>🎯 落地即射程</b>：點擊草地瞬間建造，淡紅虛線衝擊波即時反饋涵蓋範圍，放錯可隨時點選單位回收。</li>
-      <li><b>💾 本機自動存檔</b>：進度會自動儲存在本設備瀏覽器中，關閉網頁隨時回來接關！</li>
+      <li><b>⌨️ 智慧秒速召喚</b>：完整輸入正確字母後<b>自動召喚戰塔</b>！不按退回一次拼對可觸發<b>「⚡ 一發入魂 +10 金」</b>！</li>
+      <li><b>⭐ 戰塔合體升星</b>：將相同單字蓋在已有的同字戰塔上，即可<b>升星進化</b>，獲得華麗光環與巨額傷害加成！</li>
+      <li><b>⚔️ 連續挑戰模式</b>：開啟「連續挑戰」，每波通關後 3 秒自動迎戰下一波！</li>
+      <li><b>💾 本機自動存檔</b>：每波進度與戰塔陣容皆自動保存，隨時回來接關！</li>
     </ul>
-    <button class="primary" id="bCloseGuide" style="width:100%;padding:10px;font-size:15px;margin-top:8px">開始我的島嶼冒險 ⚔️</button>
+    <button class="primary" id="bCloseGuide" style="width:100%;padding:11px;font-size:15px;margin-top:8px">開始我的島嶼冒險 ⚔️</button>
   </div>
 </div>
 
@@ -476,11 +617,11 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
     <h2>💾 存檔管理與引繼</h2>
     <p>遊戲進度已自動儲存於本機。若要將進度轉移至手機或其他電腦，請複製下方的引繼碼：</p>
     <textarea id="saveCodeBox" readonly></textarea>
-    <div style="display:flex;gap:6px;margin:8px 0">
+    <div style="display:flex;gap:8px;margin:8px 0">
       <button class="primary" id="bCopySave" style="flex:1">📋 複製引繼碼</button>
       <button id="bImportSave" style="flex:1">📥 匯入代碼</button>
     </div>
-    <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+    <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
     <div style="text-align:left;font-size:11px;color:var(--danger)">
       危險區域：重設所有關卡、已征服島嶼與陣容資料。
     </div>
@@ -492,63 +633,75 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13px}
 <!-- 島嶼征服躍遷彈窗 -->
 <div class="modal-mask" id="conquerModal" hidden>
   <div class="modal">
-    <h2>🎉 島嶼征服！航道開啟！</h2>
+    <h2>👑 島嶼征服！新航道開啟！</h2>
     <p id="conquerTxt"></p>
     <div class="reward" id="conquerReward"></div>
-    <button class="primary" id="bBackWorldSuccess" style="width:100%;padding:10px;font-size:15px">前往台灣地圖查看新島嶼 ➔</button>
+    <button class="primary" id="bBackWorldSuccess" style="width:100%;padding:11px;font-size:15px">前往台灣地圖查看新島嶼 ➔</button>
   </div>
 </div>
 
 <script>
 // ==================== 1. 6 大島嶼基本資料設定 ====================
-// 定義島嶼坐標、風格色彩與怪物路徑點（wp: Waypoints）
 const ISLANDS = [
   {
     id:0, name:'萌寵森林', eng:'Pet Forest', icon:'🌲',
     desc:'北台灣溫帶森林，棲息著溫馴動物與林間守護者。',
     x: 52, y: 13, cardDir: 'to-right',
-    board:'#18261f', dirt:'#43392a', line:'#2d463a', tile:'#f2c94c',
+    board:'#15291e', dirt:'#4f3f2c', line:'#2d4f3c', tile:'#f2c94c',
     wp:[[-1,1],[3,1],[3,6],[7,6],[7,2],[10,2],[10,6],[12,6]]
   },
   {
     id:1, name:'深海奇航', eng:'Ocean Odyssey', icon:'🌊',
     desc:'花蓮外海太平洋海域，面對海盜加農砲與深海巨怪。',
     x: 73, y: 28, cardDir: 'to-left',
-    board:'#091a24', dirt:'#143445', line:'#1b4a63', tile:'#00f2fe',
+    board:'#0a202e', dirt:'#1c475c', line:'#1d526b', tile:'#00f2fe',
     wp:[[-1,1],[10,1],[10,6],[2,6],[2,3],[7,3],[7,4],[12,4]]
   },
   {
     id:2, name:'冰原城堡', eng:'Frozen Kingdom', icon:'❄️',
     desc:'雪山與合歡山極地凍土，禦寒建築與冰霜魔法之境。',
     x: 46, y: 41, cardDir: 'to-left',
-    board:'#101d2d', dirt:'#273e58', line:'#3c5a7e', tile:'#7cc6fe',
+    board:'#122338', dirt:'#2e4c6d', line:'#3c5f87', tile:'#7cc6fe',
     wp:[[-1,1],[4,1],[4,3],[8,3],[8,5],[3,5],[3,7],[12,7]]
   },
   {
     id:3, name:'熔岩地底', eng:'Molten Underground', icon:'🌋',
     desc:'嘉南平原深淵裂谷，蘊藏重金屬鍛造與地底巨龍之力。',
     x: 24, y: 56, cardDir: 'to-right',
-    board:'#190d0d', dirt:'#3d1818', line:'#572424', tile:'#ff5722',
+    board:'#210f0f', dirt:'#4a1d1d', line:'#632626', tile:'#ff5722',
     wp:[[-1,2],[3,2],[3,5],[6,5],[6,1],[9,1],[9,6],[12,6]]
   },
   {
     id:4, name:'天空神殿', eng:'Sky Temple', icon:'⚡',
     desc:'台東雲海之上的神聖聖域，充盈著雷霆審判與光明光束。',
     x: 70, y: 68, cardDir: 'to-left',
-    board:'#172338', dirt:'#304261', line:'#455f8a', tile:'#ffd166',
+    board:'#192740', dirt:'#384d73', line:'#4b6796', tile:'#ffd166',
     wp:[[-1,4],[5,4],[5,1],[7,1],[7,6],[9,6],[9,4],[12,4]]
   },
   {
     id:5, name:'星際太空', eng:'Cosmic Galaxy', icon:'🚀',
     desc:'恆春半島南端太空哨站，以軌道重力與光線粉碎外敵。',
     x: 44, y: 88, cardDir: 'to-right',
-    board:'#090a14', dirt:'#171a33', line:'#2a2f59', tile:'#c084fc',
+    board:'#0b0d1c', dirt:'#1e2247', line:'#31376e', tile:'#c084fc',
     wp:[[-1,2],[8,2],[8,5],[3,5],[3,3],[10,3],[10,6],[12,6]]
   }
 ];
 
+// 根據技能屬性對應魔法戰塔主題色票
+const FX_PALETTE = {
+  slash:      { top:'#ff758f', main:'#e63946', dark:'#800f2f', glow:'#ff4d6d', icon:'⚔️' },
+  beam:       { top:'#90e0ef', main:'#00b4d8', dark:'#03045e', glow:'#00f2fe', icon:'💠' },
+  bomb:       { top:'#ffb703', main:'#fb8500', dark:'#7f4f24', glow:'#ff9f1c', icon:'💣' },
+  breath:     { top:'#ff9e00', main:'#e85d04', dark:'#6a040f', glow:'#ff5400', icon:'🔥' },
+  chain:      { top:'#e0aaff', main:'#9d4edd', dark:'#3c096c', glow:'#c77dff', icon:'⚡' },
+  ring:       { top:'#caf0f8', main:'#48cae4', dark:'#023e8a', glow:'#7cc6fe', icon:'❄️' },
+  swarm:      { top:'#fff3b0', main:'#ffd166', dark:'#9e6b00', glow:'#ffe66d', icon:'🐝' },
+  drop_spike: { top:'#e2eafc', main:'#8d99ae', dark:'#2b2d42', glow:'#edf2f4', icon:'☄️' },
+  vortex:     { top:'#f15bb5', main:'#7209b7', dark:'#240046', glow:'#b5179e', icon:'🌀' },
+  barrier:    { top:'#95d5b2', main:'#2d6a4f', dark:'#081c15', glow:'#52b788', icon:'🛡️' }
+};
+
 // ==================== 2. 300 單字資料庫與技能屬性解析 ====================
-// 格式為：英文:中文:技能特徵
 const RAW_WORDS = [
   "CAT:貓:slash,DOG:狗:slash,PIG:豬:slash,HEN:母雞:slash,OWL:貓頭鷹:beam,COW:乳牛:barrier,ANT:螞蟻:slash,FOX:狐狸:beam,BAT:蝙蝠:beam,BEE:蜜蜂:swarm,WOLF:狼:slash,BEAR:熊:slash,DEER:鹿:slash,DUCK:鴨:breath,FROG:青蛙:breath,LION:獅子:slash,GOAT:山羊:slash,TREE:樹木:barrier,WOOD:木頭:barrier,LEAF:樹葉:bomb,DIRT:泥土:ring,ROCK:岩石:bomb,BIRD:鳥:beam,SEED:種子:bomb,BARK:樹皮:barrier,TIGER:老虎:slash,HORSE:馬:barrier,SHEEP:綿羊:ring,PANDA:熊貓:ring,EAGLE:老鷹:drop_spike,SNAKE:蛇:breath,ZEBRA:斑馬:barrier,ROBIN:知更鳥:barrier,PLANT:植物:barrier,GRASS:青草:vortex,ACORN:橡實:drop_spike,STONE:石頭:drop_spike,FRUIT:水果:barrier,TRACK:足跡:barrier,BLOOM:開花:vortex,MONKEY:猴子:swarm,RABBIT:兔子:swarm,BEAVER:河狸:barrier,SPIDER:蜘蛛:ring,FOREST:森林:drop_spike,BRANCH:樹枝:drop_spike,GIRAFFE:長頸鹿:beam,CHEETAH:獵豹:slash,HAMSTER:倉鼠:barrier,MONSTER:怪獸:breath",
   "SEA:大海:ring,COD:鱈魚:slash,FIN:魚鰭:slash,NET:漁網:barrier,ROD:釣竿:slash,WET:潮濕:ring,BAY:海灣:barrier,OAR:船槳:slash,EEL:鰻魚:chain,DIP:浸入:ring,FISH:魚:swarm,CLAM:蛤蜊:barrier,SEAL:海豹:swarm,TUNA:鮪魚:swarm,SHIP:大船:bomb,WAVE:海浪:ring,TIDE:潮汐:ring,DEEP:深海:vortex,SURF:衝浪:beam,BOAT:小船:bomb,DROP:水滴:breath,SALT:鹽巴:breath,HOOK:魚鉤:beam,REEF:礁石:barrier,SWIM:游泳:beam,SHARK:鯊魚:slash,WHALE:鯨魚:drop_spike,CORAL:珊瑚:barrier,PEARL:珍珠:barrier,SQUID:烏賊:breath,OTTER:海獺:beam,SHELL:貝殼:barrier,OCEAN:海洋:ring,FLOAT:漂浮:drop_spike,ANCHOR:鐵錨:drop_spike,COAST:海岸:ring,DIVER:潛水員:beam,BEACH:海灘:ring,WATER:水:ring,STORM:風暴:vortex,TURTLE:海龜:barrier,SHRIMP:蝦子:beam,WALRUS:海象:slash,SALMON:鮭魚:beam,CANNON:大砲:bomb,PIRATE:海盜:bomb,DOLPHIN:海豚:ring,OCTOPUS:章魚:vortex,PENGUIN:企鵝:breath,TSUNAMI:海嘯:breath",
@@ -558,7 +711,6 @@ const RAW_WORDS = [
   "UFO:幽浮:beam,BOT:機器人:beam,LAB:實驗室:barrier,POD:逃生艙:barrier,BIT:位元:barrier,HUB:轉運站:barrier,MAP:星圖:barrier,KEY:密鑰:barrier,BOX:黑盒:barrier,ARM:機械臂:barrier,MARS:火星:bomb,MOON:月球:ring,STAR:恆星:bomb,NOVA:新星:bomb,ATOM:原子:bomb,BEAT:脈衝:ring,CHIP:晶片:barrier,CORE:核心:barrier,DATA:數據:barrier,GRID:電網:chain,GEAR:齒輪:barrier,WIRE:線路:chain,WARP:躍遷:ring,TECH:科技:barrier,SHED:機庫:barrier,SPACE:太空:ring,COMET:彗星:bomb,ORBIT:軌道:ring,ALIEN:外星人:vortex,ROBOT:機械人:beam,LASER:雷射:beam,RADAR:雷達:barrier,PANEL:光板:barrier,CYBER:賽博:slash,PROBE:探測器:beam,LUNAR:月球:swarm,PILOT:飛行員:beam,STEEL:鋼鐵:barrier,POWER:能量:barrier,DRONE:無人機:swarm,ROCKET:火箭:bomb,PLANET:行星:vortex,GALAXY:銀河:ring,METEOR:流星:bomb,ENERGY:能量:beam,SHIELD:護盾:barrier,GRAVITY:重力:ring,ECLIPSE:日蝕:vortex,JUPITER:木星:vortex,COMMAND:指揮所:beam"
 ];
 
-// 將字串陣列解析為結構化字典，並依單字長度計算基礎傷害、射程與攻速
 const WORLD_SPECS = RAW_WORDS.map(raw => {
   const dict = {};
   raw.split(',').forEach(item => {
@@ -571,7 +723,6 @@ const WORLD_SPECS = RAW_WORDS.map(raw => {
     else if(len === 5){ dmg = 42; rng = 2.8; rate = 0.95; }
     else { dmg = 95; rng = 3.4; rate = 0.75; }
 
-    // 特殊技能微調
     if(fx === 'bomb' || fx === 'vortex'){ aoe = len >= 6 ? 1.7 : 1.2; dmg *= 0.8; }
     if(fx === 'breath'){ dps = Math.round(dmg * 0.45); dmg *= 0.4; }
     if(fx === 'ring'){ slow = 0.5; dmg *= 0.5; }
@@ -583,57 +734,39 @@ const WORLD_SPECS = RAW_WORDS.map(raw => {
 });
 
 // ==================== 3. 非同步語音排程佇列系統 ====================
-// 使用先進先出佇列（FIFO Queue）依序播放發音，徹底解決前音未完與後音重疊混音的問題
 const speechQueue = [];
 let isSpeaking = false;
 
-/**
- * 將發音任務推進排程佇列
- * @param {string} w 英文單字
- * @param {string} zh 中文翻譯（選填，若只需單字發音則傳入空字串或省略）
- */
 function speakWord(w, zh = ''){
   if(!('speechSynthesis' in window) || !w) return;
   speechQueue.push({ w, zh });
   processSpeechQueue();
 }
 
-/**
- * 處理語音佇列的調度核心
- */
 function processSpeechQueue(){
-  // 若目前已有語音正在播報，或佇列已空，則直接退出等待事件喚醒
   if(isSpeaking || speechQueue.length === 0) return;
-
   isSpeaking = true;
   const current = speechQueue.shift();
 
   try{
-    // 實例化英文語音對象
     const uEn = new SpeechSynthesisUtterance(current.w.toLowerCase());
     uEn.lang = 'en-US';
-    uEn.rate = 0.85; // 稍慢節奏便於聽辨拼字細節
+    uEn.rate = 0.85;
 
     let finished = false;
-    // 確保當前發音結尾正確釋放並觸發下一個排程的統整函式
     const finishCurrent = () => {
       if(finished) return;
       finished = true;
       clearTimeout(safetyTimer);
-      // 發音之間保留 200 毫秒聽覺空隙，避免緊貼黏連
       setTimeout(() => {
         isSpeaking = false;
         processSpeechQueue();
       }, 200);
     };
 
-    // 行動端/iOS Chrome 防卡死安全閥（若 6 秒內未收到 onend 強制釋放鎖）
-    const safetyTimer = setTimeout(() => {
-      finishCurrent();
-    }, 6000);
+    const safetyTimer = setTimeout(finishCurrent, 6000);
 
     uEn.onend = () => {
-      // 若該發音任務含有中文解釋，英文結束後接續播報中文
       if(current.zh){
         const uZh = new SpeechSynthesisUtterance(current.zh);
         uZh.lang = 'zh-TW';
@@ -658,19 +791,14 @@ function processSpeechQueue(){
 // ==================== 4. 本地持久化存檔系統 ====================
 const STORAGE_KEY = 'SPELL_TD_SAVE_TW_V1';
 
-// 世界進度：已解鎖最高島嶼、已完全征服島嶼、開局殘值獎金
 let worldProgress = {
   unlockedMax: 0,
   conquered: [],
   bonusGold: 60
 };
 
-// 記錄個別島嶼內部陣容與波數存檔
 let islandSavedStates = {};
 
-/**
- * 將當前遊戲完整進度寫入 LocalStorage
- */
 function saveGameProgress(){
   try{
     if(!$('battleView').hidden && !st.over){
@@ -696,9 +824,6 @@ function saveGameProgress(){
   }
 }
 
-/**
- * 從 LocalStorage 載入已保存的遊戲資料
- */
 function loadGameProgress(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -723,14 +848,15 @@ function loadGameProgress(){
   }
 }
 
-// ==================== 5. 遊戲全域狀態變數 ====================
+// ==================== 5. 遊戲全域狀態與粒子引擎 ====================
 const COLS = 12, ROWS = 8;
 let cv, ctx, CS = 50, DPR = 1;
 let hoverCell = null;
+let decorMap = []; // 儲存每格草地的自然裝飾物
 
 let st = {
   curIslandId: 0, wave: 0, gold: 60, hp: 20, maxHp: 20, kills: 0, inWave: false,
-  enemies: [], towers: [], fx: [], slots: [],
+  enemies: [], towers: [], fx: [], particles: [], slots: [],
   targetWord: '', targetSpec: null, pending: null, sel: null,
   speed: 1, camShake: 0, prepTime: 20, backspaced: false, over: false,
   autoWave: false, autoWaveTimer: 0,
@@ -741,7 +867,6 @@ const $ = id => document.getElementById(id);
 const say = (t, cls='') => { const m=$('msg'); if(m){ m.textContent=t; m.className='msg '+cls; } };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
-// 計算不同單字長度購買單一字母的造價
 function getLetterCost(len){
   if(len <= 3) return 5;
   if(len === 4) return 8;
@@ -749,7 +874,6 @@ function getLetterCost(len){
   return 18;
 }
 
-// 根據目前挑戰波數判斷題庫難度區間
 function getTier(wave){
   if(wave <= 5) return { lv:1, targetLen:3, maxLen:3, name:'第 1 等級 (3 字)' };
   if(wave <= 10) return { lv:2, targetLen:4, maxLen:4, name:'第 2 等級 (4 字)' };
@@ -757,7 +881,23 @@ function getTier(wave){
   return { lv:4, targetLen:6, maxLen:8, name:'第 4 等級 (6+ 字)' };
 }
 
-// 地圖路徑線段與長度計算
+// 噴發物理粒子（擊中火花、擊殺爆炸、升星慶祝）
+function spawnParticles(x, y, col, count = 14, spd = 2.6){
+  for(let i=0; i<count; i++){
+    const ang = Math.random() * Math.PI * 2;
+    const v = (0.3 + Math.random() * 0.85) * spd;
+    st.particles.push({
+      x, y,
+      vx: Math.cos(ang) * v,
+      vy: Math.sin(ang) * v - 0.5,
+      r: 2 + Math.random() * 3.5,
+      col,
+      t: 0,
+      life: 0.35 + Math.random() * 0.35
+    });
+  }
+}
+
 let segs = [], TOTAL_LEN = 0, pathSet = new Set();
 function initMapPath(){
   segs = []; TOTAL_LEN = 0; pathSet.clear();
@@ -773,9 +913,18 @@ function initMapPath(){
       if(x>=0 && x<COLS && y>=0 && y<ROWS) pathSet.add(x+','+y);
     }
   }
+  // 產生每格地形的隨機生態細節（小草叢、碎石、晶簇）
+  decorMap = [];
+  for(let y=0; y<ROWS; y++){
+    for(let x=0; x<COLS; x++){
+      const seed = (x * 37 + y * 17 + st.curIslandId * 13) % 10;
+      if(!isPath(x, y) && seed < 4){
+        decorMap.push({ x, y, type: seed % 2 === 0 ? 'tuft' : 'pebble', offX: 0.25 + (seed*0.07), offY: 0.3 + (seed*0.06) });
+      }
+    }
+  }
 }
 
-// 根據怪物行進距離計算其實際座標 (x, y)
 function posAt(d){
   for(const s of segs){
     if(d <= s.start + s.len){
@@ -829,14 +978,10 @@ function renderTaiwanMap(){
   });
 }
 
-/**
- * 進入指定島嶼展開塔防戰役
- */
 function enterIsland(id, carryoverGold = 60){
   st.curIslandId = id;
   const isl = ISLANDS[id];
 
-  // 動態切換島嶼專屬色票
   document.documentElement.style.setProperty('--board', isl.board);
   document.documentElement.style.setProperty('--line', isl.line);
   document.documentElement.style.setProperty('--tile', isl.tile);
@@ -854,7 +999,7 @@ function enterIsland(id, carryoverGold = 60){
     st.built = new Set(saved.built || []);
     st.towers = saved.towers.map(t => ({
       w: t.w, s: dict[t.w] || Object.values(dict)[0],
-      x: t.x, y: t.y, star: t.star||1, cd:0, t:0
+      x: t.x, y: t.y, star: t.star||1, cd:0, recoil:0
     }));
     say(`已還原【${isl.name}】的存檔陣容！第 ${st.wave} 波待命！`, 'good');
   } else {
@@ -870,12 +1015,12 @@ function enterIsland(id, carryoverGold = 60){
         if(!isPath(initX, initY)) break;
       }
     }
-    st.towers = [{ w:firstWord, s:dict[firstWord], x:initX, y:initY, star:1, cd:0, t:0 }];
+    st.towers = [{ w:firstWord, s:dict[firstWord], x:initX, y:initY, star:1, cd:0, recoil:0 }];
     st.built.add(firstWord);
     say(`已降臨【${isl.name}】！初始啟動金：${carryoverGold} 金幣！`);
   }
 
-  st.inWave = false; st.enemies = []; st.fx = [];
+  st.inWave = false; st.enemies = []; st.fx = []; st.particles = [];
   st.pending = null; st.sel = null; st.over = false; st.prepTime = 20;
   st.autoWaveTimer = 0;
 
@@ -891,9 +1036,6 @@ function enterIsland(id, carryoverGold = 60){
   saveGameProgress();
 }
 
-/**
- * 返回台灣大地圖並儲存
- */
 function returnToWorldMap(){
   saveGameProgress();
   st.inWave = false;
@@ -905,9 +1047,6 @@ function returnToWorldMap(){
   renderTaiwanMap();
 }
 
-/**
- * 擊破第 30 波魔王，完成當前島嶼征服
- */
 function conquerCurrentIsland(){
   st.autoWaveTimer = 0;
   const curId = st.curIslandId;
@@ -920,7 +1059,6 @@ function conquerCurrentIsland(){
     worldProgress.unlockedMax = nextId;
   }
 
-  // 計算結算殘值折抵金幣
   let totalAsset = st.gold;
   st.towers.forEach(t => { totalAsset += getLetterCost(t.w.length) * t.w.length * (t.star||1); });
   const carryover = 60 + Math.min(60, Math.floor(totalAsset * 0.15));
@@ -947,9 +1085,6 @@ function conquerCurrentIsland(){
 }
 
 // ==================== 7. 拼字核心與自動發音控制 ====================
-/**
- * 隨機抽取新單字題目，並在字首填入輸入框時自動排程發音
- */
 function pickPrompt(){
   const tier = getTier(st.wave);
   const dict = WORLD_SPECS[st.curIslandId];
@@ -959,7 +1094,7 @@ function pickPrompt(){
   const [w, s] = pool[Math.floor(Math.random() * pool.length)];
   st.targetWord = w;
   st.targetSpec = s;
-  st.slots = [w[0]]; // 題目預設提供第 1 個字首字母
+  st.slots = [w[0]];
   st.backspaced = false;
 
   $('pZh').textContent = s.zh;
@@ -968,7 +1103,6 @@ function pickPrompt(){
   ui();
   buildCodex();
 
-  // ★ 核心功能：當字首出現在輸入框時，排隊朗讀完整單字（排隊等待上一句念完，不搶音）
   speakWord(w);
 }
 
@@ -990,7 +1124,6 @@ function buyLetter(L){
   st.slots.push(L);
   ui();
 
-  // 完整輸入正確字母後，免手動按確認直接秒速自動召喚
   if(st.slots.length === len && st.slots.join('') === st.targetWord){
     submitWord();
   }
@@ -1039,20 +1172,18 @@ function submitWord(){
 
   const s = dict[w];
   let bonusAwarded = false;
-  // 一發入魂獎勵判定：完全未退回且一次拼對
   if(w === st.targetWord && !st.backspaced){
     st.gold += 10;
     bonusAwarded = true;
-    fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.2 });
+    fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.3 });
     say(`✨ 完美一發入魂！獲得額外獎勵 +10 金幣！`, 'good');
   } else {
-    say(`【${w}】召喚成功！點擊草地立即完成建造！`, 'good');
+    say(`【${w}】召喚成功！點擊草地立即建造魔法戰塔！`, 'good');
   }
 
   st.pending = { w, s, bonusAwarded };
   st.slots = [];
   st.built.add(w);
-  // 召喚成功：排隊朗讀單字與中文翻譯
   speakWord(w, s.zh);
   ui();
   buildCodex();
@@ -1067,26 +1198,27 @@ function shake(){
 function clickCell(x, y){
   if(st.over) return;
   if(st.pending){
-    if(isPath(x,y)) return say('士兵只能放置在草地上！', 'bad');
+    if(isPath(x,y)) return say('戰塔只能建造在草地上！', 'bad');
 
     const exist = st.towers.find(t => t.x===x && t.y===y);
     if(exist){
-      // 同單字重疊：直接升星提升屬性
       if(exist.w === st.pending.w){
         exist.star = (exist.star || 1) + 1;
-        fx({ type:'ring', x:x+0.5, y:y+0.5, col:'#ffd166', life:0.4 });
-        fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`★${exist.star} 升星!`, col:'#ffd166', life:1.1 });
+        exist.recoil = 1.0;
+        spawnParticles(x+0.5, y+0.5, '#ffd166', 26, 3.4);
+        fx({ type:'ring', x:x+0.5, y:y+0.5, col:'#ffd166', life:0.45 });
+        fx({ type:'txt', x:x+0.5, y:y+0.4, txt:`★${exist.star} 升星強化!`, col:'#ffd166', life:1.2 });
         fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:exist.s.rng||2.4, life:0.55 });
-        say(`✨【${exist.w}】升級為 ★${exist.star} 級！`, 'good');
+        say(`✨【${exist.w}】進化為 ★${exist.star} 星戰塔！威力大幅提升！`, 'good');
         st.pending = null; hoverCell = null;
         pickPrompt(); ui(); saveGameProgress();
         return;
       } else {
-        // 不同單字重疊：退款 70% 舊單位並以新單字覆蓋
         const refund = Math.floor(getLetterCost(exist.w.length) * exist.w.length * (exist.star || 1) * 0.7);
         st.gold += refund;
         st.towers = st.towers.filter(t => t !== exist);
-        st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
+        st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, recoil:0.8 });
+        spawnParticles(x+0.5, y+0.5, '#06d6a0', 18, 2.5);
         fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`替換 +${refund}金`, col:'#ffd166', life:1.0 });
         fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
         say(`覆蓋替換！退還舊塔 ${refund} 金幣`, 'good');
@@ -1096,21 +1228,21 @@ function clickCell(x, y){
       }
     }
 
-    // 點擊空草地：建造並激發淡紅射程擴散光圈
+    spawnParticles(x+0.5, y+0.5, '#7ed6a0', 20, 2.8);
     fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
-    st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, t:0 });
-    say(`✨【${st.pending.w}】建造完成！射程範圍已展開。`, 'good');
+    st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, recoil:0.8 });
+    say(`✨【${st.pending.w}】魔法戰塔建造完成！`, 'good');
     st.pending = null; hoverCell = null;
     pickPrompt(); ui(); saveGameProgress();
     return;
   }
 
-  // 未持有待放置單位時，點選現有單位查看射程與回收資訊
   const t = st.towers.find(t => t.x===x && t.y===y);
   st.sel = t || null;
   if(t){
     const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
-    $('selInfo').innerHTML = `<b>${t.w}</b> (★${t.star||1}・${t.s.zh})`;
+    const pal = FX_PALETTE[t.s.fx] || FX_PALETTE.slash;
+    $('selInfo').innerHTML = `${pal.icon} <b>${t.w}</b> (★${t.star||1}・${t.s.zh}・傷害 ${Math.round(t.s.dmg*(1+((t.star||1)-1)*0.25))})`;
     $('recGold').textContent = ref;
     say(`已選取【${t.w}】(★${t.star||1})，射程範圍已標記！`);
   }
@@ -1122,6 +1254,7 @@ function recycleSelected(){
   const t = st.sel;
   const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
   st.gold += ref;
+  spawnParticles(t.x+0.5, t.y+0.5, '#ffd166', 16, 2.2);
   st.towers = st.towers.filter(item => item !== t);
   st.sel = null;
   say(`已回收【${t.w}】，退還 ${ref} 金幣！`, 'good');
@@ -1169,7 +1302,7 @@ function startWave(){
 function spawnEnemy(type){
   const base = 60 * Math.pow(1.12, st.wave - 1);
   const startPos = posAt(0);
-  const e = { d:0, type, slowF:1, slowT:0, dot:0, dotT:0, x:startPos.x, y:startPos.y, spd:1.1, hp:base, rew:3 };
+  const e = { d:0, type, slowF:1, slowT:0, dot:0, dotT:0, x:startPos.x, y:startPos.y, spd:1.1, hp:base, rew:3, hitFlash:0 };
   if(type === 'fast'){ e.spd = 1.85; e.hp = base * 0.65; e.rew = 3; }
   if(type === 'boss'){
     const isWorldBoss = (st.wave === 30);
@@ -1182,9 +1315,12 @@ function spawnEnemy(type){
 function fx(o){ st.fx.push({ ...o, life:o.life||0.28, t:0 }); }
 function addShake(v){ st.camShake = Math.min(20, Math.max(st.camShake||0, v)); }
 
-// 依照技能類型發動攻擊動畫特效
 function fireTowerFx(t, c, tg){
   const fxType = t.s.fx || 'slash';
+  const pal = FX_PALETTE[fxType] || FX_PALETTE.slash;
+  t.recoil = 1.0; // 觸發戰塔開火後座力回彈
+  spawnParticles(tg.x, tg.y, pal.glow, 6, 1.8);
+
   if(fxType === 'beam') fx({ type:'beam', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#00f2fe', life:0.26 });
   else if(fxType === 'bomb'){ addShake(4); fx({ type:'bomb', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#ff5722', aoe:t.s.aoe||1.2, life:0.36 }); }
   else if(fxType === 'breath'){ addShake(t.w.length>=6?6:2.5); fx({ type:'breath', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#ff3b30', life:0.34 }); }
@@ -1205,7 +1341,6 @@ function update(dt, dtReal){
     st.prepTime = Math.max(0, st.prepTime - dt);
   }
 
-  // 連續挑戰倒數計時
   if(!st.inWave && !st.over && st.autoWave && st.wave < 30 && st.autoWaveTimer > 0){
     st.autoWaveTimer -= dtReal;
     if(st.autoWaveTimer <= 0){
@@ -1216,19 +1351,17 @@ function update(dt, dtReal){
     }
   }
 
-  // 生成怪物流程
   if(st.inWave && st.spawnLeft > 0){
     st.spawnT -= dt;
     if(st.spawnT <= 0){
       st.spawnLeft--;
       st.spawnT = 0.8;
 
-      // 魔王登場前 2 秒警示特效與震動
       if(st.spawnLeft === 1 && st.isBoss){
         st.spawnT = 2.0;
         addShake(12);
-        fx({ type:'txt', x:6, y:3.5, txt:'⚠️ 王要出來摟～！', col:'#ff3b30', life:2.0 });
-        say('⚠️ 警報！王要出來摟～請集中火力！', 'bad');
+        fx({ type:'txt', x:6, y:3.5, txt:'⚠️ 警報！魔王即將降臨！', col:'#ff3b30', life:2.0 });
+        say('⚠️ 警報！魔王即將降臨～請集中火力！', 'bad');
       }
 
       if(st.spawnLeft === 0 && st.isBoss){
@@ -1240,23 +1373,24 @@ function update(dt, dtReal){
     }
   }
 
-  // 更新怪物位移與狀態效果
   for(const e of st.enemies){
     const f = e.slowT > 0 ? e.slowF : 1;
     e.d += e.spd * f * dt;
     const p = posAt(e.d); e.x = p.x; e.y = p.y;
     if(e.slowT > 0) e.slowT -= dt;
+    if(e.hitFlash > 0) e.hitFlash = Math.max(0, e.hitFlash - dt * 5);
     if(e.dotT > 0){ e.hp -= e.dot * dt; e.dotT -= dt; }
     if(e.d >= TOTAL_LEN){
       e.leak = true;
       st.hp -= e.type==='boss' ? 5 : 1;
-      addShake(8);
+      addShake(9);
+      spawnParticles(e.x, e.y, '#ff5a5f', 24, 3.2);
       saveGameProgress();
     }
   }
 
-  // 防禦塔索敵與開火
   for(const t of st.towers){
+    if(t.recoil > 0) t.recoil = Math.max(0, t.recoil - dt * 4.5);
     t.cd = (t.cd || 0) - dt;
     if(t.cd > 0) continue;
     const c = { x:t.x + 0.5, y:t.y + 0.5 };
@@ -1271,9 +1405,11 @@ function update(dt, dtReal){
     fireTowerFx(t, c, tg);
 
     if(t.s.aoe){
-      st.enemies.forEach(e => { if(dist(e, tg) <= t.s.aoe) e.hp -= D; });
+      st.enemies.forEach(e => {
+        if(dist(e, tg) <= t.s.aoe){ e.hp -= D; e.hitFlash = 1; }
+      });
     } else if(t.s.fx === 'chain'){
-      tg.hp -= D;
+      tg.hp -= D; tg.hitFlash = 1;
       let last = tg;
       const hit = [tg];
       for(let j=0; j<t.s.jumps; j++){
@@ -1285,13 +1421,13 @@ function update(dt, dtReal){
           }
         }
         if(!nx) break;
-        nx.hp -= D * 0.8;
+        nx.hp -= D * 0.8; nx.hitFlash = 1;
         hit.push(nx);
         fx({ type:'chain', x:last.x, y:last.y, x2:nx.x, y2:nx.y, col:'#c084fc', life:0.25 });
         last = nx;
       }
     } else {
-      tg.hp -= D;
+      tg.hp -= D; tg.hitFlash = 1;
     }
 
     if(t.s.dps){ tg.dot = t.s.dps * starBonus; tg.dotT = t.s.dur; }
@@ -1299,29 +1435,38 @@ function update(dt, dtReal){
     t.cd = 1 / t.s.rate;
   }
 
-  // 清除死亡怪物與結算賞金
   st.enemies = st.enemies.filter(e => {
     if(e.leak) return false;
     if(e.hp <= 0){
       st.gold += e.rew; st.kills++;
-      addShake(e.type==='boss' ? 7 : 1.5);
-      fx({ type:'txt', x:e.x, y:e.y, txt:'+'+e.rew, col:'#ffd166', life:0.75 });
+      addShake(e.type==='boss' ? 8 : 1.5);
+      const pCol = e.type==='boss' ? '#ff4d6d' : (e.type==='fast' ? '#fde047' : '#ff758f');
+      spawnParticles(e.x, e.y, pCol, e.type==='boss' ? 36 : 16, e.type==='boss' ? 4.2 : 2.6);
+      fx({ type:'ring', x:e.x, y:e.y, col:pCol, life:0.32 });
+      fx({ type:'txt', x:e.x, y:e.y, txt:'+'+e.rew+'🪙', col:'#ffd166', life:0.8 });
       return false;
     }
     return true;
   });
 
-  // 基地損毀結算
+  // 更新物理粒子
+  for(const pt of st.particles){
+    pt.t += dtReal;
+    pt.x += pt.vx * dt;
+    pt.y += pt.vy * dt;
+    pt.vy += 3.5 * dt; // 輕微重力感
+  }
+  st.particles = st.particles.filter(pt => pt.t < pt.life);
+
   if(st.hp <= 0){
     st.hp = 0; st.over = true;
     st.autoWaveTimer = 0;
-    $('overTxt').textContent = `在【${ISLANDS[st.curIslandId].name}】第 ${st.wave} 波倒下，共擊倒 ${st.kills} 個敵人`;
+    $('overTxt').textContent = `在【${ISLANDS[st.curIslandId].name}】第 ${st.wave} 波倒下，共擊破 ${st.kills} 個敵軍`;
     $('over').hidden = false;
     delete islandSavedStates[st.curIslandId];
     saveGameProgress();
   }
 
-  // 波數完全通關結算
   if(st.inWave && st.spawnLeft === 0 && st.enemies.length === 0){
     st.inWave = false;
     const bonus = 10 + st.wave;
@@ -1333,7 +1478,7 @@ function update(dt, dtReal){
       return;
     }
 
-    say(`第 ${st.wave} 波通關！獎勵 +${bonus} 金幣！`, 'good');
+    say(`🎉 第 ${st.wave} 波通關！獲得賞金 +${bonus} 金幣！`, 'good');
     if(st.autoWave) st.autoWaveTimer = 3.0;
   
     ui();
@@ -1345,58 +1490,206 @@ function update(dt, dtReal){
   st.fx = st.fx.filter(f => f.t < f.life);
 }
 
-// ==================== 10. 畫布渲染系統 ====================
+// ==================== 10. 2.5D 皇家級畫布渲染系統 ====================
+function drawRoundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
 function draw(){
   const W = CS * COLS, H = CS * ROWS;
+  const nowTime = performance.now() * 0.003;
   ctx.save();
   if(st.camShake > 0){
     ctx.translate((Math.random()-0.5)*st.camShake, (Math.random()-0.5)*st.camShake);
   }
   const isl = ISLANDS[st.curIslandId];
 
-  // 繪製地圖網格與步道
-  ctx.fillStyle = isl.board; ctx.fillRect(0, 0, W, H);
-  for(let y=0; y<ROWS; y++) for(let x=0; x<COLS; x++){
-    if(isPath(x,y)){
-      ctx.fillStyle = (x+y)%2 ? isl.dirt : isl.line;
-      ctx.fillRect(x*CS, y*CS, CS, CS);
+  // 1. 繪製深邃草地底圖與棋盤微光
+  ctx.fillStyle = isl.board;
+  ctx.fillRect(0, 0, W, H);
+
+  for(let y=0; y<ROWS; y++){
+    for(let x=0; x<COLS; x++){
+      if(!isPath(x,y)){
+        if((x+y)%2 === 0){
+          ctx.fillStyle = 'rgba(255,255,255,0.018)';
+          ctx.fillRect(x*CS, y*CS, CS, CS);
+        }
+      }
     }
   }
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
-  for(let x=1; x<COLS; x++){ ctx.beginPath(); ctx.moveTo(x*CS,0); ctx.lineTo(x*CS,H); ctx.stroke(); }
-  for(let y=1; y<ROWS; y++){ ctx.beginPath(); ctx.moveTo(0,y*CS); ctx.lineTo(W,y*CS); ctx.stroke(); }
+  // 自然地貌小裝飾（草叢與鵝卵石）
+  for(const d of decorMap){
+    const dx = (d.x + d.offX) * CS, dy = (d.y + d.offY) * CS;
+    if(d.type === 'tuft'){
+      ctx.strokeStyle = 'rgba(126,214,160,0.18)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(dx, dy); ctx.lineTo(dx-4, dy-6);
+      ctx.moveTo(dx, dy); ctx.lineTo(dx+1, dy-8);
+      ctx.moveTo(dx, dy); ctx.lineTo(dx+5, dy-5);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.ellipse(dx, dy, 4, 2.5, 0.3, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
 
-  // 起點與基地標籤
-  ctx.font = `900 ${CS*0.22}px Nunito, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  const startY = isl.wp[0][1] + 0.5;
-  const endY = isl.wp[isl.wp.length - 1][1] + 0.5;
-  ctx.fillStyle = '#ff6b5b'; ctx.fillText('起點', CS*0.5, CS*startY);
-  ctx.fillStyle = '#7ed6a0'; ctx.fillText('基地', CS*11.5, CS*endY);
+  // 2. 繪製立體石板行軍步道
+  for(let y=0; y<ROWS; y++){
+    for(let x=0; x<COLS; x++){
+      if(isPath(x,y)){
+        ctx.fillStyle = (x+y)%2 ? isl.dirt : isl.line;
+        ctx.fillRect(x*CS, y*CS, CS, CS);
+        // 內嵌石板紋理
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        drawRoundRect(ctx, x*CS+3, y*CS+3, CS-6, CS-6, 5);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
 
-  // 繪製防禦塔
+  // 3. 繪製起點「深淵暗影傳送門」與終點「守護水晶聖殿」
+  const startY = (isl.wp[0][1] + 0.5) * CS;
+  const startX = CS * 0.52;
+  ctx.save();
+  ctx.translate(startX, startY);
+  const portalGrad = ctx.createRadialGradient(0,0,2, 0,0,CS*0.46);
+  portalGrad.addColorStop(0, '#fff');
+  portalGrad.addColorStop(0.35, '#c084fc');
+  portalGrad.addColorStop(0.75, '#581c87');
+  portalGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = portalGrad;
+  ctx.beginPath(); ctx.arc(0, 0, CS*0.46, 0, Math.PI*2); ctx.fill();
+  ctx.rotate(-nowTime * 1.8);
+  ctx.strokeStyle = '#e879f9'; ctx.lineWidth = 2.5; ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.arc(0, 0, CS*0.32, 0, Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  ctx.fillStyle = '#f5d0fe'; ctx.font = `900 ${CS*0.17}px Nunito, sans-serif`;
+  ctx.textAlign = 'center'; ctx.fillText('深淵入口', startX, startY + CS*0.42);
+
+  // 終點守護水晶城堡
+  const endY = (isl.wp[isl.wp.length - 1][1] + 0.5) * CS;
+  const endX = CS * 11.48;
+  ctx.save();
+  ctx.translate(endX, endY);
+  const cryGlow = ctx.createRadialGradient(0,0,2, 0,0,CS*0.48);
+  cryGlow.addColorStop(0, 'rgba(6,214,160,0.85)');
+  cryGlow.addColorStop(0.6, 'rgba(17,138,178,0.35)');
+  cryGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = cryGlow;
+  ctx.beginPath(); ctx.arc(0, 0, CS*0.48, 0, Math.PI*2); ctx.fill();
+  // 懸浮稜鏡水晶
+  const bob = Math.sin(nowTime * 2.5) * 3;
+  ctx.translate(0, bob);
+  ctx.fillStyle = '#06d6a0';
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, -CS*0.32);
+  ctx.lineTo(CS*0.22, 0);
+  ctx.lineTo(0, CS*0.28);
+  ctx.lineTo(-CS*0.22, 0);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = '#a7f3d0'; ctx.font = `900 ${CS*0.17}px Nunito, sans-serif`;
+  ctx.textAlign = 'center'; ctx.fillText('守護水晶', endX, endY + CS*0.42);
+
+  // 4. 繪製 2.5D 魔法水晶戰塔
   for(const t of st.towers){
-    const p = CS * 0.08;
-    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(t.x*CS+p, t.y*CS+p+2, CS-2*p, CS-2*p);
-    ctx.fillStyle = isl.tile; ctx.fillRect(t.x*CS+p, t.y*CS+p, CS-2*p, CS-2*p);
+    const pal = FX_PALETTE[t.s.fx] || FX_PALETTE.slash;
+    const cx = (t.x + 0.5) * CS;
+    const cy = (t.y + 0.5) * CS;
+    const star = t.star || 1;
+    const rec = (t.recoil || 0) * 4;
 
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // 底部呼吸燈魔法陣（升星越高等越華麗）
+    const auraR = CS * (0.42 + Math.min(0.12, (star-1)*0.03));
+    ctx.strokeStyle = pal.glow;
+    ctx.globalAlpha = 0.35 + Math.sin(nowTime*3 + t.x)*0.15;
+    ctx.lineWidth = star > 1 ? 2 : 1.2;
+    ctx.beginPath(); ctx.arc(0, 2, auraR, 0, Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // 2.5D 立體暗色厚底座
+    const pad = CS * 0.1;
+    const bw = CS - pad*2;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    drawRoundRect(ctx, -bw/2, -bw/2 + 5, bw, bw, 9);
+    ctx.fill();
+
+    ctx.fillStyle = pal.dark;
+    drawRoundRect(ctx, -bw/2, -bw/2 + 2, bw, bw, 9);
+    ctx.fill();
+
+    // 寶石主塔身（帶後座力縮放）
+    ctx.translate(0, -rec);
+    const bodyGrad = ctx.createLinearGradient(0, -bw/2, 0, bw/2);
+    bodyGrad.addColorStop(0, pal.top);
+    bodyGrad.addColorStop(0.45, pal.main);
+    bodyGrad.addColorStop(1, pal.dark);
+    ctx.fillStyle = bodyGrad;
+    drawRoundRect(ctx, -bw/2 + 1.5, -bw/2 - 1, bw - 3, bw - 3, 8);
+    ctx.fill();
+
+    // 頂部玻璃高光邊框
+    ctx.strokeStyle = star >= 2 ? '#ffd166' : 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = star >= 2 ? 2.2 : 1.2;
+    ctx.stroke();
+
+    // 選取外框
     if(st.sel === t){
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
-      ctx.strokeRect(t.x*CS+p-2, t.y*CS+p-2, CS-2*p+4, CS-2*p+4);
+      drawRoundRect(ctx, -bw/2 - 2, -bw/2 - 4, bw + 4, bw + 3, 10);
+      ctx.stroke();
     }
 
-    const fs = Math.min(CS*0.32, (CS*0.84)/(t.w.length*0.65));
-    ctx.fillStyle = '#22200f'; ctx.font = `900 ${fs}px Nunito, sans-serif`;
-    ctx.fillText(t.w, t.x*CS + CS/2, t.y*CS + CS/2 - CS*0.06);
+    // 頂部小屬性核心球
+    const orbY = -bw*0.36 + Math.sin(nowTime*4 + t.y)*1.5;
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = pal.glow; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(0, orbY, CS*0.07, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
 
-    ctx.font = `800 ${CS*0.16}px Nunito, sans-serif`; ctx.fillStyle = 'rgba(34,32,15,0.8)';
-    const tag = (t.star > 1 ? `★${t.star} ` : '') + t.s.zh;
-    ctx.fillText(tag, t.x*CS + CS/2, t.y*CS + CS*0.75);
+    // 英文單字立體描邊字
+    const fs = Math.min(CS*0.29, (CS*0.80)/(t.w.length*0.62));
+    ctx.font = `900 ${fs}px "Bungee", Nunito, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 3.5;
+    ctx.strokeText(t.w, 0, -CS*0.04);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(t.w, 0, -CS*0.04);
+
+    // 底部中文標籤膠囊
+    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+    drawRoundRect(ctx, -bw*0.44, CS*0.14, bw*0.88, CS*0.22, 4);
+    ctx.fill();
+
+    ctx.font = `900 ${CS*0.155}px Nunito, sans-serif`;
+    ctx.fillStyle = star > 1 ? '#ffd166' : '#f1faee';
+    const tag = (star > 1 ? `★${star} ` : '') + t.s.zh;
+    ctx.fillText(tag, 0, CS*0.255);
+
+    ctx.restore();
   }
 
-  // 繪製各類型怪物視覺與血條
-  const nowTime = performance.now() * 0.003;
-
+  // 5. 繪製立體怪物軍團與受擊閃白
   for(const e of st.enemies){
     const isBoss = (e.type === 'boss');
     const isWorldBoss = isBoss && (st.wave === 30);
@@ -1408,10 +1701,10 @@ function draw(){
 
     if(isBoss){
       const pulse = 1 + Math.sin(nowTime * 4) * 0.12;
-      const auraR = CS * (isWorldBoss ? 0.75 : 0.6) * pulse;
+      const auraR = CS * (isWorldBoss ? 0.78 : 0.62) * pulse;
       const auraGrad = ctx.createRadialGradient(0, 0, CS * 0.1, 0, 0, auraR);
-      auraGrad.addColorStop(0, isWorldBoss ? 'rgba(255, 42, 95, 0.65)' : 'rgba(220, 38, 38, 0.55)');
-      auraGrad.addColorStop(0.6, isWorldBoss ? 'rgba(168, 85, 247, 0.3)' : 'rgba(185, 28, 28, 0.2)');
+      auraGrad.addColorStop(0, isWorldBoss ? 'rgba(255, 42, 95, 0.7)' : 'rgba(220, 38, 38, 0.6)');
+      auraGrad.addColorStop(0.6, isWorldBoss ? 'rgba(168, 85, 247, 0.35)' : 'rgba(185, 28, 28, 0.22)');
       auraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = auraGrad;
       ctx.beginPath(); ctx.arc(0, 0, auraR, 0, Math.PI * 2); ctx.fill();
@@ -1419,9 +1712,9 @@ function draw(){
       ctx.save();
       ctx.rotate(nowTime * (isWorldBoss ? 2.5 : 1.5));
       const spikes = isWorldBoss ? 8 : 6;
-      const outerR = CS * (isWorldBoss ? 0.44 : 0.38);
+      const outerR = CS * (isWorldBoss ? 0.45 : 0.39);
       const innerR = CS * (isWorldBoss ? 0.28 : 0.24);
-      ctx.fillStyle = isWorldBoss ? '#4a044e' : '#3f0c10';
+      ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : (isWorldBoss ? '#4a044e' : '#3f0c10');
       ctx.strokeStyle = isWorldBoss ? '#f43f5e' : '#ef4444';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
@@ -1437,7 +1730,7 @@ function draw(){
 
       const coreR = CS * (isWorldBoss ? 0.32 : 0.26);
       const bodyGrad = ctx.createRadialGradient(-coreR*0.3, -coreR*0.3, coreR*0.1, 0, 0, coreR);
-      bodyGrad.addColorStop(0, isWorldBoss ? '#fb7185' : '#f87171');
+      bodyGrad.addColorStop(0, e.hitFlash > 0 ? '#fff' : (isWorldBoss ? '#fb7185' : '#f87171'));
       bodyGrad.addColorStop(0.5, isWorldBoss ? '#9f1239' : '#991b1b');
       bodyGrad.addColorStop(1, '#180305');
       ctx.fillStyle = bodyGrad;
@@ -1451,63 +1744,60 @@ function draw(){
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      ctx.fillStyle = '#450a0a';
-      ctx.beginPath();
-      ctx.arc(-coreR*0.35, -coreR*0.1, coreR*0.06, 0, Math.PI*2);
-      ctx.arc(coreR*0.35, -coreR*0.1, coreR*0.06, 0, Math.PI*2);
-      ctx.fill();
-
       ctx.fillStyle = '#ffd166';
       ctx.font = `900 ${CS * 0.28}px Nunito, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(isWorldBoss ? '👑' : '😈', 0, -coreR * 0.85);
 
     } else if(e.type === 'fast'){
-      const r = CS * 0.2;
-      ctx.fillStyle = 'rgba(251, 146, 60, 0.4)';
+      const r = CS * 0.21;
+      ctx.fillStyle = 'rgba(251, 146, 60, 0.45)';
       ctx.beginPath();
       ctx.moveTo(-r * 1.5, -r * 0.5);
-      ctx.lineTo(-r * 2.2, 0);
+      ctx.lineTo(-r * 2.3, 0);
       ctx.lineTo(-r * 1.5, r * 0.5);
       ctx.fill();
 
       const bodyGrad = ctx.createLinearGradient(-r, 0, r, 0);
-      bodyGrad.addColorStop(0, '#ea580c');
-      bodyGrad.addColorStop(1, '#fde047');
+      bodyGrad.addColorStop(0, e.hitFlash > 0 ? '#fff' : '#ea580c');
+      bodyGrad.addColorStop(1, e.hitFlash > 0 ? '#fff' : '#fde047');
       ctx.fillStyle = bodyGrad;
       ctx.beginPath();
-      ctx.ellipse(0, 0, r * 1.25, r * 0.75, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, r * 1.25, r * 0.78, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.15, r * 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.15, r * 0.22, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#1e293b';
-      ctx.beginPath(); ctx.arc(r * 0.45, -r * 0.15, r * 0.08, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(r * 0.45, -r * 0.15, r * 0.09, 0, Math.PI * 2); ctx.fill();
 
     } else {
       const squash = 1 + Math.sin(nowTime * 6 + e.d) * 0.09;
-      const r = CS * 0.22;
+      const r = CS * 0.23;
 
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
       ctx.ellipse(0, r * 0.85, r * 0.9, r * 0.35, 0, 0, Math.PI * 2);
       ctx.fill();
 
       const blobGrad = ctx.createRadialGradient(-r*0.2, -r*0.3, r*0.1, 0, 0, r);
-      blobGrad.addColorStop(0, '#f87171');
-      blobGrad.addColorStop(0.7, '#dc2626');
-      blobGrad.addColorStop(1, '#450a0a');
+      blobGrad.addColorStop(0, e.hitFlash > 0 ? '#ffffff' : '#ff8fa3');
+      blobGrad.addColorStop(0.7, e.hitFlash > 0 ? '#ffc2d1' : '#e63946');
+      blobGrad.addColorStop(1, '#590d22');
       ctx.fillStyle = blobGrad;
       ctx.beginPath();
       ctx.ellipse(0, 0, r / squash, r * squash, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.strokeStyle = e.slowT > 0 ? '#7cc6fe' : '#800f2f';
+      ctx.lineWidth = e.slowT > 0 ? 2.5 : 1.5;
+      ctx.stroke();
 
+      // 惡魔小角
       ctx.fillStyle = '#fef08a';
       ctx.beginPath();
-      ctx.moveTo(-r*0.5, -r*0.8); ctx.lineTo(-r*0.2, -r*1.2); ctx.lineTo(0, -r*0.7);
-      ctx.moveTo(r*0.5, -r*0.8); ctx.lineTo(r*0.2, -r*1.2); ctx.lineTo(0, -r*0.7);
+      ctx.moveTo(-r*0.5, -r*0.75); ctx.lineTo(-r*0.22, -r*1.22); ctx.lineTo(0, -r*0.7);
+      ctx.moveTo(r*0.5, -r*0.75); ctx.lineTo(r*0.22, -r*1.22); ctx.lineTo(0, -r*0.7);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
@@ -1518,18 +1808,19 @@ function draw(){
       ctx.beginPath(); ctx.arc(0, -r * 0.1, r * 0.08, 0, Math.PI * 2); ctx.fill();
     }
 
+    // 圓角高質感血條
     const r = CS * (isBoss ? (isWorldBoss ? 0.44 : 0.36) : 0.25);
     const bw = isBoss ? r * 2.8 : r * 2.2;
-    const bh = isBoss ? 6 : 4;
+    const bh = isBoss ? 6.5 : 4.5;
     const barY = -r - (isBoss ? 16 : 9);
 
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillStyle = 'rgba(10, 18, 28, 0.88)';
     ctx.fillRect(-bw/2 - 1, barY - 1, bw + 2, bh + 2);
 
     const hpRatio = Math.max(0, e.hp / e.max);
-    let hpColor = '#7ed6a0';
-    if(hpRatio < 0.3) hpColor = '#ef4444';
-    else if(hpRatio < 0.6) hpColor = '#facc15';
+    let hpColor = '#06d6a0';
+    if(hpRatio < 0.3) hpColor = '#ff5a5f';
+    else if(hpRatio < 0.6) hpColor = '#ffd166';
 
     ctx.fillStyle = hpColor;
     ctx.fillRect(-bw/2, barY, bw * hpRatio, bh);
@@ -1540,7 +1831,7 @@ function draw(){
       ctx.strokeRect(-bw/2 - 1, barY - 1, bw + 2, bh + 2);
 
       ctx.font = `900 ${CS * 0.14}px Nunito, sans-serif`;
-      ctx.fillStyle = isWorldBoss ? '#ffd166' : '#f87171';
+      ctx.fillStyle = isWorldBoss ? '#ffd166' : '#ff8fa3';
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.fillText(isWorldBoss ? '★ WORLD BOSS ★' : 'BOSS', 0, barY - 2);
     }
@@ -1548,18 +1839,18 @@ function draw(){
     ctx.restore();
   }
 
-  // 滑鼠懸停預覽射程圈
+  // 6. 滑鼠懸停預覽射程圈
   if(st.pending && hoverCell){
     const cx = (hoverCell.x + 0.5) * CS;
     const cy = (hoverCell.y + 0.5) * CS;
     const rng = (st.pending.s.rng || 2.4) * CS;
 
     ctx.save();
-    ctx.fillStyle = isPath(hoverCell.x, hoverCell.y) ? 'rgba(255,107,91,0.3)' : 'rgba(126,214,160,0.25)';
+    ctx.fillStyle = isPath(hoverCell.x, hoverCell.y) ? 'rgba(255,90,95,0.35)' : 'rgba(6,214,160,0.28)';
     ctx.fillRect(hoverCell.x*CS, hoverCell.y*CS, CS, CS);
 
     ctx.setLineDash([7, 6]);
-    ctx.strokeStyle = 'rgba(255, 107, 91, 0.85)';
+    ctx.strokeStyle = 'rgba(255, 107, 91, 0.9)';
     ctx.lineWidth = 2.5;
     ctx.fillStyle = 'rgba(255, 107, 91, 0.12)';
     ctx.beginPath();
@@ -1570,16 +1861,15 @@ function draw(){
     ctx.restore();
   }
 
-  // 選取已存在單位時標記射程圈
   if(st.sel){
     const cx = (st.sel.x + 0.5) * CS;
     const cy = (st.sel.y + 0.5) * CS;
     const rng = (st.sel.s.rng || 2.4) * CS;
     ctx.save();
     ctx.setLineDash([6, 5]);
-    ctx.strokeStyle = 'rgba(255, 209, 102, 0.85)';
-    ctx.lineWidth = 2;
-    ctx.fillStyle = 'rgba(255, 209, 102, 0.08)';
+    ctx.strokeStyle = 'rgba(255, 209, 102, 0.9)';
+    ctx.lineWidth = 2.2;
+    ctx.fillStyle = 'rgba(255, 209, 102, 0.09)';
     ctx.beginPath();
     ctx.arc(cx, cy, rng, 0, Math.PI * 2);
     ctx.fill();
@@ -1588,20 +1878,30 @@ function draw(){
     ctx.restore();
   }
 
+  // 7. 渲染物理爆破粒子
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for(const pt of st.particles){
+    const alpha = Math.max(0, 1 - pt.t / pt.life);
+    ctx.fillStyle = pt.col;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(pt.x * CS, pt.y * CS, pt.r * alpha, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // 8. 渲染技能特效與跳字
   for(const f of st.fx) renderEnhancedFx(f);
   ctx.restore();
 }
 
-/**
- * 特效與衝擊波渲染模組
- */
 function renderEnhancedFx(f){
   const p = f.t / f.life, a = Math.max(0, 1 - p);
   ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
+  if(f.type !== 'txt') ctx.globalCompositeOperation = 'lighter';
 
   switch(f.type){
-    // 單位落地瞬間向外擴散淡出的半透明淡紅衝擊波
     case 'spawn_range':{
       const ease = Math.sin(p * Math.PI * 0.5);
       const rCur = (f.rng || 2.4) * CS * (0.35 + 0.65 * ease);
@@ -1616,9 +1916,9 @@ function renderEnhancedFx(f){
       break;
     }
     case 'beam':{
-      ctx.strokeStyle = f.col; ctx.lineWidth = CS * 0.28 * a;
+      ctx.strokeStyle = f.col; ctx.lineWidth = CS * 0.3 * a;
       ctx.beginPath(); ctx.moveTo(f.x*CS, f.y*CS); ctx.lineTo(f.x2*CS, f.y2*CS); ctx.stroke();
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = CS * 0.1 * a;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = CS * 0.11 * a;
       ctx.beginPath(); ctx.moveTo(f.x*CS, f.y*CS); ctx.lineTo(f.x2*CS, f.y2*CS); ctx.stroke();
       break;
     }
@@ -1651,7 +1951,7 @@ function renderEnhancedFx(f){
     }
     case 'slash':{
       ctx.translate(f.x2*CS, f.y2*CS);
-      const l = CS * 0.75;
+      const l = CS * 0.78;
       ctx.strokeStyle = f.col; ctx.lineWidth = 10 * a;
       ctx.beginPath(); ctx.moveTo(-l,-l); ctx.lineTo(l,l); ctx.moveTo(l,-l); ctx.lineTo(-l,l); ctx.stroke();
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4 * a;
@@ -1710,8 +2010,14 @@ function renderEnhancedFx(f){
       break;
     }
     case 'txt':{
-      ctx.fillStyle = f.col; ctx.font = `900 ${CS*0.32}px Nunito, sans-serif`;
-      ctx.textAlign = 'center'; ctx.fillText(f.txt, f.x*CS, (f.y - f.t*0.8)*CS);
+      ctx.globalAlpha = a;
+      ctx.font = `900 ${CS*0.34}px Nunito, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 4;
+      const ty = (f.y - f.t*0.95)*CS;
+      ctx.strokeText(f.txt, f.x*CS, ty);
+      ctx.fillStyle = f.col;
+      ctx.fillText(f.txt, f.x*CS, ty);
       break;
     }
   }
@@ -1741,10 +2047,10 @@ function buildCodex(){
   const wrap = $('codexWrap'); wrap.innerHTML = '';
   const dict = WORLD_SPECS[st.curIslandId];
   const groups = [
-    { len:3, name:'🌱 3 字基礎 (1~5關)' },
-    { len:4, name:'🌿 4 字核心 (6~10關)' },
-    { len:5, name:'🌲 5 字中堅 (11~15關)' },
-    { len:6, name:'🔥 6+ 字大招 (16~30關)' }
+    { len:3, name:'🌱 3 字初階戰塔 (1~5關)' },
+    { len:4, name:'🌿 4 字核心戰塔 (6~10關)' },
+    { len:5, name:'🌲 5 字精銳戰塔 (11~15關)' },
+    { len:6, name:'🔥 6+ 字傳奇神塔 (16~30關)' }
   ];
   const tier = getTier(st.wave);
 
@@ -1758,10 +2064,10 @@ function buildCodex(){
       const isLocked = w.length > tier.maxLen;
       const isCur = (w === st.targetWord);
       const isDone = st.built.has(w);
+      const pal = FX_PALETTE[s.fx] || FX_PALETTE.slash;
       const c = document.createElement('div');
       c.className = `cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCur?'target-active':''}`;
-      c.innerHTML = `<b>${w}</b><i></i>${s.zh}`;
-      // 點擊圖鑑卡片發音（同樣接入佇列依序發音）
+      c.innerHTML = `<b>${pal.icon} ${w}</b>${s.zh}`;
       c.onclick = () => { speakWord(w, s.zh); say(`🔊 ${w} (${s.zh})・威力:${s.dmg} 射程:${s.rng}`); };
       cDiv.appendChild(c);
     });
@@ -1770,7 +2076,6 @@ function buildCodex(){
   });
 }
 
-// 刷新各項 UI 面板狀態
 function ui(){
   $('sHp').textContent = Math.ceil(st.hp);
   $('sGold').textContent = st.gold;
@@ -1789,13 +2094,13 @@ function ui(){
 
   const pEl = $('prepTimer');
   if(st.inWave){
-    pEl.innerHTML = `<span style="color:var(--ok)">⚔️ 第 ${st.wave} 波戰鬥中</span>`;
+    pEl.innerHTML = `<span style="color:var(--ok)">⚔️ 第 ${st.wave} 波激烈交戰中</span>`;
   } else if(st.autoWaveTimer > 0){
     pEl.innerHTML = `⏱️ 連續開戰倒數: <b style="color:var(--danger);font-size:14px">${Math.ceil(st.autoWaveTimer)}s</b> (下一波即將衝鋒)`;
   } else if(st.prepTime > 0){
-    pEl.innerHTML = `⏱️ 早鳥獎勵: <b style="color:var(--gold);font-size:14px">${Math.ceil(st.prepTime)}s</b> (開戰+10金)`;
+    pEl.innerHTML = `⏱️ 早鳥獎勵: <b style="color:var(--gold);font-size:14px">${Math.ceil(st.prepTime)}s</b> (立即開戰 +10金)`;
   } else {
-    pEl.innerHTML = `⏳ 準備就緒 (從容擺位)`;
+    pEl.innerHTML = `⏳ 戰備狀態 (可從容部署戰塔)`;
   }
 
   const cost = getLetterCost(len);
@@ -1805,14 +2110,13 @@ function ui(){
   $('bSubmit').disabled = st.over || !!st.pending || st.slots.length < len;
   $('bClear').disabled = st.over || !!st.pending || st.slots.length <= 1;
   $('bWave').disabled = st.inWave || st.over;
-  $('bWave').textContent = st.inWave ? '戰鬥中...' : `開始第 ${st.wave+1} 波 ⚔️`;
+  $('bWave').textContent = st.inWave ? '⚔️ 交戰中...' : `開始第 ${st.wave+1} 波 ⚔️`;
 
   $('pendWrap').hidden = !st.pending;
-  if(st.pending) $('pend').textContent = `待放置：${st.pending.w}。點選草地立即建造並展開射程範圍！`;
+  if(st.pending) $('pend').textContent = `✨ 待部署：【${st.pending.w}】(${st.pending.s.zh}) — 點選草地立即建造，點選同字塔可升星！`;
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
-// 根據視窗寬度自適應重繪畫布尺寸與 DPR
 function resize(){
   const stage = $('stage');
   const w = stage.clientWidth || 360;
@@ -1882,7 +2186,6 @@ function resetAllData(){
 
 // ==================== 13. 生命週期初始化與事件綁定 ====================
 window.addEventListener('DOMContentLoaded', () => {
-  // 阻止 Safari / 行動端手勢縮放
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('gesturechange', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault());
@@ -1935,10 +2238,9 @@ window.addEventListener('DOMContentLoaded', () => {
   $('bDeselect').onclick = () => { st.sel = null; ui(); };
   $('bSpeed').onclick = () => {
     st.speed = st.speed === 1 ? 2 : (st.speed === 2 ? 3 : 1);
-    $('bSpeed').textContent = `速度 ${st.speed}×`;
+    $('bSpeed').textContent = `⚡ 速度 ${st.speed}×`;
   };
 
-  // 取得滑鼠游標在遊戲網格上的位置
   function updateHoverPos(clientX, clientY){
     const r = cv.getBoundingClientRect();
     if(r.width === 0 || r.height === 0) return;
@@ -1971,7 +2273,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('resize', resize);
   
-  // 實體鍵盤監聽事件
   window.addEventListener('keydown', e => {
     if($('battleView').hidden) return;
     if(e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1984,7 +2285,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 主動畫更新循環
   let prev = performance.now();
   function loop(now){
     const dtReal = Math.min(0.05, (now - prev)/1000);
