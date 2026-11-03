@@ -48,6 +48,7 @@ html,body{
   background:radial-gradient(circle at 50% 0%, #162a22 0%, #070e0b 100%);
   color:var(--chalk);margin:0;padding:0;overflow-x:hidden;-webkit-tap-highlight-color:transparent;
   min-height:100vh;
+  scroll-behavior: smooth;
 }
 body{
   font-family:var(--body);
@@ -57,6 +58,74 @@ body{
 }
 .wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 [hidden]{display:none !important}
+
+/* ==================== 雙向半透明白色懸浮跳轉按鈕 ==================== */
+.float-jump-btn {
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.65) !important;
+  color: #ffffff !important;
+  font-family: var(--body) !important;
+  font-weight: 900 !important;
+  font-size: 11.5px !important;
+  padding: 5px 11px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, box-shadow 0.15s ease !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75) !important;
+  z-index: 25;
+  white-space: nowrap;
+}
+.float-jump-btn:hover {
+  background: rgba(255, 255, 255, 0.34) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 12px rgba(255, 255, 255, 0.35) !important;
+  transform: translateY(-1px);
+}
+.float-jump-btn:active {
+  transform: scale(0.93) !important;
+}
+
+/* 掛載在當前目標單字卡上的迷你回跳膠囊鈕 */
+.card-back-pill {
+  position: absolute;
+  top: -11px;
+  right: -8px;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(4px);
+  color: #122019 !important;
+  border: 1.5px solid #ffffff !important;
+  border-radius: 999px !important;
+  padding: 2px 7px !important;
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.65) !important;
+  cursor: pointer !important;
+  z-index: 30;
+  line-height: 1.2;
+  transition: transform 0.12s ease;
+}
+.card-back-pill:hover {
+  transform: scale(1.1);
+  background: #ffffff !important;
+}
+.card-back-pill:active {
+  transform: scale(0.92);
+}
+
+/* 跳轉抵達時的聚光強調動畫 */
+@keyframes jumpHighlightPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9), 0 12px 28px rgba(0,0,0,0.9); }
+  50% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0), 0 16px 36px rgba(255,209,102,0.95); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 12px 28px rgba(0,0,0,0.9); }
+}
+.jump-flash {
+  animation: jumpHighlightPulse 0.9s ease-out !important;
+}
 
 /* ==================== 1. 台灣世界地圖皇家級樣式 ==================== */
 #worldView{display:flex;flex-direction:column;gap:10px;padding-bottom:16px}
@@ -244,9 +313,12 @@ h1 small{font-family:var(--body);font-size:12px;color:var(--ok);font-weight:800;
 .stat.hp b{color:#ff6b6b} .stat.gold b{color:var(--gold)} .stat.map b{color:var(--ok)}
 
 .rack{
+  position:relative;
   display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
   background:rgba(15,26,20,0.65);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);
+  flex-wrap:wrap;
 }
+.slots-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .slots{display:flex;gap:6px;min-height:40px;align-items:center;flex-wrap:wrap}
 .slot{
   width:34px;height:40px;border-radius:8px;border:2px dashed rgba(154,181,166,0.4);
@@ -267,7 +339,7 @@ h1 small{font-family:var(--body);font-size:12px;color:var(--ok);font-weight:800;
 }
 @keyframes popSlot{0%{transform:scale(0.6)}100%{transform:scale(1)}}
 
-.rack-btns{display:flex;gap:6px}
+.rack-btns{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 button{
   font-family:var(--body);font-weight:900;font-size:12px;border-radius:8px;
   border:1px solid var(--line);background:linear-gradient(180deg, #284235, #192b22);
@@ -343,10 +415,27 @@ button:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(40%)}
 
 /* ==================== 圖鑑容器與聚焦立體卡片 ==================== */
 details{
+  position:relative;
   background:rgba(22,38,30,0.85);border:1px solid var(--line);border-radius:10px;padding:10px;overflow:visible;
   box-shadow:0 4px 14px rgba(0,0,0,0.35);
 }
-summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(--gold)}
+.codex-topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+}
+summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(--gold);padding-right:110px}
+.codex-jump-up-wrap{
+  position:sticky;
+  top:10px;
+  z-index:35;
+  display:flex;
+  justify-content:flex-end;
+  pointer-events:none;
+  margin-top:-26px;
+  margin-bottom:4px;
+}
+.codex-jump-up-wrap .float-jump-btn{
+  pointer-events:auto;
+}
 .codex-group{margin-top:10px}
 .group-title{font-size:11.5px;font-weight:900;color:var(--ok);margin-bottom:6px;letter-spacing:0.5px}
 
@@ -514,7 +603,7 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(-
     </header>
 
     <!-- 題目提示與操作卡 -->
-    <div class="prompt-card">
+    <div class="prompt-card" id="promptCard">
       <div class="prompt-main">
         <span class="prompt-title">🎯 召喚目標：</span>
         <span class="prompt-zh" id="pZh">貓</span>
@@ -537,9 +626,12 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(-
       <div class="stat"><span>💀 擊破敵軍</span><b id="sKills">0</b></div>
     </div>
 
-    <!-- 拼字輸入槽與操作按鈕 -->
-    <div class="rack">
-      <div class="slots" id="slots"></div>
+    <!-- 拼字輸入槽與操作按鈕（附設半透明白色「查此字」懸浮跳轉鈕） -->
+    <div class="rack" id="rackAnchor">
+      <div class="slots-wrap">
+        <div class="slots" id="slots"></div>
+        <button type="button" class="float-jump-btn" id="bJumpToCodex" title="跳轉至底部單字圖鑑查看此字">📖 查此字 ↓</button>
+      </div>
       <div class="rack-btns">
         <button class="primary" id="bSubmit" disabled="">召喚戰塔 ⏎</button>
         <button id="bClear" disabled="">重填</button>
@@ -586,10 +678,14 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(-
 
     <!-- 虛擬鍵盤與單字圖鑑 -->
     <div class="kb" id="kb"></div>
-    <div class="hint">💡 技巧：點擊草地瞬間建造魔法戰塔；重複放置相同單字於同一塔上可直接【升星強化】！</div>
+    <div class="hint">💡 技巧：點擊輸入框旁「📖 查此字 ↓」可瞬間跳到下方字典偷看拼法，再按「⬆️ 回輸入框」一秒回來！</div>
 
     <details id="detailsCodex" open>
       <summary>📖 本島單字魔法圖鑑（點擊卡片聽真人發音 🔊，共 50 字）</summary>
+      <!-- 懸浮於圖鑑右上角的半透明白色回跳按鈕 -->
+      <div class="codex-jump-up-wrap">
+        <button type="button" class="float-jump-btn" id="bJumpToInput" title="跳回上方拼字輸入框">⬆️ 回輸入框</button>
+      </div>
       <div id="codexWrap"></div>
     </details>
   </div>
@@ -603,8 +699,8 @@ summary{cursor:pointer;font-weight:900;outline:none;font-size:13.5px;color:var(-
     <p>這是一場用英語單字守護台灣群島的奇幻冒險。探索 6 大魔法島嶼，收服 300 座單字水晶戰塔：</p>
     <ul>
       <li><b>⌨️ 智慧秒速召喚</b>：完整輸入正確字母後<b>自動召喚戰塔</b>！不按退回一次拼對可觸發<b>「⚡ 一發入魂 +10 金」</b>！</li>
+      <li><b>📖 雙向閃電查字</b>：忘記怎麼拼？點擊輸入框旁的半透明白色<b>「📖 查此字 ↓」</b>直接跳到該單字卡，看完點<b>「⬆️ 回輸入框」</b>瞬間返回！</li>
       <li><b>⭐ 戰塔合體升星</b>：將相同單字蓋在已有的同字戰塔上，即可<b>升星進化</b>，獲得華麗光環與巨額傷害加成！</li>
-      <li><b>⚔️ 連續挑戰模式</b>：開啟「連續挑戰」，每波通關後 3 秒自動迎戰下一波！</li>
       <li><b>💾 本機自動存檔</b>：每波進度與戰塔陣容皆自動保存，隨時回來接關！</li>
     </ul>
     <button class="primary" id="bCloseGuide" style="width:100%;padding:11px;font-size:15px;margin-top:8px">開始我的島嶼冒險 ⚔️</button>
@@ -852,7 +948,7 @@ function loadGameProgress(){
 const COLS = 12, ROWS = 8;
 let cv, ctx, CS = 50, DPR = 1;
 let hoverCell = null;
-let decorMap = []; // 儲存每格草地的自然裝飾物
+let decorMap = [];
 
 let st = {
   curIslandId: 0, wave: 0, gold: 60, hp: 20, maxHp: 20, kills: 0, inWave: false,
@@ -866,6 +962,40 @@ let st = {
 const $ = id => document.getElementById(id);
 const say = (t, cls='') => { const m=$('msg'); if(m){ m.textContent=t; m.className='msg '+cls; } };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+// ==================== 雙向快速跳轉邏輯 ====================
+function jumpToActiveCodexWord(){
+  const details = $('detailsCodex');
+  if(details && !details.open){
+    details.open = true;
+  }
+  setTimeout(() => {
+    const targetCard = document.querySelector('.cx.target-active') || $('detailsCodex');
+    if(targetCard){
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      targetCard.classList.remove('jump-flash');
+      void targetCard.offsetWidth;
+      targetCard.classList.add('jump-flash');
+      if(st.targetWord && st.targetSpec){
+        say(`📖 已定位至【${st.targetWord}】(${st.targetSpec.zh})，看完點「⬆️ 回輸入框」即可返回！`, 'good');
+      }
+    }
+  }, 40);
+}
+
+function jumpBackToInputRack(e){
+  if(e) e.stopPropagation(); // 避免觸發單字卡本身的點擊事件
+  const anchor = $('promptCard') || $('rackAnchor');
+  if(anchor){
+    anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const slotsEl = $('slots');
+    if(slotsEl){
+      slotsEl.classList.remove('jump-flash');
+      void slotsEl.offsetWidth;
+      slotsEl.classList.add('jump-flash');
+    }
+  }
+}
 
 function getLetterCost(len){
   if(len <= 3) return 5;
@@ -881,7 +1011,6 @@ function getTier(wave){
   return { lv:4, targetLen:6, maxLen:8, name:'第 4 等級 (6+ 字)' };
 }
 
-// 噴發物理粒子（擊中火花、擊殺爆炸、升星慶祝）
 function spawnParticles(x, y, col, count = 14, spd = 2.6){
   for(let i=0; i<count; i++){
     const ang = Math.random() * Math.PI * 2;
@@ -913,7 +1042,6 @@ function initMapPath(){
       if(x>=0 && x<COLS && y>=0 && y<ROWS) pathSet.add(x+','+y);
     }
   }
-  // 產生每格地形的隨機生態細節（小草叢、碎石、晶簇）
   decorMap = [];
   for(let y=0; y<ROWS; y++){
     for(let x=0; x<COLS; x++){
@@ -1318,7 +1446,7 @@ function addShake(v){ st.camShake = Math.min(20, Math.max(st.camShake||0, v)); }
 function fireTowerFx(t, c, tg){
   const fxType = t.s.fx || 'slash';
   const pal = FX_PALETTE[fxType] || FX_PALETTE.slash;
-  t.recoil = 1.0; // 觸發戰塔開火後座力回彈
+  t.recoil = 1.0;
   spawnParticles(tg.x, tg.y, pal.glow, 6, 1.8);
 
   if(fxType === 'beam') fx({ type:'beam', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#00f2fe', life:0.26 });
@@ -1449,12 +1577,11 @@ function update(dt, dtReal){
     return true;
   });
 
-  // 更新物理粒子
   for(const pt of st.particles){
     pt.t += dtReal;
     pt.x += pt.vx * dt;
     pt.y += pt.vy * dt;
-    pt.vy += 3.5 * dt; // 輕微重力感
+    pt.vy += 3.5 * dt;
   }
   st.particles = st.particles.filter(pt => pt.t < pt.life);
 
@@ -1510,7 +1637,6 @@ function draw(){
   }
   const isl = ISLANDS[st.curIslandId];
 
-  // 1. 繪製深邃草地底圖與棋盤微光
   ctx.fillStyle = isl.board;
   ctx.fillRect(0, 0, W, H);
 
@@ -1525,7 +1651,6 @@ function draw(){
     }
   }
 
-  // 自然地貌小裝飾（草叢與鵝卵石）
   for(const d of decorMap){
     const dx = (d.x + d.offX) * CS, dy = (d.y + d.offY) * CS;
     if(d.type === 'tuft'){
@@ -1544,13 +1669,11 @@ function draw(){
     }
   }
 
-  // 2. 繪製立體石板行軍步道
   for(let y=0; y<ROWS; y++){
     for(let x=0; x<COLS; x++){
       if(isPath(x,y)){
         ctx.fillStyle = (x+y)%2 ? isl.dirt : isl.line;
         ctx.fillRect(x*CS, y*CS, CS, CS);
-        // 內嵌石板紋理
         ctx.fillStyle = 'rgba(0,0,0,0.18)';
         drawRoundRect(ctx, x*CS+3, y*CS+3, CS-6, CS-6, 5);
         ctx.fill();
@@ -1561,7 +1684,6 @@ function draw(){
     }
   }
 
-  // 3. 繪製起點「深淵暗影傳送門」與終點「守護水晶聖殿」
   const startY = (isl.wp[0][1] + 0.5) * CS;
   const startX = CS * 0.52;
   ctx.save();
@@ -1581,7 +1703,6 @@ function draw(){
   ctx.fillStyle = '#f5d0fe'; ctx.font = `900 ${CS*0.17}px Nunito, sans-serif`;
   ctx.textAlign = 'center'; ctx.fillText('深淵入口', startX, startY + CS*0.42);
 
-  // 終點守護水晶城堡
   const endY = (isl.wp[isl.wp.length - 1][1] + 0.5) * CS;
   const endX = CS * 11.48;
   ctx.save();
@@ -1592,7 +1713,6 @@ function draw(){
   cryGlow.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = cryGlow;
   ctx.beginPath(); ctx.arc(0, 0, CS*0.48, 0, Math.PI*2); ctx.fill();
-  // 懸浮稜鏡水晶
   const bob = Math.sin(nowTime * 2.5) * 3;
   ctx.translate(0, bob);
   ctx.fillStyle = '#06d6a0';
@@ -1608,7 +1728,6 @@ function draw(){
   ctx.fillStyle = '#a7f3d0'; ctx.font = `900 ${CS*0.17}px Nunito, sans-serif`;
   ctx.textAlign = 'center'; ctx.fillText('守護水晶', endX, endY + CS*0.42);
 
-  // 4. 繪製 2.5D 魔法水晶戰塔
   for(const t of st.towers){
     const pal = FX_PALETTE[t.s.fx] || FX_PALETTE.slash;
     const cx = (t.x + 0.5) * CS;
@@ -1619,7 +1738,6 @@ function draw(){
     ctx.save();
     ctx.translate(cx, cy);
 
-    // 底部呼吸燈魔法陣（升星越高等越華麗）
     const auraR = CS * (0.42 + Math.min(0.12, (star-1)*0.03));
     ctx.strokeStyle = pal.glow;
     ctx.globalAlpha = 0.35 + Math.sin(nowTime*3 + t.x)*0.15;
@@ -1627,7 +1745,6 @@ function draw(){
     ctx.beginPath(); ctx.arc(0, 2, auraR, 0, Math.PI*2); ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // 2.5D 立體暗色厚底座
     const pad = CS * 0.1;
     const bw = CS - pad*2;
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -1638,7 +1755,6 @@ function draw(){
     drawRoundRect(ctx, -bw/2, -bw/2 + 2, bw, bw, 9);
     ctx.fill();
 
-    // 寶石主塔身（帶後座力縮放）
     ctx.translate(0, -rec);
     const bodyGrad = ctx.createLinearGradient(0, -bw/2, 0, bw/2);
     bodyGrad.addColorStop(0, pal.top);
@@ -1648,26 +1764,22 @@ function draw(){
     drawRoundRect(ctx, -bw/2 + 1.5, -bw/2 - 1, bw - 3, bw - 3, 8);
     ctx.fill();
 
-    // 頂部玻璃高光邊框
     ctx.strokeStyle = star >= 2 ? '#ffd166' : 'rgba(255,255,255,0.55)';
     ctx.lineWidth = star >= 2 ? 2.2 : 1.2;
     ctx.stroke();
 
-    // 選取外框
     if(st.sel === t){
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
       drawRoundRect(ctx, -bw/2 - 2, -bw/2 - 4, bw + 4, bw + 3, 10);
       ctx.stroke();
     }
 
-    // 頂部小屬性核心球
     const orbY = -bw*0.36 + Math.sin(nowTime*4 + t.y)*1.5;
     ctx.fillStyle = '#ffffff';
     ctx.shadowColor = pal.glow; ctx.shadowBlur = 8;
     ctx.beginPath(); ctx.arc(0, orbY, CS*0.07, 0, Math.PI*2); ctx.fill();
     ctx.shadowBlur = 0;
 
-    // 英文單字立體描邊字
     const fs = Math.min(CS*0.29, (CS*0.80)/(t.w.length*0.62));
     ctx.font = `900 ${fs}px "Bungee", Nunito, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1676,7 +1788,6 @@ function draw(){
     ctx.fillStyle = '#ffffff';
     ctx.fillText(t.w, 0, -CS*0.04);
 
-    // 底部中文標籤膠囊
     ctx.fillStyle = 'rgba(0,0,0,0.62)';
     drawRoundRect(ctx, -bw*0.44, CS*0.14, bw*0.88, CS*0.22, 4);
     ctx.fill();
@@ -1689,7 +1800,6 @@ function draw(){
     ctx.restore();
   }
 
-  // 5. 繪製立體怪物軍團與受擊閃白
   for(const e of st.enemies){
     const isBoss = (e.type === 'boss');
     const isWorldBoss = isBoss && (st.wave === 30);
@@ -1793,7 +1903,6 @@ function draw(){
       ctx.lineWidth = e.slowT > 0 ? 2.5 : 1.5;
       ctx.stroke();
 
-      // 惡魔小角
       ctx.fillStyle = '#fef08a';
       ctx.beginPath();
       ctx.moveTo(-r*0.5, -r*0.75); ctx.lineTo(-r*0.22, -r*1.22); ctx.lineTo(0, -r*0.7);
@@ -1808,7 +1917,6 @@ function draw(){
       ctx.beginPath(); ctx.arc(0, -r * 0.1, r * 0.08, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 圓角高質感血條
     const r = CS * (isBoss ? (isWorldBoss ? 0.44 : 0.36) : 0.25);
     const bw = isBoss ? r * 2.8 : r * 2.2;
     const bh = isBoss ? 6.5 : 4.5;
@@ -1839,7 +1947,6 @@ function draw(){
     ctx.restore();
   }
 
-  // 6. 滑鼠懸停預覽射程圈
   if(st.pending && hoverCell){
     const cx = (hoverCell.x + 0.5) * CS;
     const cy = (hoverCell.y + 0.5) * CS;
@@ -1878,7 +1985,6 @@ function draw(){
     ctx.restore();
   }
 
-  // 7. 渲染物理爆破粒子
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   for(const pt of st.particles){
@@ -1891,7 +1997,6 @@ function draw(){
   }
   ctx.restore();
 
-  // 8. 渲染技能特效與跳字
   for(const f of st.fx) renderEnhancedFx(f);
   ctx.restore();
 }
@@ -2068,6 +2173,18 @@ function buildCodex(){
       const c = document.createElement('div');
       c.className = `cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCur?'target-active':''}`;
       c.innerHTML = `<b>${pal.icon} ${w}</b>${s.zh}`;
+
+      // 在當前目標單字卡右上角直接附上迷你半透明白底「⬆️輸入」按鈕，方便看完秒跳回
+      if(isCur){
+        const upBtn = document.createElement('button');
+        upBtn.type = 'button';
+        upBtn.className = 'card-back-pill';
+        upBtn.textContent = '⬆️回輸入';
+        upBtn.title = '跳回上方輸入框';
+        upBtn.onclick = jumpBackToInputRack;
+        c.appendChild(upBtn);
+      }
+
       c.onclick = () => { speakWord(w, s.zh); say(`🔊 ${w} (${s.zh})・威力:${s.dmg} 射程:${s.rng}`); };
       cDiv.appendChild(c);
     });
@@ -2220,6 +2337,11 @@ window.addEventListener('DOMContentLoaded', () => {
   $('bListen').onclick = () => speakWord(st.targetWord, st.targetSpec.zh);
   $('bAutoWave').onclick = toggleAutoWave;
   $('bWave').onclick = startWave;
+
+  // 綁定雙向半透明白色懸浮跳轉按鈕
+  $('bJumpToCodex').onclick = jumpToActiveCodexWord;
+  $('bJumpToInput').onclick = jumpBackToInputRack;
+
   $('bCancel').onclick = () => {
     if(st.pending){
       const len = st.pending.w.length;
