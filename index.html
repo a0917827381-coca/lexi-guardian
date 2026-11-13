@@ -552,7 +552,7 @@ summary{cursor:pointer;font-weight:900;font-size:12.5px;color:var(--gold);paddin
     <div class="rack" id="rackAnchor">
       <div class="slots-wrap">
         <div class="slots" id="slots"></div>
-        <button type="button" class="float-jump-btn" id="bJumpToCodex" title="跳轉至底部單字圖鑑查看此字">📖 查此字 ↓</button>
+        <button type="button" class="float-jump-btn" id="bJumpToCodex" title="跳轉至底部單字圖鑑查看此字（將取消一發入魂獎勵）">📖 查此字 ↓</button>
       </div>
       <div class="rack-btns">
         <button class="primary" id="bSubmit" disabled="">召喚 ⏎</button>
@@ -600,7 +600,7 @@ summary{cursor:pointer;font-weight:900;font-size:12.5px;color:var(--gold);paddin
 
     <!-- 虛擬鍵盤與單字圖鑑 -->
     <div class="kb" id="kb"></div>
-    <div class="hint">💡 手機專屬提示：在草地上點第 1 下可預覽射程，點第 2 下確認建造！</div>
+    <div class="hint">💡 手機專屬提示：在草地上點第 1 下可預覽射程，點第 2 下確認建造！🛡️ 護盾塔每波結束可修復水晶！</div>
 
     <details id="detailsCodex" open>
       <summary>📖 本島魔法圖鑑（點擊卡片聽發音 🔊，共 50 字）</summary>
@@ -619,11 +619,11 @@ summary{cursor:pointer;font-weight:900;font-size:12.5px;color:var(--gold);paddin
     <h2>🏝️ 歡迎來到拼字塔防！</h2>
     <p>這是一場用英語單字守護台灣群島的奇幻冒險。探索 6 大魔法島嶼，收服 300 座單字水晶戰塔：</p>
     <ul>
-      <li><b>⌨️ 智慧秒速召喚</b>：輸入正確字母後<b>自動召喚戰塔</b>！一次拼對可觸發<b>「⚡ 一發入魂 +10 金」</b>！</li>
+      <li><b>⌨️ 智慧秒速召喚</b>：輸入正確字母後<b>自動召喚戰塔</b>！不看提示、不退回一次拼對可觸發<b>「⚡ 一發入魂 +10 金」</b>！</li>
+      <li><b>🛡️ 護盾戰塔守護</b>：帶有 🛡️ 圖示的防禦類單字不僅能<b>擊退緩速</b>敵軍，每波結束還能<b>自動修復守護水晶</b>！</li>
       <li><b>📱 雙擊防誤觸建造</b>：在手機上，點擊草地第 1 下可預覽射程光圈，點擊同位置第 2 下才確認建造！</li>
-      <li><b>📖 雙向閃電查字</b>：忘記怎麼拼？點輸入框旁<b>「📖 查此字 ↓」</b>跳轉字典，看完點<b>「⬆️ 回輸入框」</b>一秒返回！</li>
+      <li><b>📖 雙向閃電查字</b>：忘記怎麼拼？點輸入框旁<b>「📖 查此字 ↓」</b>跳轉字典（查字將不計一發入魂獎勵），看完點<b>「⬆️ 回輸入框」</b>一秒返回！</li>
       <li><b>⭐ 戰塔合體升星</b>：相同單字覆蓋在舊塔上即可<b>升星進化</b>！</li>
-      <li><b>💾 本機自動存檔</b>：每波進度與陣容自動保存，隨時接關！</li>
     </ul>
     <button class="primary" id="bCloseGuide" style="width:100%;padding:10px;font-size:14px;margin-top:6px">開始島嶼冒險 ⚔️</button>
   </div>
@@ -732,7 +732,7 @@ const WORLD_SPECS = RAW_WORDS.map(raw => {
     const [w, zh, fx] = item.split(':');
     if(!w) return;
     const len = w.length;
-    let dmg = 8, rng = 2.4, rate = 1.3, aoe = 0, slow = 0, dps = 0;
+    let dmg = 8, rng = 2.4, rate = 1.3, aoe = 0, slow = 0, dps = 0, kb = 0;
     if(len === 3){ dmg = 9; rng = 2.4; rate = 1.4; }
     else if(len === 4){ dmg = 20; rng = 2.5; rate = 1.1; }
     else if(len === 5){ dmg = 42; rng = 2.8; rate = 0.95; }
@@ -742,24 +742,99 @@ const WORLD_SPECS = RAW_WORDS.map(raw => {
     if(fx === 'breath'){ dps = Math.round(dmg * 0.45); dmg *= 0.4; }
     if(fx === 'ring'){ slow = 0.5; dmg *= 0.5; }
     if(fx === 'chain'){ dmg *= 0.75; }
+    if(fx === 'barrier'){ dmg *= 0.75; slow = 0.35; kb = 0.16; aoe = 0.85; }
 
-    dict[w] = { zh, fx, dmg:Math.round(dmg), rng, rate, aoe, slow, dps, dur:2.5, jumps: len>=6?5:3 };
+    dict[w] = { zh, fx, dmg:Math.round(dmg), rng, rate, aoe, slow, dps, kb, dur:2.5, jumps: len>=6?5:3 };
   });
   return dict;
 });
 
-// ==================== 3. 語音系統（含 iOS 解鎖相容性處理） ====================
+// ==================== 3. 語音與零依賴 Web Audio 合成音效系統 ====================
 const speechQueue = [];
 let isSpeaking = false;
 let ttsUnlocked = false;
+let audioCtx = null;
 
 function unlockTTS(){
+  if(!audioCtx){
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(AC) audioCtx = new AC();
+    }catch(e){}
+  }
+  if(audioCtx && audioCtx.state === 'suspended'){
+    audioCtx.resume().catch(()=>{});
+  }
   if(ttsUnlocked || !('speechSynthesis' in window)) return;
   try{
     const dummy = new SpeechSynthesisUtterance('');
     dummy.volume = 0;
     window.speechSynthesis.speak(dummy);
     ttsUnlocked = true;
+  }catch(e){}
+}
+
+function playSfx(type){
+  if(!audioCtx || audioCtx.state !== 'running') return;
+  try{
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if(type === 'key'){
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(680, now + 0.045);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.045);
+      osc.start(now); osc.stop(now + 0.05);
+    } else if(type === 'error'){
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(170, now);
+      osc.frequency.linearRampToValueAtTime(115, now + 0.18);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now); osc.stop(now + 0.19);
+    } else if(type === 'summon'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.06);
+      osc.frequency.setValueAtTime(783.99, now + 0.12);
+      gain.gain.setValueAtTime(0.11, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.26);
+      osc.start(now); osc.stop(now + 0.27);
+    } else if(type === 'build'){
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(330, now);
+      osc.frequency.exponentialRampToValueAtTime(660, now + 0.12);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.13);
+      osc.start(now); osc.stop(now + 0.14);
+    } else if(type === 'upgrade'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.setValueAtTime(880, now + 0.07);
+      osc.frequency.setValueAtTime(1174.66, now + 0.14);
+      gain.gain.setValueAtTime(0.13, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now); osc.stop(now + 0.31);
+    } else if(type === 'coin'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, now);
+      osc.frequency.setValueAtTime(1318.51, now + 0.06);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.2);
+      osc.start(now); osc.stop(now + 0.21);
+    } else if(type === 'boss'){
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.linearRampToValueAtTime(90, now + 0.4);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.42);
+      osc.start(now); osc.stop(now + 0.43);
+    }
   }catch(e){}
 }
 
@@ -833,7 +908,8 @@ function saveGameProgress(){
         hp: st.hp,
         kills: st.kills,
         towers: st.towers.map(t => ({ w: t.w, x: t.x, y: t.y, star: t.star||1 })),
-        built: Array.from(st.built)
+        built: Array.from(st.built),
+        mistakes: st.mistakes || {}
       };
     }
     const payload = {
@@ -870,11 +946,17 @@ function loadGameProgress(){
   }
 }
 
-// ==================== 5. 遊戲全域狀態與粒子引擎 ====================
+// ==================== 5. 遊戲全域狀態與離屏快取畫布 ====================
 const COLS = 12, ROWS = 8;
 let cv, ctx, CS = 50, DPR = 1;
+const bgCanvas = document.createElement('canvas');
+const bgCtx = bgCanvas.getContext('2d');
 let hoverCell = null;
 let decorMap = [];
+let codexCardMap = new Map();
+let sharedUpBtn = null;
+let lastPrepSec = -1;
+let lastAutoSec = -1;
 
 let st = {
   curIslandId: 0, wave: 0, gold: 60, hp: 20, maxHp: 20, kills: 0, inWave: false,
@@ -882,15 +964,21 @@ let st = {
   targetWord: '', targetSpec: null, pending: null, sel: null,
   speed: 1, camShake: 0, prepTime: 20, backspaced: false, over: false,
   autoWave: false, autoWaveTimer: 0,
-  built: new Set()
+  built: new Set(),
+  mistakes: {}
 };
 
 const $ = id => document.getElementById(id);
 const say = (t, cls='') => { const m=$('msg'); if(m){ m.textContent=t; m.className='msg '+cls; } };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
-// 雙向快速跳轉
+// 雙向快速跳轉（附帶查字防作弊平衡）
 function jumpToActiveCodexWord(){
+  unlockTTS();
+  if(!st.backspaced && st.targetWord){
+    st.backspaced = true;
+    st.mistakes[st.targetWord] = (st.mistakes[st.targetWord] || 0) + 1;
+  }
   const details = $('detailsCodex');
   if(details && !details.open) details.open = true;
   setTimeout(() => {
@@ -901,7 +989,7 @@ function jumpToActiveCodexWord(){
       void targetCard.offsetWidth;
       targetCard.classList.add('jump-flash');
       if(st.targetWord && st.targetSpec){
-        say(`📖 已定位至【${st.targetWord}】(${st.targetSpec.zh})，點「⬆️ 回輸入框」返回！`, 'good');
+        say(`📖 已定位至【${st.targetWord}】(${st.targetSpec.zh})，查字將取消本題一發入魂獎勵，點「⬆️ 回輸入框」返回！`, 'good');
       }
     }
   }, 40);
@@ -1050,6 +1138,7 @@ function enterIsland(id, carryoverGold = 60){
     st.hp = saved.hp;
     st.kills = saved.kills;
     st.built = new Set(saved.built || []);
+    st.mistakes = saved.mistakes || {};
     st.towers = saved.towers.map(t => ({
       w: t.w, s: dict[t.w] || Object.values(dict)[0],
       x: t.x, y: t.y, star: t.star||1, cd:0, recoil:0
@@ -1058,6 +1147,7 @@ function enterIsland(id, carryoverGold = 60){
   } else {
     st.wave = 0; st.hp = 20; st.gold = carryoverGold; st.kills = 0;
     st.built.clear();
+    st.mistakes = {};
     const firstWord = Object.keys(dict)[0];
     let initX = 2, initY = 3;
     if(isPath(initX, initY)){
@@ -1076,6 +1166,7 @@ function enterIsland(id, carryoverGold = 60){
   st.inWave = false; st.enemies = []; st.fx = []; st.particles = [];
   st.pending = null; st.sel = null; st.over = false; st.prepTime = 20;
   st.autoWaveTimer = 0;
+  lastPrepSec = -1; lastAutoSec = -1;
 
   $('mapTitle').textContent = isl.name;
   $('sMap').textContent = isl.name;
@@ -1084,6 +1175,7 @@ function enterIsland(id, carryoverGold = 60){
   $('worldView').hidden = true;
   $('battleView').hidden = false;
 
+  initCodexDOM();
   pickPrompt();
   resize();
   saveGameProgress();
@@ -1102,6 +1194,7 @@ function returnToWorldMap(){
 
 function conquerCurrentIsland(){
   st.autoWaveTimer = 0;
+  playSfx('upgrade');
   const curId = st.curIslandId;
   if(!worldProgress.conquered.includes(curId)){
     worldProgress.conquered.push(curId);
@@ -1137,14 +1230,36 @@ function conquerCurrentIsland(){
   };
 }
 
-// ==================== 7. 拼字核心與發音 ====================
+// ==================== 7. 智慧權重出題（SRS）與拼字核心 ====================
 function pickPrompt(){
   const tier = getTier(st.wave);
   const dict = WORLD_SPECS[st.curIslandId];
-  const pool = Object.entries(dict).filter(([w]) => {
+  let pool = Object.entries(dict).filter(([w]) => {
     return tier.lv >= 4 ? w.length >= 6 : w.length === tier.targetLen;
   });
-  const [w, s] = pool[Math.floor(Math.random() * pool.length)];
+
+  if(pool.length > 1 && st.targetWord){
+    pool = pool.filter(([w]) => w !== st.targetWord);
+  }
+
+  // SRS 間隔重複權重計算：未建造單字權重 x4，曾拼錯/查字單字額外加權
+  let totalWeight = 0;
+  const weighted = pool.map(entry => {
+    const w = entry[0];
+    let weight = st.built.has(w) ? 1 : 4;
+    if(st.mistakes[w]) weight += Math.min(6, st.mistakes[w] * 3);
+    totalWeight += weight;
+    return { entry, weight };
+  });
+
+  let r = Math.random() * totalWeight;
+  let chosen = weighted[0].entry;
+  for(const item of weighted){
+    r -= item.weight;
+    if(r <= 0){ chosen = item.entry; break; }
+  }
+
+  const [w, s] = chosen;
   st.targetWord = w;
   st.targetSpec = s;
   st.slots = [w[0]];
@@ -1154,7 +1269,7 @@ function pickPrompt(){
   $('pLevel').textContent = tier.name;
   $('pCost').textContent = `(${getLetterCost(w.length)}金/字)`;
   ui();
-  buildCodex();
+  updateCodexState();
 
   if(ttsUnlocked) speakWord(w);
 }
@@ -1173,7 +1288,11 @@ function buyLetter(L){
   const len = st.targetWord.length;
   if(st.slots.length >= len) return say(`只需 ${len} 個字母！`, 'bad');
   const cost = getLetterCost(len);
-  if(st.gold < cost) return say('金幣不夠！', 'bad');
+  if(st.gold < cost){
+    playSfx('error');
+    return say('金幣不夠！', 'bad');
+  }
+  playSfx('key');
   st.gold -= cost;
   st.slots.push(L);
   ui();
@@ -1185,20 +1304,24 @@ function buyLetter(L){
 
 function backSlot(){
   if(st.slots.length > 1){
+    playSfx('key');
     const cost = getLetterCost(st.targetWord.length);
     st.slots.pop();
     st.gold += cost;
     st.backspaced = true;
+    if(st.targetWord) st.mistakes[st.targetWord] = (st.mistakes[st.targetWord] || 0) + 1;
     ui();
   }
 }
 
 function clearSlots(){
   if(st.slots.length > 1){
+    playSfx('key');
     const cost = getLetterCost(st.targetWord.length);
     st.gold += cost * (st.slots.length - 1);
     st.slots = [st.targetWord[0]];
     st.backspaced = true;
+    if(st.targetWord) st.mistakes[st.targetWord] = (st.mistakes[st.targetWord] || 0) + 1;
     ui();
   }
 }
@@ -1208,12 +1331,17 @@ function submitWord(){
   const w = st.slots.join('');
   const dict = WORLD_SPECS[st.curIslandId];
   if(w.length < st.targetWord.length){
+    playSfx('error');
     shake(); return say(`還差 ${st.targetWord.length - w.length} 個字母！`, 'bad');
   }
 
   if(!dict[w]){
+    playSfx('error');
     shake();
     st.backspaced = true;
+    if(st.targetWord){
+      st.mistakes[st.targetWord] = (st.mistakes[st.targetWord] || 0) + 1;
+    }
     if(st.targetWord && w.length === st.targetWord.length){
       let diff = 0;
       for(let i=0; i<w.length; i++) if(w[i] !== st.targetWord[i]) diff++;
@@ -1229,9 +1357,12 @@ function submitWord(){
   if(w === st.targetWord && !st.backspaced){
     st.gold += 10;
     bonusAwarded = true;
+    if(st.mistakes[w] > 0) st.mistakes[w]--;
+    playSfx('coin');
     fx({ type:'txt', x:6, y:3.5, txt:'⚡ 一發入魂 +10金幣!', col:'#ffd166', life:1.3 });
     say(`✨ 完美一發入魂！額外 +10 金幣！`, 'good');
   } else {
+    playSfx('summon');
     say(`【${w}】召喚成功！點選草地建造戰塔！`, 'good');
   }
 
@@ -1240,7 +1371,7 @@ function submitWord(){
   st.built.add(w);
   speakWord(w, s.zh);
   ui();
-  buildCodex();
+  updateCodexState();
 }
 
 function shake(){
@@ -1276,15 +1407,18 @@ function clickCell(x, y){
 
   if(st.pending){
     if(isPath(x,y)){
+      playSfx('error');
       hoverCell = null;
       return say('戰塔只能建造在草地上！', 'bad');
     }
 
-    const exist = st.towers.find(t => t.x===x && t.y===y);
-    if(exist){
+    const existIdx = st.towers.findIndex(t => t.x===x && t.y===y);
+    if(existIdx !== -1){
+      const exist = st.towers[existIdx];
       if(exist.w === st.pending.w){
         exist.star = (exist.star || 1) + 1;
         exist.recoil = 1.0;
+        playSfx('upgrade');
         spawnParticles(x+0.5, y+0.5, '#ffd166', 22, 3.0);
         fx({ type:'ring', x:x+0.5, y:y+0.5, col:'#ffd166', life:0.45 });
         fx({ type:'txt', x:x+0.5, y:y+0.4, txt:`★${exist.star} 升星強化!`, col:'#ffd166', life:1.2 });
@@ -1296,8 +1430,8 @@ function clickCell(x, y){
       } else {
         const refund = Math.floor(getLetterCost(exist.w.length) * exist.w.length * (exist.star || 1) * 0.7);
         st.gold += refund;
-        st.towers = st.towers.filter(t => t !== exist);
-        st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, recoil:0.8 });
+        st.towers[existIdx] = { w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, recoil:0.8 };
+        playSfx('build');
         spawnParticles(x+0.5, y+0.5, '#06d6a0', 16, 2.5);
         fx({ type:'txt', x:x+0.5, y:y+0.5, txt:`替換 +${refund}金`, col:'#ffd166', life:1.0 });
         fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
@@ -1308,6 +1442,7 @@ function clickCell(x, y){
       }
     }
 
+    playSfx('build');
     spawnParticles(x+0.5, y+0.5, '#7ed6a0', 18, 2.6);
     fx({ type:'spawn_range', x:x+0.5, y:y+0.5, rng:st.pending.s.rng||2.4, life:0.55 });
     st.towers.push({ w:st.pending.w, s:st.pending.s, x, y, star:1, cd:0, recoil:0.8 });
@@ -1322,7 +1457,8 @@ function clickCell(x, y){
   if(t){
     const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
     const pal = FX_PALETTE[t.s.fx] || FX_PALETTE.slash;
-    $('selInfo').innerHTML = `${pal.icon} <b>${t.w}</b> (★${t.star||1}・${t.s.zh}・傷害 ${Math.round(t.s.dmg*(1+((t.star||1)-1)*0.25))})`;
+    const extraTxt = t.s.fx === 'barrier' ? '・擊退+波末回血' : '';
+    $('selInfo').innerHTML = `${pal.icon} <b>${t.w}</b> (★${t.star||1}・${t.s.zh}・傷害 ${Math.round(t.s.dmg*(1+((t.star||1)-1)*0.25))}${extraTxt})`;
     $('recGold').textContent = ref;
     say(`選取【${t.w}】(★${t.star||1})，射程已標記！`);
   }
@@ -1334,15 +1470,18 @@ function recycleSelected(){
   const t = st.sel;
   const ref = Math.floor(getLetterCost(t.w.length) * t.w.length * (t.star || 1) * 0.7);
   st.gold += ref;
-  spawnParticles(t.x+0.5, y+0.5, '#ffd166', 15, 2.2);
-  st.towers = st.towers.filter(item => item !== t);
+  playSfx('coin');
+  // 修正舊版未定義變數 y 導致的崩潰與無限洗錢漏洞
+  spawnParticles(t.x+0.5, t.y+0.5, '#ffd166', 15, 2.2);
+  const idx = st.towers.indexOf(t);
+  if(idx !== -1) st.towers.splice(idx, 1);
   st.sel = null;
   say(`已回收【${t.w}】，退還 ${ref} 金幣！`, 'good');
   ui();
   saveGameProgress();
 }
 
-// ==================== 9. 戰鬥循環更新 ====================
+// ==================== 9. 戰鬥循環更新（含原位陣列壓縮與即時倒數） ====================
 function toggleAutoWave(){
   st.autoWave = !st.autoWave;
   st.autoWaveTimer = 0;
@@ -1371,12 +1510,13 @@ function startWave(){
 
   if(st.prepTime > 0){
     st.gold += 10;
+    playSfx('coin');
     say(`⚡ 神速開戰！早鳥獎勵 +10 金幣！第 ${st.wave} 波來襲！`, 'good');
   } else {
     say(`第 ${st.wave} 波開戰！${st.isBoss ? '⚠️ 本波有強大魔王！' : ''}`);
   }
   ui();
-  buildCodex();
+  updateCodexState();
   saveGameProgress();
 }
 
@@ -1411,7 +1551,28 @@ function fireTowerFx(t, c, tg){
   else if(fxType === 'swarm') fx({ type:'swarm', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#ffd166', life:0.32 });
   else if(fxType === 'drop_spike'){ addShake(5.5); fx({ type:'drop_spike', x2:tg.x, y2:tg.y, col:'#ffffff', life:0.36 }); }
   else if(fxType === 'vortex') fx({ type:'vortex', x2:tg.x, y2:tg.y, col:'#a855f7', life:0.4 });
-  else fx({ type:'barrier', x:c.x, y:c.y, col:'#7ed6a0', life:0.34 });
+  else fx({ type:'barrier', x:c.x, y:c.y, x2:tg.x, y2:tg.y, col:'#7ed6a0', life:0.34 });
+}
+
+function updatePrepTimerDOM(){
+  const pEl = $('prepTimer');
+  if(!pEl || st.inWave) return;
+  if(st.autoWaveTimer > 0){
+    const curAuto = Math.ceil(st.autoWaveTimer);
+    if(curAuto !== lastAutoSec){
+      lastAutoSec = curAuto;
+      pEl.innerHTML = `⏱️ 連戰倒數: <b style="color:var(--danger);font-size:13px">${curAuto}s</b>`;
+    }
+  } else if(st.prepTime > 0){
+    const curPrep = Math.ceil(st.prepTime);
+    if(curPrep !== lastPrepSec){
+      lastPrepSec = curPrep;
+      pEl.innerHTML = `⏱️ 早鳥獎勵: <b style="color:var(--gold);font-size:13px">${curPrep}s</b> (開戰 +10金)`;
+    }
+  } else if(lastPrepSec !== 0){
+    lastPrepSec = 0;
+    pEl.innerHTML = `⏳ 戰備狀態 (可從容部署)`;
+  }
 }
 
 function update(dt, dtReal){
@@ -1432,6 +1593,8 @@ function update(dt, dtReal){
     }
   }
 
+  if(!st.inWave) updatePrepTimerDOM();
+
   if(st.inWave && st.spawnLeft > 0){
     st.spawnT -= dt;
     if(st.spawnT <= 0){
@@ -1440,6 +1603,7 @@ function update(dt, dtReal){
 
       if(st.spawnLeft === 1 && st.isBoss){
         st.spawnT = 2.0;
+        playSfx('boss');
         addShake(10);
         fx({ type:'txt', x:6, y:3.5, txt:'⚠️ 警報！魔王降臨！', col:'#ff3b30', life:2.0 });
         say('⚠️ 警報！魔王即將現身！請集中火力！', 'bad');
@@ -1454,7 +1618,8 @@ function update(dt, dtReal){
     }
   }
 
-  for(const e of st.enemies){
+  for(let i=0; i<st.enemies.length; i++){
+    const e = st.enemies[i];
     const f = e.slowT > 0 ? e.slowF : 1;
     e.d += e.spd * f * dt;
     const p = posAt(e.d); e.x = p.x; e.y = p.y;
@@ -1466,17 +1631,20 @@ function update(dt, dtReal){
       st.hp -= e.type==='boss' ? 5 : 1;
       addShake(8);
       spawnParticles(e.x, e.y, '#ff5a5f', 20, 3.0);
+      ui();
       saveGameProgress();
     }
   }
 
-  for(const t of st.towers){
+  for(let i=0; i<st.towers.length; i++){
+    const t = st.towers[i];
     if(t.recoil > 0) t.recoil = Math.max(0, t.recoil - dt * 4.5);
     t.cd = (t.cd || 0) - dt;
     if(t.cd > 0) continue;
     const c = { x:t.x + 0.5, y:t.y + 0.5 };
     let tg = null;
-    for(const e of st.enemies){
+    for(let j=0; j<st.enemies.length; j++){
+      const e = st.enemies[j];
       if(dist(e, c) <= t.s.rng && (!tg || e.d > tg.d)) tg = e;
     }
     if(!tg) continue;
@@ -1486,16 +1654,24 @@ function update(dt, dtReal){
     fireTowerFx(t, c, tg);
 
     if(t.s.aoe){
-      st.enemies.forEach(e => {
-        if(dist(e, tg) <= t.s.aoe){ e.hp -= D; e.hitFlash = 1; }
-      });
+      for(let j=0; j<st.enemies.length; j++){
+        const e = st.enemies[j];
+        if(dist(e, tg) <= t.s.aoe){
+          e.hp -= D; e.hitFlash = 1;
+          if(t.s.kb){
+            const kbDist = e.type === 'boss' ? t.s.kb * 0.25 : t.s.kb;
+            e.d = Math.max(0, e.d - kbDist);
+          }
+        }
+      }
     } else if(t.s.fx === 'chain'){
       tg.hp -= D; tg.hitFlash = 1;
       let last = tg;
       const hit = [tg];
       for(let j=0; j<t.s.jumps; j++){
         let nx = null, minD = 2.0;
-        for(const e of st.enemies){
+        for(let k=0; k<st.enemies.length; k++){
+          const e = st.enemies[k];
           if(!hit.includes(e)){
             const d = dist(e, last);
             if(d < minD){ minD = d; nx = e; }
@@ -1516,31 +1692,45 @@ function update(dt, dtReal){
     t.cd = 1 / t.s.rate;
   }
 
-  st.enemies = st.enemies.filter(e => {
-    if(e.leak) return false;
+  // 原位壓縮 enemies 陣列，減少 GC 壓力
+  let eWrite = 0;
+  let killedAny = false;
+  for(let i=0; i<st.enemies.length; i++){
+    const e = st.enemies[i];
+    if(e.leak) continue;
     if(e.hp <= 0){
       st.gold += e.rew; st.kills++;
+      killedAny = true;
       addShake(e.type==='boss' ? 7 : 1.2);
       const pCol = e.type==='boss' ? '#ff4d6d' : (e.type==='fast' ? '#fde047' : '#ff758f');
       spawnParticles(e.x, e.y, pCol, e.type==='boss' ? 30 : 14, e.type==='boss' ? 3.8 : 2.4);
       fx({ type:'ring', x:e.x, y:e.y, col:pCol, life:0.3 });
       fx({ type:'txt', x:e.x, y:e.y, txt:'+'+e.rew+'🪙', col:'#ffd166', life:0.75 });
-      return false;
+      continue;
     }
-    return true;
-  });
-
-  for(const pt of st.particles){
-    pt.t += dtReal;
-    pt.x += pt.vx * dt;
-    pt.y += pt.vy * dt;
-    pt.vy += 3.5 * dt;
+    st.enemies[eWrite++] = e;
   }
-  st.particles = st.particles.filter(pt => pt.t < pt.life);
+  st.enemies.length = eWrite;
+  if(killedAny) ui();
+
+  // 原位壓縮 particles 陣列
+  let pWrite = 0;
+  for(let i=0; i<st.particles.length; i++){
+    const pt = st.particles[i];
+    pt.t += dtReal;
+    if(pt.t < pt.life){
+      pt.x += pt.vx * dt;
+      pt.y += pt.vy * dt;
+      pt.vy += 3.5 * dt;
+      st.particles[pWrite++] = pt;
+    }
+  }
+  st.particles.length = pWrite;
 
   if(st.hp <= 0){
     st.hp = 0; st.over = true;
     st.autoWaveTimer = 0;
+    playSfx('error');
     $('overTxt').textContent = `在【${ISLANDS[st.curIslandId].name}】第 ${st.wave} 波倒下，擊破 ${st.kills} 個敵軍`;
     $('over').hidden = false;
     delete islandSavedStates[st.curIslandId];
@@ -1552,25 +1742,48 @@ function update(dt, dtReal){
     const bonus = 10 + st.wave;
     st.gold += bonus;
     st.prepTime = 20;
+    lastPrepSec = -1;
+
+    // 計算場上護盾塔數量，每波結束自動修復守護水晶
+    let barrierHeal = 0;
+    for(let i=0; i<st.towers.length; i++){
+      if(st.towers[i].s.fx === 'barrier') barrierHeal += (st.towers[i].star || 1);
+    }
+    let healMsg = '';
+    if(barrierHeal > 0 && st.hp < st.maxHp){
+      const actualHeal = Math.min(st.maxHp - st.hp, Math.ceil(barrierHeal * 0.5));
+      if(actualHeal > 0){
+        st.hp += actualHeal;
+        healMsg = ` 🛡️護盾塔修復 +${actualHeal} 水晶！`;
+        fx({ type:'txt', x:10.8, y:4, txt:`+${actualHeal}🏰 水晶修復`, col:'#06d6a0', life:1.4 });
+      }
+    }
 
     if(st.wave >= 30){
       conquerCurrentIsland();
       return;
     }
 
-    say(`🎉 第 ${st.wave} 波通關！獲得賞金 +${bonus} 金幣！`, 'good');
+    playSfx('summon');
+    say(`🎉 第 ${st.wave} 波通關！賞金 +${bonus} 金幣！${healMsg}`, 'good');
     if(st.autoWave) st.autoWaveTimer = 3.0;
 
     ui();
-    buildCodex();
+    updateCodexState();
     saveGameProgress();
   }
 
-  st.fx.forEach(f => f.t += dtReal);
-  st.fx = st.fx.filter(f => f.t < f.life);
+  // 原位壓縮 fx 陣列
+  let fWrite = 0;
+  for(let i=0; i<st.fx.length; i++){
+    const f = st.fx[i];
+    f.t += dtReal;
+    if(f.t < f.life) st.fx[fWrite++] = f;
+  }
+  st.fx.length = fWrite;
 }
 
-// ==================== 10. 高效繪圖渲染系統（無 shadowBlur 降耗） ====================
+// ==================== 10. 高效繪圖渲染系統（離屏快取底圖 + 無 shadowBlur） ====================
 function drawRoundRect(ctx, x, y, w, h, r){
   ctx.beginPath();
   ctx.moveTo(x+r, y);
@@ -1579,6 +1792,59 @@ function drawRoundRect(ctx, x, y, w, h, r){
   ctx.arcTo(x, y+h, x, y, r);
   ctx.arcTo(x, y, x+w, y, r);
   ctx.closePath();
+}
+
+function renderStaticBg(){
+  const W = CS * COLS, H = CS * ROWS;
+  bgCanvas.width = W * DPR;
+  bgCanvas.height = H * DPR;
+  bgCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  const isl = ISLANDS[st.curIslandId];
+  bgCtx.fillStyle = isl.board;
+  bgCtx.fillRect(0, 0, W, H);
+
+  for(let y=0; y<ROWS; y++){
+    for(let x=0; x<COLS; x++){
+      if(!isPath(x,y) && (x+y)%2 === 0){
+        bgCtx.fillStyle = 'rgba(255,255,255,0.016)';
+        bgCtx.fillRect(x*CS, y*CS, CS, CS);
+      }
+    }
+  }
+
+  for(const d of decorMap){
+    const dx = (d.x + d.offX) * CS, dy = (d.y + d.offY) * CS;
+    if(d.type === 'tuft'){
+      bgCtx.strokeStyle = 'rgba(126,214,160,0.16)';
+      bgCtx.lineWidth = 1.8;
+      bgCtx.beginPath();
+      bgCtx.moveTo(dx, dy); bgCtx.lineTo(dx-3, dy-5);
+      bgCtx.moveTo(dx, dy); bgCtx.lineTo(dx+1, dy-7);
+      bgCtx.moveTo(dx, dy); bgCtx.lineTo(dx+4, dy-4);
+      bgCtx.stroke();
+    } else {
+      bgCtx.fillStyle = 'rgba(255,255,255,0.07)';
+      bgCtx.beginPath();
+      bgCtx.ellipse(dx, dy, 3.5, 2.2, 0.3, 0, Math.PI*2);
+      bgCtx.fill();
+    }
+  }
+
+  for(let y=0; y<ROWS; y++){
+    for(let x=0; x<COLS; x++){
+      if(isPath(x,y)){
+        bgCtx.fillStyle = (x+y)%2 ? isl.dirt : isl.line;
+        bgCtx.fillRect(x*CS, y*CS, CS, CS);
+        bgCtx.fillStyle = 'rgba(0,0,0,0.18)';
+        drawRoundRect(bgCtx, x*CS+2, y*CS+2, CS-4, CS-4, 4);
+        bgCtx.fill();
+        bgCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+        bgCtx.lineWidth = 1;
+        bgCtx.stroke();
+      }
+    }
+  }
 }
 
 function draw(){
@@ -1590,52 +1856,8 @@ function draw(){
   }
   const isl = ISLANDS[st.curIslandId];
 
-  ctx.fillStyle = isl.board;
-  ctx.fillRect(0, 0, W, H);
-
-  for(let y=0; y<ROWS; y++){
-    for(let x=0; x<COLS; x++){
-      if(!isPath(x,y)){
-        if((x+y)%2 === 0){
-          ctx.fillStyle = 'rgba(255,255,255,0.016)';
-          ctx.fillRect(x*CS, y*CS, CS, CS);
-        }
-      }
-    }
-  }
-
-  for(const d of decorMap){
-    const dx = (d.x + d.offX) * CS, dy = (d.y + d.offY) * CS;
-    if(d.type === 'tuft'){
-      ctx.strokeStyle = 'rgba(126,214,160,0.16)';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(dx, dy); ctx.lineTo(dx-3, dy-5);
-      ctx.moveTo(dx, dy); ctx.lineTo(dx+1, dy-7);
-      ctx.moveTo(dx, dy); ctx.lineTo(dx+4, dy-4);
-      ctx.stroke();
-    } else {
-      ctx.fillStyle = 'rgba(255,255,255,0.07)';
-      ctx.beginPath();
-      ctx.ellipse(dx, dy, 3.5, 2.2, 0.3, 0, Math.PI*2);
-      ctx.fill();
-    }
-  }
-
-  for(let y=0; y<ROWS; y++){
-    for(let x=0; x<COLS; x++){
-      if(isPath(x,y)){
-        ctx.fillStyle = (x+y)%2 ? isl.dirt : isl.line;
-        ctx.fillRect(x*CS, y*CS, CS, CS);
-        ctx.fillStyle = 'rgba(0,0,0,0.18)';
-        drawRoundRect(ctx, x*CS+2, y*CS+2, CS-4, CS-4, 4);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-  }
+  // 繪製離屏快取的靜態底圖
+  ctx.drawImage(bgCanvas, 0, 0, W, H);
 
   // 起點與終點入口視覺
   const startY = (isl.wp[0][1] + 0.5) * CS;
@@ -1722,7 +1944,6 @@ function draw(){
       ctx.stroke();
     }
 
-    // 輕量光暈取代 shadowBlur
     const orbY = -bw*0.35 + Math.sin(nowTime*4 + t.y)*1.5;
     ctx.fillStyle = pal.glow;
     ctx.globalAlpha = 0.45;
@@ -2058,9 +2279,11 @@ function renderEnhancedFx(f){
       break;
     }
     case 'barrier':{
+      const tx = (f.x2 !== undefined ? f.x2 : f.x) * CS;
+      const ty = (f.y2 !== undefined ? f.y2 : f.y) * CS;
       ctx.strokeStyle = f.col; ctx.lineWidth = 5 * a;
-      ctx.beginPath(); ctx.arc(f.x*CS, f.y*CS, CS * 0.7, 0, Math.PI*2); ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(tx, ty, CS * (0.4 + 0.45 * p), 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = `rgba(149, 213, 178, ${0.22 * a})`; ctx.fill();
       break;
     }
     case 'txt':{
@@ -2078,14 +2301,13 @@ function renderEnhancedFx(f){
   ctx.restore();
 }
 
-// ==================== 11. 鍵盤與圖鑑建構（附帶換題鍵） ====================
+// ==================== 11. 鍵盤與零重建圖鑑更新機制 ====================
 function buildKb(){
   const kb = $('kb'); kb.innerHTML = '';
   const rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
   rows.forEach((rowStr, i) => {
     const row = document.createElement('div'); row.className = 'kb-row';
 
-    // 第 3 排左側加換題鍵，方便單手拇指操作
     if(i === 2){
       const sk = document.createElement('button');
       sk.className = 'key skip-key';
@@ -2109,8 +2331,10 @@ function buildKb(){
   });
 }
 
-function buildCodex(){
+// 進島時僅建立一次圖鑑 DOM，徹底消除每次換題與開戰的 Layout Thrashing
+function initCodexDOM(){
   const wrap = $('codexWrap'); wrap.innerHTML = '';
+  codexCardMap.clear();
   const dict = WORLD_SPECS[st.curIslandId];
   const groups = [
     { len:3, name:'🌱 3 字初階戰塔 (1~5關)' },
@@ -2118,7 +2342,15 @@ function buildCodex(){
     { len:5, name:'🌲 5 字精銳戰塔 (11~15關)' },
     { len:6, name:'🔥 6+ 字傳奇神塔 (16~30關)' }
   ];
-  const tier = getTier(st.wave);
+
+  if(!sharedUpBtn){
+    sharedUpBtn = document.createElement('button');
+    sharedUpBtn.type = 'button';
+    sharedUpBtn.className = 'card-back-pill';
+    sharedUpBtn.textContent = '⬆️回輸入';
+    sharedUpBtn.title = '跳回上方輸入框';
+    sharedUpBtn.onclick = jumpBackToInputRack;
+  }
 
   groups.forEach(g => {
     const gDiv = document.createElement('div'); gDiv.className = 'codex-group';
@@ -2127,33 +2359,35 @@ function buildCodex(){
     const words = Object.entries(dict).filter(([w]) => g.len===6 ? w.length>=6 : w.length===g.len);
 
     words.forEach(([w, s]) => {
-      const isLocked = w.length > tier.maxLen;
-      const isCur = (w === st.targetWord);
-      const isDone = st.built.has(w);
       const pal = FX_PALETTE[s.fx] || FX_PALETTE.slash;
       const c = document.createElement('div');
-      c.className = `cx ${isDone?'done':''} ${isLocked?'locked':''} ${isCur?'target-active':''}`;
+      c.className = 'cx';
       c.innerHTML = `<b>${pal.icon} ${w}</b>${s.zh}`;
-
-      if(isCur){
-        const upBtn = document.createElement('button');
-        upBtn.type = 'button';
-        upBtn.className = 'card-back-pill';
-        upBtn.textContent = '⬆️回輸入';
-        upBtn.title = '跳回上方輸入框';
-        upBtn.onclick = jumpBackToInputRack;
-        c.appendChild(upBtn);
-      }
-
       c.onclick = () => {
         unlockTTS();
         speakWord(w, s.zh);
         say(`🔊 ${w} (${s.zh})・威力:${s.dmg} 射程:${s.rng}`);
       };
       cDiv.appendChild(c);
+      codexCardMap.set(w, c);
     });
     gDiv.appendChild(cDiv);
     wrap.appendChild(gDiv);
+  });
+}
+
+function updateCodexState(){
+  const tier = getTier(st.wave);
+  codexCardMap.forEach((c, w) => {
+    const isLocked = w.length > tier.maxLen;
+    const isCur = (w === st.targetWord);
+    const isDone = st.built.has(w);
+    c.classList.toggle('done', isDone);
+    c.classList.toggle('locked', isLocked);
+    c.classList.toggle('target-active', isCur);
+    if(isCur && sharedUpBtn.parentNode !== c){
+      c.appendChild(sharedUpBtn);
+    }
   });
 }
 
@@ -2176,17 +2410,20 @@ function ui(){
   const pEl = $('prepTimer');
   if(st.inWave){
     pEl.innerHTML = `<span style="color:var(--ok)">⚔️ 第 ${st.wave} 波激戰中</span>`;
-  } else if(st.autoWaveTimer > 0){
-    pEl.innerHTML = `⏱️ 連戰倒數: <b style="color:var(--danger);font-size:13px">${Math.ceil(st.autoWaveTimer)}s</b>`;
-  } else if(st.prepTime > 0){
-    pEl.innerHTML = `⏱️ 早鳥獎勵: <b style="color:var(--gold);font-size:13px">${Math.ceil(st.prepTime)}s</b> (開戰 +10金)`;
   } else {
-    pEl.innerHTML = `⏳ 戰備狀態 (可從容部署)`;
+    lastPrepSec = -1; lastAutoSec = -1;
+    updatePrepTimerDOM();
   }
 
   const cost = getLetterCost(len);
   document.querySelectorAll('.key').forEach(b => {
-    b.disabled = st.over || !!st.pending || st.gold < cost || st.slots.length >= len;
+    if(b.classList.contains('skip-key')){
+      b.disabled = st.over || !!st.pending;
+    } else if(b.classList.contains('wide')){
+      b.disabled = st.over || !!st.pending || st.slots.length <= 1;
+    } else {
+      b.disabled = st.over || !!st.pending || st.gold < cost || st.slots.length >= len;
+    }
   });
   $('bSubmit').disabled = st.over || !!st.pending || st.slots.length < len;
   $('bClear').disabled = st.over || !!st.pending || st.slots.length <= 1;
@@ -2198,7 +2435,7 @@ function ui(){
   $('selWrap').hidden = (!st.sel || !!st.pending);
 }
 
-// 限制 DPR <= 2，徹底杜絕 iPhone 3x Retina 高清縮放帶來的嚴重發熱
+// 限制 DPR <= 2 並同步更新離屏底圖
 function resize(){
   const stage = $('stage');
   const w = stage.clientWidth || 360;
@@ -2207,6 +2444,7 @@ function resize(){
   cv.width = w * DPR; cv.height = CS * ROWS * DPR;
   cv.style.height = (CS * ROWS) + 'px';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  renderStaticBg();
 }
 
 // ==================== 12. 存檔與引繼 ====================
@@ -2272,7 +2510,6 @@ window.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('gesturechange', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault());
 
-  // 監聽首次觸控以解鎖 iOS Web Audio / TTS
   document.addEventListener('touchstart', unlockTTS, { once:true, passive:true });
   document.addEventListener('click', unlockTTS, { once:true, passive:true });
 
@@ -2345,7 +2582,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 電腦滑鼠懸浮監聽
   cv.addEventListener('pointermove', e => {
     if(e.pointerType === 'mouse'){
       updateHoverPos(e.clientX, e.clientY);
